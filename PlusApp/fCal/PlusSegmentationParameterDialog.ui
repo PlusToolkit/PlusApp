@@ -45,7 +45,7 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>225</width>
+       <width>275</width>
        <height>0</height>
       </size>
      </property>
@@ -98,7 +98,11 @@
            </size>
           </property>
           <property name="text">
-           <string>Freeze Image</string>
+           <string>Freeze</string>
+          </property>
+          <property name="icon">
+           <iconset resource="fCal.qrc">
+            <normaloff>:/icons/Resources/icon_Pause.png</normaloff>:/icons/Resources/icon_Pause.png</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -150,7 +154,11 @@
            <string>Export frozen image into a single-frame metafile</string>
           </property>
           <property name="text">
-           <string>Export Image</string>
+           <string>Save Image</string>
+          </property>
+          <property name="icon">
+           <iconset resource="fCal.qrc">
+            <normaloff>:/icons/Resources/icon_Save.png</normaloff>:/icons/Resources/icon_Save.png</iconset>
           </property>
          </widget>
         </item>
@@ -235,6 +243,9 @@
              <property name="text">
               <string>from</string>
              </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
             </widget>
            </item>
            <item row="0" column="2">
@@ -263,6 +274,9 @@
             <widget class="QLabel" name="label_To">
              <property name="text">
               <string>to</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -407,7 +421,23 @@
            <item>
             <widget class="QLabel" name="label_Reference">
              <property name="text">
-              <string>References (mm): G</string>
+              <string>References (mm):</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_Green">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Green</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -437,9 +467,18 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_By">
+            <widget class="QLabel" name="label_Blue">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
-              <string>B</string>
+              <string>Blue</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -978,6 +1017,10 @@
           <property name="text">
            <string>Apply and Close</string>
           </property>
+          <property name="icon">
+           <iconset resource="fCal.qrc">
+            <normaloff>:/icons/Resources/icon_Apply.png</normaloff>:/icons/Resources/icon_Apply.png</iconset>
+          </property>
          </widget>
         </item>
         <item>
@@ -1025,7 +1068,11 @@
            <string>Save changes in a new file and into device set configuration data</string>
           </property>
           <property name="text">
-           <string>Save and Close...</string>
+           <string>Save and Close</string>
+          </property>
+          <property name="icon">
+           <iconset resource="fCal.qrc">
+            <normaloff>:/icons/Resources/icon_Save.png</normaloff>:/icons/Resources/icon_Save.png</iconset>
           </property>
          </widget>
         </item>
@@ -1078,6 +1125,8 @@
    <header location="global">QVTKWidget.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="fCal.qrc"/>
+ </resources>
  <connections/>
 </ui>

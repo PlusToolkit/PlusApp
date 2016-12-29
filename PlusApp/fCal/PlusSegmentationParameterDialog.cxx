@@ -6,19 +6,19 @@ See License.txt for details.
 
 // Local includes
 #include "PlusSegmentationParameterDialog.h"
-#include "PlusConfigFileSaverDialog.h"
 #include "vtkPlusImageVisualizer.h"
 
 // PlusLib includes
 #include <PlusFidPatternRecognition.h>
 #include <PlusFidPatternRecognitionCommon.h>
-#include <PlusVideoFrame.h>
 #include <PlusTrackedFrame.h>
+#include <PlusVideoFrame.h>
+#include <QPlusConfigFileSaverDialog.h>
 #include <vtkPlusChannel.h>
-#include <vtkPlusDevice.h>
-#include <vtkPlusTrackedFrameList.h>
 #include <vtkPlusDataCollector.h>
+#include <vtkPlusDevice.h>
 #include <vtkPlusSequenceIO.h>
+#include <vtkPlusTrackedFrameList.h>
 
 // VTK includes
 #include <vtkActor.h>
@@ -167,9 +167,14 @@ protected:
   }
 
 protected:
-  PlusSegmentationParameterDialog*    m_ParentDialog;
-  vtkSmartPointer<vtkActorCollection> m_ActorCollection;
-  std::array<double, 2>               m_ClickOffsetFromCenterOfSource;
+  //! Parent segmentation parameter dialog
+  PlusSegmentationParameterDialog*      m_ParentDialog;
+
+  //! Actor collection for the current mode
+  vtkSmartPointer<vtkActorCollection>   m_ActorCollection;
+
+  /*! Pair to store the offset of the click from the center of the desired source */
+  double                                m_ClickOffsetFromCenterOfSource[2];
 };
 
 /*! \class vtkROIModeHandler
@@ -751,7 +756,7 @@ PlusSegmentationParameterDialog::PlusSegmentationParameterDialog(QWidget* aParen
 
   connect(ui.groupBox_ROI, SIGNAL(toggled(bool)), this, SLOT(GroupBoxROIToggled(bool)));
   connect(ui.groupBox_Spacing, SIGNAL(toggled(bool)), this, SLOT(GroupBoxSpacingToggled(bool)));
-  connect(ui.pushButton_FreezeImage, SIGNAL(toggled(bool)), this, SLOT(FreezeImage(bool)));
+  connect(ui.pushButton_FreezeImage, SIGNAL(toggled(bool)), this, SLOT(OnFreezeImageClicked(bool)));
   connect(ui.pushButton_Export, SIGNAL(clicked()), this, SLOT(ExportImage()));
   connect(ui.pushButton_ApplyAndClose, SIGNAL(clicked()), this, SLOT(ApplyAndCloseClicked()));
   connect(ui.pushButton_SaveAndClose, SIGNAL(clicked()), this, SLOT(SaveAndCloseClicked()));
@@ -1167,7 +1172,7 @@ void PlusSegmentationParameterDialog::SaveAndCloseClicked()
     return;
   }
 
-  PlusConfigFileSaverDialog* configSaverDialog = new PlusConfigFileSaverDialog(this);
+  QPlusConfigFileSaverDialog* configSaverDialog = new QPlusConfigFileSaverDialog(this);
   configSaverDialog->exec();
 
   delete configSaverDialog;
@@ -1392,11 +1397,16 @@ PlusStatus PlusSegmentationParameterDialog::SegmentCurrentImage()
 }
 
 //-----------------------------------------------------------------------------
-void PlusSegmentationParameterDialog::FreezeImage(bool aOn)
+void PlusSegmentationParameterDialog::OnFreezeImageClicked(bool aOn)
 {
-  LOG_INFO("FreezeImage turned " << (aOn ? "on" : "off"));
+  LOG_DEBUG("FreezeImage turned " << (aOn ? "on" : "off"));
 
   m_ImageFrozen = aOn;
+
+  QSize size = ui.pushButton_FreezeImage->iconSize();
+  QPixmap pix(m_ImageFrozen ? ":/icons/Resources/icon_Play.png" : ":/icons/Resources/icon_Pause.png");
+  ui.pushButton_FreezeImage->setIcon(QIcon(pix.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+  ui.pushButton_FreezeImage->setText(m_ImageFrozen ? tr("Resume") : tr("Freeze"));
 
   ui.pushButton_Export->setEnabled(m_ImageFrozen);
 }

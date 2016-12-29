@@ -181,7 +181,7 @@ protected slots:
   * Freeze / Unfreeze image
   * \param aOn True if checked (freeze), false if unchecked (unfreeze)
   */
-  void FreezeImage(bool aOn);
+  void OnFreezeImageClicked(bool aOn);
 
   /*!
   * Export frozen image into a single-frame metafile
@@ -297,45 +297,47 @@ protected slots:
   void OriginalIntensityForDotsToggled(bool aOn);
 
 protected:
-  /*! Data collector */
-  vtkPlusDataCollector*         m_DataCollector;
-  vtkPlusChannel*               m_SelectedChannel;
+  /*! Cached reference to data collector */
+  vtkPlusDataCollector*                   m_DataCollector;
+
+  /*! Cached reference to active channel */
+  vtkPlusChannel*                         m_SelectedChannel;
+
+  /*! Cached pointer to renderer for the canvas */
+  vtkRenderer*                            m_CanvasRenderer;
 
   /*! Actor for displaying segmented points */
-  vtkActor*                     m_SegmentedPointsActor;
+  vtkSmartPointer<vtkActor>               m_SegmentedPointsActor;
 
   /*! Poly data for holding the segmented points */
-  vtkPolyData*                  m_SegmentedPointsPolyData;
+  vtkSmartPointer<vtkPolyData>            m_SegmentedPointsPolyData;
 
   /*! Poly data for holding the fiducial candidates */
-  vtkPolyData*                  m_CandidatesPolyData;
+  vtkSmartPointer<vtkPolyData>            m_CandidatesPolyData;
 
   /*! ROI mode handler callback command instance */
-  vtkROIModeHandler*            m_ROIModeHandler;
+  vtkSmartPointer<vtkROIModeHandler>      m_ROIModeHandler;
 
   /*! Spacing mode handler callback command instance */
-  vtkSpacingModeHandler*        m_SpacingModeHandler;
-
-  /*! Renderer for the canvas */
-  vtkRenderer*                  m_CanvasRenderer;
+  vtkSmartPointer<vtkSpacingModeHandler>  m_SpacingModeHandler;
 
   /*! 2D Image Visualization */
-  vtkPlusImageVisualizer*       m_ImageVisualizer;
+  vtkSmartPointer<vtkPlusImageVisualizer> m_ImageVisualizer;
 
   /*! Timer for refreshing the canvas */
-  QTimer*                       m_CanvasRefreshTimer;
+  QTimer*                                 m_CanvasRefreshTimer;
 
   /*! Original mm per pixel spacing (from input configuration) */
-  double                        m_ApproximateSpacingMmPerPixel;
+  double                                  m_ApproximateSpacingMmPerPixel;
 
   /*! Pattern recognition object for segmenting the images */
-  PlusFidPatternRecognition*    m_PatternRecognition;
+  PlusFidPatternRecognition*              m_PatternRecognition;
 
   /*! Flag indicating if image is frozen (using Freeze button) */
-  bool                          m_ImageFrozen;
+  bool                                    m_ImageFrozen;
 
-  /*! Tracked frame to hold the desired image to process */
-  PlusTrackedFrame              m_Frame;
+  /*! Tracked frame to hold the desired image to process*/
+  PlusTrackedFrame                        m_Frame;
 
 protected:
   Ui::SegmentationParameterDialog ui;
