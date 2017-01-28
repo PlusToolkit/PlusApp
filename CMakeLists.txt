@@ -60,22 +60,28 @@ CONFIGURE_FILE(
   )
 
 # --------------------------------------------------------------------------
-# Find SVN for revision information status and automatic update of the repository
+# Find git for revision information status and automatic update of the repository
 # --------------------------------------------------------------------------
 IF (PLUSAPP_OFFLINE_BUILD)
-  SET(PLUSAPP_REVISION 0)
+  SET(PLUSAPP_REVISION "NA")
+  SET(PLUSAPP_SHORT_REVISION "NA")
 ELSE()
+  # Need git for the automatic update of the repository
   FIND_PACKAGE(Git)
   IF(Git_FOUND)
-    EXECUTE_PROCESS(COMMAND git rev-parse HEAD OUTPUT_VARIABLE PLUSAPP_REVISION WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD OUTPUT_VARIABLE PLUSAPP_REVISION WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     STRING(REGEX REPLACE "\n$" "" PLUSAPP_REVISION "${PLUSAPP_REVISION}")
     STRING(REGEX REPLACE "\r$" "" PLUSAPP_REVISION "${PLUSAPP_REVISION}")
     
-    MESSAGE(STATUS "Current git hash is ${PLUSLIB_REVISION}")
+    MESSAGE(STATUS "Current git hash is ${PLUSAPP_REVISION}")
 
-    EXECUTE_PROCESS(COMMAND git rev-parse --short HEAD OUTPUT_VARIABLE PLUSAPP_SHORT_REVISION WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD OUTPUT_VARIABLE PLUSAPP_SHORT_REVISION WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     STRING(REGEX REPLACE "\n$" "" PLUSAPP_SHORT_REVISION "${PLUSAPP_SHORT_REVISION}")
     STRING(REGEX REPLACE "\r$" "" PLUSAPP_SHORT_REVISION "${PLUSAPP_SHORT_REVISION}")
+  ELSE()
+    MESSAGE(WARNING "Git tool not found. Cannot retrieve revision information from repository")
+    SET(PLUSAPP_REVISION "NA")
+    SET(PLUSAPP_SHORT_REVISION "NA")
   ENDIF()
 ENDIF()
 
