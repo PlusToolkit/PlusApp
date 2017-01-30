@@ -43,7 +43,7 @@
 \par Simulators
 - \subpage DeviceSavedDataSource
 - \subpage DeviceUsSimulator
-- \subpage DeviceFake
+- \subpage DeviceFakeTracker
 
 \par Data processors
 - \subpage DeviceVirtualCapture
