@@ -89,7 +89,7 @@ void PlusCaptureControlWidget::UpdateBasedOnState()
   if (m_Device != NULL)
   {
     ui.startStopButton->setEnabled(true);
-    ui.channelIdentifierLabel->setText(QString(m_Device->GetDeviceId()));
+    ui.channelIdentifierLabel->setText(QString::fromStdString(m_Device->GetDeviceId()));
     ui.numberOfRecordedFramesValueLabel->setText(QString::number(m_Device->GetTotalFramesRecorded(), 10));
 
     ui.saveAsButton->setEnabled(this->CanSave());

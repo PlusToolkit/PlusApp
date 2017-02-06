@@ -225,7 +225,7 @@ int main(int argc, char** argv)
 
       // Dump video buffer to file
       std::string outputVideoBufferSequenceFileName = vtkPlusConfig::GetInstance()->GetOutputPath(outputSequenceFileNamePrefix
-          + "-" + (*acqChannelIt)->GetChannelId() + "-" + videoSource->GetSourceId() + ".mha");
+          + "-" + (*acqChannelIt)->GetChannelId() + "-" + videoSource->GetId() + ".mha");
       LOG_INFO("Write video buffer to " << outputVideoBufferSequenceFileName);
       videoSource->WriteToSequenceFile(outputVideoBufferSequenceFileName.c_str(), false);
     }
@@ -240,9 +240,9 @@ int main(int argc, char** argv)
       double realFramePeriodStdevSec = 0;
       double realFrameRate = tool->GetFrameRate(false, &realFramePeriodStdevSec);
       double idealFrameRate = tool->GetFrameRate(true);
-      LOG_INFO("------------------ " << tool->GetSourceId() << " ---------------------");
-      LOG_INFO("Tracker tool " << tool->GetSourceId() <<  " actual sampling frequency: " << realFrameRate << "fps (sampling period stdev: " << realFramePeriodStdevSec * 1000.0 << "ms)");
-      LOG_INFO("Tracker tool " << tool->GetSourceId() <<  " nominal sampling frequency: " << idealFrameRate << "fps");
+      LOG_INFO("------------------ " << tool->GetId() << " ---------------------");
+      LOG_INFO("Tracker tool " << tool->GetId() <<  " actual sampling frequency: " << realFrameRate << "fps (sampling period stdev: " << realFramePeriodStdevSec * 1000.0 << "ms)");
+      LOG_INFO("Tracker tool " << tool->GetId() <<  " nominal sampling frequency: " << idealFrameRate << "fps");
       LOG_INFO("Number of items in the tool buffer: " << numOfItems);
       LOG_INFO("Tool buffer size: " << bufferSize);
 
@@ -292,7 +292,7 @@ int main(int argc, char** argv)
       }
       // Dump tracker tool buffer to file
       std::string outputTrackerBufferSequenceFileName = vtkPlusConfig::GetInstance()->GetOutputPath(outputSequenceFileNamePrefix
-          + "-" + (*acqChannelIt)->GetChannelId() + "-" + tool->GetSourceId() + ".mha");
+          + "-" + (*acqChannelIt)->GetChannelId() + "-" + tool->GetId() + ".mha");
       LOG_INFO("Write tracker buffer to " << outputTrackerBufferSequenceFileName);
       tool->WriteToSequenceFile(outputTrackerBufferSequenceFileName.c_str(), false);
     }

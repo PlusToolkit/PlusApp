@@ -1069,7 +1069,7 @@ void QTemporalCalibrationToolbox::FixedSignalChanged(int newIndex)
     if (this->FixedChannel->GetVideoSource(aSource) == PLUS_SUCCESS)
     {
       QVariant strVar = QVariant::fromValue(QString("Video"));
-      ui.comboBox_FixedSourceValue->addItem(aSource->GetSourceId(), strVar);
+      ui.comboBox_FixedSourceValue->addItem(QString::fromStdString(aSource->GetId()), strVar);
     }
     PlusTrackedFrame frame;
     if (this->FixedChannel->GetTrackedFrame(frame) != PLUS_SUCCESS)
@@ -1146,7 +1146,7 @@ void QTemporalCalibrationToolbox::MovingSignalChanged(int newIndex)
     if (this->MovingChannel->GetVideoSource(aSource) == PLUS_SUCCESS)
     {
       QVariant strVar = QVariant::fromValue(QString("Video"));
-      ui.comboBox_MovingSourceValue->addItem(aSource->GetSourceId(), strVar);
+      ui.comboBox_MovingSourceValue->addItem(QString::fromStdString(aSource->GetId()), strVar);
     }
     PlusTrackedFrame frame;
     if (this->MovingChannel->GetTrackedFrame(frame) != PLUS_SUCCESS)
