@@ -17,13 +17,15 @@
 #include <vtkIGTLIOLogic.h>
 #include <vtkIGTLIOConnector.h>
 
-class QPlusDeviceSetSelectorWidget;
-class vtkPlusOpenIGTLinkServer;
-class vtkPlusDataCollector;
-class vtkPlusTransformRepository;
 class QComboBox;
+class QDragEnterEvent;
+class QDropEvent;
+class QPlusDeviceSetSelectorWidget;
 class QProcess;
 class QWidget;
+class vtkPlusDataCollector;
+class vtkPlusOpenIGTLinkServer;
+class vtkPlusTransformRepository;
 
 //-----------------------------------------------------------------------------
 
@@ -76,6 +78,9 @@ protected slots:
   static void OnRemoteControlServerEventReceived(vtkObject* caller, unsigned long eventId, void* clientdata, void* calldata);
 
 protected:
+  virtual void dragEnterEvent(QDragEnterEvent* event);
+  virtual void dropEvent(QDropEvent* event);
+
   /*! Receive standard output or error and send it to the log */
   void SendServerOutputToLogger(const QByteArray& strData);
 
