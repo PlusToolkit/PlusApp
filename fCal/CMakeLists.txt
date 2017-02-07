@@ -101,7 +101,7 @@ IF(WIN32)
   SET(APP_MODE WIN32)
 ENDIF()
 
-ADD_EXECUTABLE( fCal ${APP_MODE} 
+ADD_EXECUTABLE(fCal ${APP_MODE} 
   ${fCal_SRCS} 
   ${fCal_Toolbox_SRCS}
   ${fCal_UI_HDRS} 
@@ -116,6 +116,11 @@ target_include_directories(fCal PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/Toolboxes
   )
+
+IF(NOT (MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode"))
+  target_compile_options(fCal PRIVATE -ftemplate-depth=5000)
+ENDIF()
+
 source_group(Toolboxes FILES ${fCal_Toolbox_SRCS} ${fCal_Toolbox_UI_HDRS})
 source_group("UI Files" FILES ${fCal_UI_SRCS})
 
