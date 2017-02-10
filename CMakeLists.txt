@@ -31,8 +31,6 @@ MESSAGE(STATUS "PlusApp version: ${PLUSAPP_VERSION}" )
 # --------------------------------------------------------------------------
 # Testing
 # --------------------------------------------------------------------------
-
-# Standard CMake option for testing.
 OPTION(BUILD_TESTING "Build test programs" ON)
 
 INCLUDE(CTest)
