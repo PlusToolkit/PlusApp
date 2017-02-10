@@ -75,7 +75,6 @@ ELSE()
 ENDIF()
 
 IF(PLUS_USE_OpenIGTLink)
-message(${OpenIGTLinkIO_DIR})
   IF(EXISTS "${OpenIGTLink_DIR}/CMakeCache.txt")
     LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${OpenIGTLink_DIR};OpenIGTLink;RuntimeLibraries;/")
   ELSE()
