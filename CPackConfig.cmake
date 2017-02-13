@@ -83,6 +83,8 @@ IF(PLUS_USE_OpenIGTLink)
   
   IF(EXISTS "${OpenIGTLinkIO_DIR}/CMakeCache.txt")
     LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${OpenIGTLinkIO_DIR};OpenIGTLinkIO;RuntimeLibraries;/")
+  ELSE()
+    MESSAGE(WARNING "Unable to set OpenIGTLinkIO_DIR for package generation!")
   ENDIF()
 ENDIF()
 
