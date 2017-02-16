@@ -58,6 +58,28 @@ CONFIGURE_FILE(
   )
 
 # --------------------------------------------------------------------------
+# Developer setup
+#
+FIND_PACKAGE(Git QUIET)
+IF(Git_FOUND)
+  GET_FILENAME_COMPONENT(_git_directory ${GIT_EXECUTABLE} DIRECTORY)
+ENDIF()
+SET(_x86env "ProgramFiles(x86)")
+FIND_PROGRAM(BASH_EXECUTABLE bash
+  HINTS 
+    ${_git_directory}
+    $ENV{ProgramFiles}/Git/bin
+    $ENV{${_x86env}}/Git/bin
+  )
+MARK_AS_ADVANCED(BASH_EXECUTABLE)
+IF(BASH_EXECUTABLE)
+  EXECUTE_PROCESS(COMMAND "${BASH_EXECUTABLE}" -c "cd ${CMAKE_SOURCE_DIR} && ${CMAKE_SOURCE_DIR}/Utilities/SetupForDevelopment.sh copyOnly"
+    OUTPUT_VARIABLE _bashOutput
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}}
+  )
+ENDIF()
+
+# --------------------------------------------------------------------------
 # Find git for revision information status and automatic update of the repository
 # --------------------------------------------------------------------------
 IF (PLUSAPP_OFFLINE_BUILD)
