@@ -19,6 +19,6 @@ GENERATE_HELP_DOC(PointSetExtractor)
 IF(PLUSAPP_INSTALL_BIN_DIR)
   INSTALL(TARGETS PointSetExtractor
     DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
-    COMPONENT RuntimeLibraries
+    COMPONENT RuntimeExecutables
     )  
 ENDIF()

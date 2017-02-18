@@ -78,6 +78,6 @@ TARGET_LINK_LIBRARIES( PlusServerLauncher PRIVATE ${PlusServerLauncher_LIBS} )
 IF(PLUSAPP_INSTALL_BIN_DIR)
   INSTALL(TARGETS PlusServerLauncher 
     DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
-    COMPONENT RuntimeLibraries
+    COMPONENT RuntimeExecutables
     )
 ENDIF()

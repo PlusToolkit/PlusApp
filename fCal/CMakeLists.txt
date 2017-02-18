@@ -129,12 +129,12 @@ source_group("UI Files" FILES ${fCal_UI_SRCS})
 IF(PLUSAPP_INSTALL_BIN_DIR)
   INSTALL(TARGETS fCal 
     DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
-    COMPONENT RuntimeLibraries
+    COMPONENT RuntimeExecutables
     )
 ENDIF()
 
 # --------------------------------------------------------------------------
 # Testing
-IF (BUILD_TESTING)
-  ADD_SUBDIRECTORY (Testing)
+IF(BUILD_TESTING)
+  ADD_SUBDIRECTORY(Testing)
 ENDIF()

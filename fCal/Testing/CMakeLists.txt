@@ -24,7 +24,7 @@ TARGET_LINK_LIBRARIES(SegmentationParameterDialogTest PRIVATE ${SegmentationPara
 IF(PLUSAPP_INSTALL_BIN_DIR)
   INSTALL(TARGETS SegmentationParameterDialogTest 
     DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
-    COMPONENT RuntimeLibraries
+    COMPONENT RuntimeExecutables
     )
 ENDIF()
 

@@ -88,6 +88,20 @@ IF(PLUS_USE_OpenIGTLink)
   ENDIF()
 ENDIF()
 
+IF(PLUS_USE_OvrvisionPro)
+  IF(EXISTS "${OvrvisionPro_DIR}/CMakeCache.txt")
+    LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${OvrvisionPro_DIR};OvrvisionPro;RuntimeLibraries;/")
+  ELSE()
+    MESSAGE(WARNING "Unable to set OvrvisionPro_DIR for package generation!")
+  ENDIF()
+
+  IF(EXISTS "${OpenCV_DIR}/CMakeCache.txt")
+    LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${OpenCV_DIR};OpenCV;libs;/")
+  ELSE()
+    MESSAGE(WARNING "Unable to set OpenCV_DIR for package generation!")
+  ENDIF()
+ENDIF()
+
 #-----------------------------------------------------------------------------
 # Installation vars.
 # PLUSAPP_INSTALL_BIN_DIR          - binary dir(executables)

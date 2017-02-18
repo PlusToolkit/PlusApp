@@ -10,12 +10,12 @@ GENERATE_HELP_DOC(SpatialSensorFusion)
 IF(PLUSAPP_INSTALL_BIN_DIR)
   INSTALL(TARGETS SpatialSensorFusion
     DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
-    COMPONENT RuntimeLibraries
+    COMPONENT RuntimeExecutables
     )
 ENDIF()
 
 # --------------------------------------------------------------------------
 # Testing
-IF (BUILD_TESTING)
-  ADD_SUBDIRECTORY (Testing)
+IF(BUILD_TESTING)
+  ADD_SUBDIRECTORY(Testing)
 ENDIF()

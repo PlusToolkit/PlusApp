@@ -19,6 +19,6 @@ ENDIF()
 IF(PLUSAPP_INSTALL_BIN_DIR)
   INSTALL(TARGETS DiagDataCollection
     DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
-    COMPONENT RuntimeLibraries
+    COMPONENT RuntimeExecutables
     )
 ENDIF()
