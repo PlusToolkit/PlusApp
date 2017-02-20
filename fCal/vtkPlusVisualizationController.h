@@ -335,8 +335,10 @@ protected:
   QTimer                                      AcquisitionTimer;
   /*! Polydata holding the result points (eg. stylus tip, segmented points) */
   vtkSmartPointer<vtkPolyData>                ResultPolyData;
+  vtkSmartPointer<vtkPoints>                  ResultPoints;
   /*! Polydata holding the input points */
   vtkSmartPointer<vtkPolyData>                InputPolyData;
+  vtkSmartPointer<vtkPoints>                  InputPoints;
   /*! Flag indicating if the visualization is in image mode (show only the image and interactions are off) or device display mode (show all tools and the image and interactions are on) or none */
   DISPLAY_MODE                                CurrentMode;
   /*! Desired frame rate of synchronized recording */

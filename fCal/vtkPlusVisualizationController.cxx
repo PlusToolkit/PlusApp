@@ -54,12 +54,12 @@ vtkPlusVisualizationController::vtkPlusVisualizationController()
   this->ClearTransformRepository();
 
   // Input points poly data
-  vtkSmartPointer<vtkPoints> input = vtkSmartPointer<vtkPoints>::New();
-  this->InputPolyData->SetPoints(input);
+  this->InputPoints = vtkSmartPointer<vtkPoints>::New();
+  this->InputPolyData->SetPoints(this->InputPoints);
 
   // Result points poly data
-  vtkSmartPointer<vtkPoints> resultPoint = vtkSmartPointer<vtkPoints>::New();
-  this->ResultPolyData->SetPoints(resultPoint);
+  this->ResultPoints = vtkSmartPointer<vtkPoints>::New();
+  this->ResultPolyData->SetPoints(this->ResultPoints);
 
   // Initialize timer
   connect(&this->AcquisitionTimer, &QTimer::timeout, this, &vtkPlusVisualizationController::Update);
@@ -145,13 +145,13 @@ void vtkPlusVisualizationController::SetInputPolyDataPoints(vtkPoints* points)
 //----------------------------------------------------------------------------
 vtkPoints* vtkPlusVisualizationController::GetResultPolyDataPoints()
 {
-  return ResultPolyData->GetPoints();
+  return this->ResultPoints;
 }
 
 //----------------------------------------------------------------------------
 vtkPoints* vtkPlusVisualizationController::GetInputPolyDataPoints()
 {
-  return this->InputPolyData->GetPoints();
+  return this->InputPoints;
 }
 
 //-----------------------------------------------------------------------------
