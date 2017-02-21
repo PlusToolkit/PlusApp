@@ -536,7 +536,7 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 {
   PlusServerLauncherMainWindow* self = reinterpret_cast<PlusServerLauncherMainWindow*>(clientData);
 
-  auto device = dynamic_cast<igtlioDevice*>(caller);
+  auto device = dynamic_cast<igtlio::Device*>(caller);
 
   if (device == nullptr)
   {
