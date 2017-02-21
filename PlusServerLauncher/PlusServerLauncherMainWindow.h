@@ -14,8 +14,8 @@
 #include <QProcess>
 
 // OpenIGTLinkIO includes
-#include <vtkIGTLIOLogic.h>
-#include <vtkIGTLIOConnector.h>
+#include <igtlioLogic.h>
+#include <igtlioConnector.h>
 
 class QComboBox;
 class QDragEnterEvent;
@@ -106,8 +106,8 @@ protected:
   /*! OpenIGTLink server that allows remote control of launcher (start/stop a PlusServer process, etc) */
   int m_RemoteControlServerPort;
   vtkSmartPointer<vtkCallbackCommand>   m_RemoteControlServerCallbackCommand;
-  vtkIGTLIOLogicPointer                 m_RemoteControlServerLogic;
-  vtkIGTLIOConnectorPointer             m_RemoteControlServerConnector;
+  igtlio::LogicPointer                  m_RemoteControlServerLogic;
+  igtlio::ConnectorPointer              m_RemoteControlServerConnector;
 
 private:
   Ui::PlusServerLauncherMainWindow ui;

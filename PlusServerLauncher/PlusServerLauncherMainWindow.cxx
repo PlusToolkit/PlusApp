@@ -34,7 +34,7 @@ See License.txt for details.
 #include <algorithm>
 
 // OpenIGTLinkIO includes
-#include <vtkIGTLIODevice.h>
+#include <igtlioDevice.h>
 
 namespace
 {
@@ -158,9 +158,9 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
     }
 
     LOG_INFO("Start remote control server at port: " << m_RemoteControlServerPort);
-    m_RemoteControlServerLogic = vtkIGTLIOLogicPointer::New();
-    m_RemoteControlServerLogic->AddObserver(vtkIGTLIOLogic::CommandQueryReceivedEvent, m_RemoteControlServerCallbackCommand);
-    m_RemoteControlServerLogic->AddObserver(vtkIGTLIOLogic::CommandResponseReceivedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerLogic = igtlio::LogicPointer::New();
+    m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandQueryReceivedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandResponseReceivedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector = m_RemoteControlServerLogic->CreateConnector();
     m_RemoteControlServerConnector->SetTypeServer(m_RemoteControlServerPort);
     m_RemoteControlServerConnector->Start();
@@ -536,7 +536,7 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 {
   PlusServerLauncherMainWindow* self = reinterpret_cast<PlusServerLauncherMainWindow*>(clientData);
 
-  auto device = dynamic_cast<vtkIGTLIODevice*>(caller);
+  auto device = dynamic_cast<igtlioDevice*>(caller);
 
   if (device == nullptr)
   {
@@ -545,9 +545,9 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 
   switch (eventId)
   {
-  case vtkIGTLIOLogic::CommandQueryReceivedEvent:
+  case igtlio::Logic::CommandQueryReceivedEvent:
     break;
-  case vtkIGTLIOLogic::CommandResponseReceivedEvent:
+  case igtlio::Logic::CommandResponseReceivedEvent:
     break;
   }
 }
