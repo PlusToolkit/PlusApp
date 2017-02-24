@@ -487,7 +487,7 @@ PlusStatus QVolumeReconstructionToolbox::SaveVolumeToFile(QString aOutput)
 
   if (aOutput.right(3).toLower() == QString("mha"))
   {
-    if (m_VolumeReconstructor->SaveReconstructedVolumeToMetafile(aOutput.toLatin1().constData()) != PLUS_SUCCESS)
+    if (m_VolumeReconstructor->SaveReconstructedVolumeToMetafile(aOutput.toStdString()) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to save reconstructed volume in sequence metafile!");
       return PLUS_FAIL;

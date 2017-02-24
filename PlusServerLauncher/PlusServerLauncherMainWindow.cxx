@@ -486,24 +486,24 @@ void PlusServerLauncherMainWindow::ErrorReceived(QProcess::ProcessError errorCod
   const char* errorString = "unknown";
   switch ((QProcess::ProcessError)errorCode)
   {
-  case QProcess::FailedToStart:
-    errorString = "FailedToStart";
-    break;
-  case QProcess::Crashed:
-    errorString = "Crashed";
-    break;
-  case QProcess::Timedout:
-    errorString = "Timedout";
-    break;
-  case QProcess::WriteError:
-    errorString = "WriteError";
-    break;
-  case QProcess::ReadError:
-    errorString = "ReadError";
-    break;
-  case QProcess::UnknownError:
-  default:
-    errorString = "UnknownError";
+    case QProcess::FailedToStart:
+      errorString = "FailedToStart";
+      break;
+    case QProcess::Crashed:
+      errorString = "Crashed";
+      break;
+    case QProcess::Timedout:
+      errorString = "Timedout";
+      break;
+    case QProcess::WriteError:
+      errorString = "WriteError";
+      break;
+    case QProcess::ReadError:
+      errorString = "ReadError";
+      break;
+    case QProcess::UnknownError:
+    default:
+      errorString = "UnknownError";
   }
   LOG_ERROR("Server process error: " << errorString);
   m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
@@ -545,9 +545,9 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 
   switch (eventId)
   {
-  case igtlio::Logic::CommandQueryReceivedEvent:
-    break;
-  case igtlio::Logic::CommandResponseReceivedEvent:
-    break;
+    case igtlio::Logic::CommandQueryReceivedEvent:
+      break;
+    case igtlio::Logic::CommandResponseReceivedEvent:
+      break;
   }
 }
