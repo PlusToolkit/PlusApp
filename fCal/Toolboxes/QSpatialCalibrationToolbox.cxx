@@ -9,7 +9,7 @@ See License.txt for details.
 #include "fCalMainWindow.h"
 #include "vtkPlusDisplayableObject.h"
 #include "vtkPlusVisualizationController.h"
-#include "PlusSegmentationParameterDialog.h"
+#include "QPlusSegmentationParameterDialog.h"
 
 // PlusLib includes
 #include <PlusConfigure.h>
@@ -542,12 +542,12 @@ void QSpatialCalibrationToolbox::EditSegmentationParameters()
   m_ParentMainWindow->GetVisualizationController()->SetVisualizationMode(vtkPlusVisualizationController::DISPLAY_MODE_NONE);
   if (m_ParentMainWindow->GetVisualizationController()->DisconnectInput() != PLUS_SUCCESS)
   {
-    LOG_ERROR("Unable to disconnect input. Cannot show input in PlusSegmentationParameterDialog.");
+    LOG_ERROR("Unable to disconnect input. Cannot show input in QPlusSegmentationParameterDialog.");
     return;
   }
 
   // Show segmentation parameter dialog
-  PlusSegmentationParameterDialog* segmentationParamDialog = new PlusSegmentationParameterDialog(this, m_ParentMainWindow->GetVisualizationController()->GetDataCollector(), m_ParentMainWindow->GetSelectedChannel());
+  QPlusSegmentationParameterDialog* segmentationParamDialog = new QPlusSegmentationParameterDialog(this, m_ParentMainWindow->GetVisualizationController()->GetDataCollector(), m_ParentMainWindow->GetSelectedChannel());
   segmentationParamDialog->exec();
   delete segmentationParamDialog;
 

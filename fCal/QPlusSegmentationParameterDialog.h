@@ -8,7 +8,7 @@
 #define SEGMENTATIONPARAMETERDIALOG_H
 
 // Local includes
-#include "ui_PlusSegmentationParameterDialog.h"
+#include "ui_QPlusSegmentationParameterDialog.h"
 
 // PlusLib includes
 #include <PlusConfigure.h>
@@ -30,11 +30,11 @@ class vtkSpacingModeHandler;
 
 //-----------------------------------------------------------------------------
 
-/*! \class PlusSegmentationParameterDialog
+/*! \class QPlusSegmentationParameterDialog
  * \brief Segmentation parameter setting dialog class
  * \ingroup PlusAppCommonWidgets
  */
-class PlusSegmentationParameterDialog : public QDialog
+class QPlusSegmentationParameterDialog : public QDialog
 {
   Q_OBJECT
 
@@ -44,12 +44,12 @@ public:
   * \param aParent Parent object
   * \param aDataCollector Data collector (needed for the image output)
   */
-  PlusSegmentationParameterDialog(QWidget* aParent, vtkPlusDataCollector* aCollector, vtkPlusChannel* aChannel);
+  QPlusSegmentationParameterDialog(QWidget* aParent, vtkPlusDataCollector* aCollector, vtkPlusChannel* aChannel);
 
   /*!
   * Destructor
   */
-  ~PlusSegmentationParameterDialog();
+  ~QPlusSegmentationParameterDialog();
 
   /*!
   * Return canvas renderer
@@ -78,6 +78,9 @@ public:
   * \return Success flag
   */
   PlusStatus GetROI(unsigned int& aXMin, unsigned int& aYMin, unsigned int& aXMax, unsigned int& aYMax);
+
+  PlusStatus SetROI(unsigned int roi[4]);
+  PlusStatus GetROI(unsigned int roi[4]);
 
   /*!
   * Compute and set spacing according to summed measured length (got from the mode handler)

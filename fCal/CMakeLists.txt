@@ -5,7 +5,7 @@ PROJECT(fCal)
 SET (fCal_SRCS
   fCalMain.cxx
   fCalMainWindow.cxx
-  PlusSegmentationParameterDialog.cxx
+  QPlusSegmentationParameterDialog.cxx
   vtkPlusVisualizationController.cxx
   vtkPlusDisplayableObject.cxx
   vtkPlusImageVisualizer.cxx
@@ -30,7 +30,7 @@ ENDIF()
 
 SET (fCal_UI_HDRS
   fCalMainWindow.h
-  PlusSegmentationParameterDialog.h
+  QPlusSegmentationParameterDialog.h
   vtkPlusVisualizationController.h
   vtkPlusDisplayableObject.h
   vtkPlusImageVisualizer.h
@@ -59,7 +59,7 @@ SET (fCal_UI_SRCS
   Toolboxes/QStylusCalibrationToolbox.ui
   Toolboxes/QPhantomRegistrationToolbox.ui
   Toolboxes/QVolumeReconstructionToolbox.ui
-  PlusSegmentationParameterDialog.ui
+  QPlusSegmentationParameterDialog.ui
   PlusCaptureControlWidget.ui 
   )
 
