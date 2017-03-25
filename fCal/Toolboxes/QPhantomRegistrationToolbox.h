@@ -191,28 +191,28 @@ protected slots:
 
 protected:
   /*! Phantom landmark registration algorithm */
-  vtkPlusPhantomLandmarkRegistrationAlgo*     m_PhantomLandmarkRegistration;
+  vtkSmartPointer<vtkPlusPhantomLandmarkRegistrationAlgo>     m_PhantomLandmarkRegistration;
 
   /*! Phantom linear object registration algorithm */
-  vtkPlusPhantomLinearObjectRegistrationAlgo* m_PhantomLinearObjectRegistration;
+  vtkSmartPointer<vtkPlusPhantomLinearObjectRegistrationAlgo> m_PhantomLinearObjectRegistration;
 
   /*! Stylus tip Landmark detection algorithm */
-  vtkPlusLandmarkDetectionAlgo*                  m_LandmarkDetection;
+  vtkSmartPointer<vtkPlusLandmarkDetectionAlgo>               m_LandmarkDetection;
 
   /*! Landmark already detected */
-  int                                    m_LandmarkDetected;
+  int                                     m_LandmarkDetected;
 
   /*! Renderer for the canvas */
-  vtkRenderer*                            m_PhantomRenderer;
+  vtkSmartPointer<vtkRenderer>            m_PhantomRenderer;
 
   /*! Actor for displaying the phantom geometry in phantom canvas */
-  vtkActor*                               m_PhantomActor;
+  vtkSmartPointer<vtkActor>               m_PhantomActor;
 
   /*! Actor for displaying the defined landmark from the configuration file */
-  vtkActor*                               m_RequestedLandmarkActor;
+  vtkSmartPointer<vtkActor>               m_RequestedLandmarkActor;
 
   /*! Polydata holding the requested landmark for highlighting in phantom canvas */
-  vtkPolyData*                            m_RequestedLandmarkPolyData;
+  vtkSmartPointer<vtkPolyData>            m_RequestedLandmarkPolyData;
 
   /*! Index of current landmark */
   int                                     m_CurrentLandmarkIndex;
@@ -234,7 +234,7 @@ protected:
 
 
   /*! Previous stylus tip to reference transform matrix to determine the difference at each point acquisition */
-  vtkMatrix4x4*                           m_PreviousStylusTipToReferenceTransformMatrix;
+  vtkSmartPointer<vtkMatrix4x4>           m_PreviousStylusTipToReferenceTransformMatrix;
 
 protected:
   Ui::PhantomRegistrationToolbox ui;

@@ -133,7 +133,7 @@ PlusStatus QStylusCalibrationToolbox::ReadConfiguration(vtkXMLDataElement* aConf
     LOG_WARNING("Unable to read NumberOfStylusCalibrationPointsToAcquire attribute from fCal element of the device set configuration, default value '" << m_NumberOfPoints << "' will be used");
   }
 
-  XML_READ_SCALAR_ATTRIBUTE_OPTIONAL(int, FreeHandStartupDelaySec , fCalElement);
+  XML_READ_SCALAR_ATTRIBUTE_OPTIONAL(int, FreeHandStartupDelaySec, fCalElement);
 
   return PLUS_SUCCESS;
 }
@@ -413,11 +413,9 @@ void QStylusCalibrationToolbox::StartCalibration()
   m_CurrentPointNumber = 0;
 
   // Clear input points and result point
-  vtkSmartPointer<vtkPoints> inputPoints = vtkSmartPointer<vtkPoints>::New();
-  m_ParentMainWindow->GetVisualizationController()->SetInputPolyDataPoints(inputPoints);
-
-  vtkSmartPointer<vtkPoints> resultPointsPoint = vtkSmartPointer<vtkPoints>::New();
-  m_ParentMainWindow->GetVisualizationController()->SetResultPolyDataPoints(resultPointsPoint);
+  m_ParentMainWindow->GetVisualizationController()->SetInputColor(0.0, 0.7, 1.0);
+  m_ParentMainWindow->GetVisualizationController()->ClearInputPolyData();
+  m_ParentMainWindow->GetVisualizationController()->ClearResultPolyData();
 
   // Initialize calibration
   m_PivotCalibration->RemoveAllCalibrationPoints();
@@ -555,7 +553,7 @@ void QStylusCalibrationToolbox::OnDataAcquired()
                            .arg(stylusToReferenceTransformMatrix->GetElement(2, 3), 7, 'f', 1, ' ');
 
   // Add point to the input if fulfills the criteria
-  vtkPoints* points = m_ParentMainWindow->GetVisualizationController()->GetInputPolyDataPoints();
+  vtkSmartPointer<vtkPoints> points = m_ParentMainWindow->GetVisualizationController()->GetInputPolyDataPoints();
 
   double positionDifferenceLowThresholdMm = 2.0;
   double positionDifferenceHighThresholdMm = 500.0;

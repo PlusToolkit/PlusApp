@@ -279,10 +279,10 @@ public:
 
   PlusStatus ResetCamera();
 
-  void SetResultPolyDataPoints(vtkPoints* points);
-  void SetInputPolyDataPoints(vtkPoints* points);
-  vtkPoints* GetResultPolyDataPoints();
-  vtkPoints* GetInputPolyDataPoints();
+  void SetResultPolyDataPoints(vtkSmartPointer<vtkPoints> points);
+  void SetInputPolyDataPoints(vtkSmartPointer<vtkPoints> points);
+  vtkSmartPointer<vtkPoints> GetResultPolyDataPoints();
+  vtkSmartPointer<vtkPoints> GetInputPolyDataPoints();
 
 protected slots:
   /*!

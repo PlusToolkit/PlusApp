@@ -38,44 +38,22 @@ See License.txt for details.
 QPhantomRegistrationToolbox::QPhantomRegistrationToolbox(fCalMainWindow* aParentMainWindow, Qt::WindowFlags aFlags)
   : QAbstractToolbox(aParentMainWindow)
   , QWidget(aParentMainWindow, aFlags)
-  , m_PhantomActor(NULL)
-  , m_RequestedLandmarkActor(NULL)
-  , m_RequestedLandmarkPolyData(NULL)
-  , m_PhantomRenderer(NULL)
+  , m_PhantomLandmarkRegistration(vtkSmartPointer<vtkPlusPhantomLandmarkRegistrationAlgo>::New())
+  , m_PhantomLinearObjectRegistration(vtkSmartPointer<vtkPlusPhantomLinearObjectRegistrationAlgo>::New())
+  , m_LandmarkDetection(vtkSmartPointer<vtkPlusLandmarkDetectionAlgo>::New())
+  , m_PhantomActor(vtkSmartPointer<vtkActor>::New())
+  , m_RequestedLandmarkActor(vtkSmartPointer<vtkActor>::New())
+  , m_RequestedLandmarkPolyData(vtkSmartPointer<vtkPolyData>::New())
+  , m_PhantomRenderer(vtkSmartPointer<vtkRenderer>::New())
   , m_CurrentLandmarkIndex(0)
   , m_LinearObjectRegistrationState(LinearObjectRegistrationState_Incomplete)
   , m_LandmarkPivotingState(LandmarkPivotingState_Incomplete)
-  , m_PreviousStylusTipToReferenceTransformMatrix(NULL)
+  , m_PreviousStylusTipToReferenceTransformMatrix(vtkSmartPointer<vtkMatrix4x4>::New())
   , m_LandmarkDetected(-1)
 {
   ui.setupUi(this);
 
-  // Create algorithm class
-  m_PhantomLandmarkRegistration = vtkPlusPhantomLandmarkRegistrationAlgo::New();
-  if (m_PhantomLandmarkRegistration == NULL)
-  {
-    LOG_ERROR("Unable to instantiate phantom landmark registration algorithm class!");
-    return;
-  }
-
-  m_PhantomLinearObjectRegistration = vtkPlusPhantomLinearObjectRegistrationAlgo::New();
-  if (m_PhantomLinearObjectRegistration == NULL)
-  {
-    LOG_ERROR("Unable to instantiate phantom linear object registration algorithm class!");
-    return;
-  }
-
-  m_LandmarkDetection = vtkPlusLandmarkDetectionAlgo::New();
-  if (m_LandmarkDetection == NULL)
-  {
-    LOG_ERROR("Unable to instantiate pivot detection algorithm class!");
-    return;
-  }
-
-  m_PreviousStylusTipToReferenceTransformMatrix = vtkMatrix4x4::New();
-
   // Create and add renderer to phantom canvas
-  m_PhantomRenderer = vtkRenderer::New();
   m_PhantomRenderer->SetBackground(0.1, 0.1, 0.1);
   m_PhantomRenderer->SetBackground2(0.4, 0.4, 0.4);
   m_PhantomRenderer->SetGradientBackground(true);
@@ -83,12 +61,10 @@ QPhantomRegistrationToolbox::QPhantomRegistrationToolbox(fCalMainWindow* aParent
   ui.canvasPhantom->GetRenderWindow()->AddRenderer(m_PhantomRenderer);
 
   // Initialize requested landmarks visualization in toolbox canvas
-  m_RequestedLandmarkPolyData = vtkPolyData::New();
   m_RequestedLandmarkPolyData->Initialize();
   vtkSmartPointer<vtkPoints> requestedLandmarkPoints = vtkSmartPointer<vtkPoints>::New();
   m_RequestedLandmarkPolyData->SetPoints(requestedLandmarkPoints);
 
-  m_RequestedLandmarkActor = vtkActor::New();
   vtkSmartPointer<vtkPolyDataMapper> requestedLandmarksMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   vtkSmartPointer<vtkGlyph3D> requestedLandmarksGlyph = vtkSmartPointer<vtkGlyph3D>::New();
   vtkSmartPointer<vtkSphereSource> requestedLandmarksSphereSource = vtkSmartPointer<vtkSphereSource>::New();
@@ -101,8 +77,6 @@ QPhantomRegistrationToolbox::QPhantomRegistrationToolbox(fCalMainWindow* aParent
   m_RequestedLandmarkActor->GetProperty()->SetColor(1.0, 0.5, 0.0);
 
   m_PhantomRenderer->AddActor(m_RequestedLandmarkActor);
-
-  m_PhantomActor = vtkActor::New();
   m_PhantomRenderer->AddActor(m_PhantomActor);
 
   // Connect events
@@ -120,56 +94,7 @@ QPhantomRegistrationToolbox::QPhantomRegistrationToolbox(fCalMainWindow* aParent
 //-----------------------------------------------------------------------------
 QPhantomRegistrationToolbox::~QPhantomRegistrationToolbox()
 {
-  if (m_PhantomLandmarkRegistration != NULL)
-  {
-    m_PhantomLandmarkRegistration->Delete();
-    m_PhantomLandmarkRegistration = NULL;
-  }
-
-  if (m_LandmarkDetection != NULL)
-  {
-    m_LandmarkDetection->Delete();
-    m_LandmarkDetection = NULL;
-  }
-
-  if (m_PhantomLinearObjectRegistration != NULL)
-  {
-    m_PhantomLinearObjectRegistration->Delete();
-    m_PhantomLinearObjectRegistration = NULL;
-  }
-
-  if (m_PhantomActor != NULL)
-  {
-    m_PhantomRenderer->RemoveActor(m_PhantomActor);
-    m_PhantomActor->Delete();
-    m_PhantomActor = NULL;
-  }
-
-  if (m_RequestedLandmarkActor != NULL)
-  {
-    m_PhantomRenderer->RemoveActor(m_RequestedLandmarkActor);
-    m_RequestedLandmarkActor->Delete();
-    m_RequestedLandmarkActor = NULL;
-  }
-
-  if (m_RequestedLandmarkPolyData != NULL)
-  {
-    m_RequestedLandmarkPolyData->Delete();
-    m_RequestedLandmarkPolyData = NULL;
-  }
-
-  if (m_PhantomRenderer != NULL)
-  {
-    ui.canvasPhantom->GetRenderWindow()->RemoveRenderer(m_PhantomRenderer);
-    m_PhantomRenderer->Delete();
-    m_PhantomRenderer = NULL;
-  }
-
-  if (m_PreviousStylusTipToReferenceTransformMatrix != NULL)
-  {
-    m_PreviousStylusTipToReferenceTransformMatrix->Delete();
-    m_PreviousStylusTipToReferenceTransformMatrix = NULL;
-  }
+  ui.canvasPhantom->GetRenderWindow()->RemoveRenderer(m_PhantomRenderer);
 }
 
 //-----------------------------------------------------------------------------

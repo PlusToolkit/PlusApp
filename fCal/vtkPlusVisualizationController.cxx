@@ -40,7 +40,7 @@ vtkStandardNewMacro(vtkPlusVisualizationController);
 //-----------------------------------------------------------------------------
 vtkPlusVisualizationController::vtkPlusVisualizationController()
   : ImageVisualizer(vtkSmartPointer<vtkPlusImageVisualizer>::New())
-  , PerspectiveVisualizer(vtkSmartPointer < vtkPlus3DObjectVisualizer >::New())
+  , PerspectiveVisualizer(vtkSmartPointer<vtkPlus3DObjectVisualizer>::New())
   , BlankRenderer(vtkSmartPointer<vtkRenderer>::New())
   , ResultPolyData(vtkSmartPointer<vtkPolyData>::New())
   , InputPolyData(vtkSmartPointer<vtkPolyData>::New())
@@ -70,8 +70,8 @@ vtkPlusVisualizationController::vtkPlusVisualizationController()
   this->ImageVisualizer->EnableROI(false);
 
   // Create 3D visualizer
-  this->PerspectiveVisualizer->SetResultPolyData(this->ResultPolyData);
-  this->PerspectiveVisualizer->SetInputPolyData(this->InputPolyData);
+  this->PerspectiveVisualizer->SetResultPolyData(this->ResultPolyData.Get());
+  this->PerspectiveVisualizer->SetInputPolyData(this->InputPolyData.Get());
 
   // Set up blank renderer
   this->BlankRenderer->SetBackground(0.1, 0.1, 0.1);
@@ -95,25 +95,27 @@ vtkPlusVisualizationController::~vtkPlusVisualizationController()
 }
 
 //-----------------------------------------------------------------------------
-
 void vtkPlusVisualizationController::SetCanvas(QVTKWidget* aCanvas)
 {
   this->Canvas = aCanvas;
   this->Canvas->setFocusPolicy(Qt::ClickFocus);
 }
 
-
 //----------------------------------------------------------------------------
 void vtkPlusVisualizationController::ClearResultPolyData()
 {
+  this->ResultPoints = vtkSmartPointer<vtkPoints>::New();
   this->ResultPolyData->Initialize();
+  this->ResultPolyData->SetPoints(this->ResultPoints);
   this->ResultPolyData->Modified();
 }
 
 //----------------------------------------------------------------------------
 void vtkPlusVisualizationController::ClearInputPolyData()
 {
+  this->InputPoints = vtkSmartPointer<vtkPoints>::New();
   this->InputPolyData->Initialize();
+  this->InputPolyData->SetPoints(this->InputPoints);
   this->InputPolyData->Modified();
 }
 
@@ -129,27 +131,28 @@ PlusStatus vtkPlusVisualizationController::ResetCamera()
   return PLUS_FAIL;
 }
 
-
 //----------------------------------------------------------------------------
-void vtkPlusVisualizationController::SetResultPolyDataPoints(vtkPoints* points)
+void vtkPlusVisualizationController::SetResultPolyDataPoints(vtkSmartPointer<vtkPoints> points)
 {
-  this->ResultPolyData->SetPoints(points);
+  this->ResultPoints = points;
+  this->ResultPolyData->SetPoints(this->ResultPoints);
 }
 
 //----------------------------------------------------------------------------
-void vtkPlusVisualizationController::SetInputPolyDataPoints(vtkPoints* points)
+void vtkPlusVisualizationController::SetInputPolyDataPoints(vtkSmartPointer<vtkPoints> points)
 {
-  this->InputPolyData->SetPoints(points);
+  this->InputPoints = points;
+  this->InputPolyData->SetPoints(this->InputPoints);
 }
 
 //----------------------------------------------------------------------------
-vtkPoints* vtkPlusVisualizationController::GetResultPolyDataPoints()
+vtkSmartPointer<vtkPoints> vtkPlusVisualizationController::GetResultPolyDataPoints()
 {
   return this->ResultPoints;
 }
 
 //----------------------------------------------------------------------------
-vtkPoints* vtkPlusVisualizationController::GetInputPolyDataPoints()
+vtkSmartPointer<vtkPoints> vtkPlusVisualizationController::GetInputPolyDataPoints()
 {
   return this->InputPoints;
 }
