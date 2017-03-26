@@ -11,9 +11,6 @@ See License.txt for details.
 #include "vtkPlusPivotCalibrationAlgo.h"
 #include "vtkPlusVisualizationController.h"
 
-// STL includes
-#include <future>
-
 // Qt includes
 #include <QFileDialog>
 #include <QTimer>
@@ -454,12 +451,9 @@ void QStylusCalibrationToolbox::StopCalibration()
   else
   {
     // Calibrate async
-    std::future<PlusStatus> future = std::async(std::launch::async, [this]()
-    {
-      return m_PivotCalibration->DoPivotCalibration(m_ParentMainWindow->GetVisualizationController()->GetTransformRepository());
-    });
+    PlusStatus result = m_PivotCalibration->DoPivotCalibration(m_ParentMainWindow->GetVisualizationController()->GetTransformRepository());
 
-    if (future.get() == PLUS_SUCCESS)
+    if (result == PLUS_SUCCESS)
     {
       LOG_INFO("Stylus calibration successful");
 
