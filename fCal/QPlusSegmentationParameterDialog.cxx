@@ -1345,11 +1345,12 @@ PlusStatus QPlusSegmentationParameterDialog::SegmentCurrentImage()
   }
 
   // Adjust max ROI limits
-  if (m_Frame.GetFrameSize()[0] < ui.spinBox_XMax->value())
+  // value guaranteed >= 0
+  if (m_Frame.GetFrameSize()[0] < static_cast<unsigned>(ui.spinBox_XMax->value()))
   {
     ui.spinBox_XMax->setValue(m_Frame.GetFrameSize()[0]);
   }
-  if (m_Frame.GetFrameSize()[1] < ui.spinBox_YMax->value())
+  if (m_Frame.GetFrameSize()[1] < static_cast<unsigned>(ui.spinBox_YMax->value()))
   {
     ui.spinBox_YMax->setValue(m_Frame.GetFrameSize()[1]);
   }
