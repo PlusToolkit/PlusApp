@@ -101,7 +101,7 @@ protected:
   QProcess*                             m_CurrentServerInstance;
 
   /*! List of active ports for PlusServers */
-  std::vector<int>                      m_PortList;
+  std::string                           m_Suffix;
 
   /*! OpenIGTLink server that allows remote control of launcher (start/stop a PlusServer process, etc) */
   int m_RemoteControlServerPort;

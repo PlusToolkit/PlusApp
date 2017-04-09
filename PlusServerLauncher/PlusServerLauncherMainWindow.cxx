@@ -268,55 +268,23 @@ bool PlusServerLauncherMainWindow::StopServer()
   }
   delete m_CurrentServerInstance;
   m_CurrentServerInstance = NULL;
-  m_PortList.clear();
+  m_Suffix.clear();
   return (!forcedShutdown);
 }
 
 //----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
 {
-  // input is the format: message
-  if (message.find("Plus OpenIGTLink server started on port:") != std::string::npos)
+  // Input is the format: message
+  // Plus OpenIGTLink server listening on IPs: 169.254.100.247, 169.254.181.13, 129.100.44.163, 192.168.199.1, 192.168.233.1, 127.0.0.1 -- port 18944
+  if (message.find("Plus OpenIGTLink server listening on IPs:") != std::string::npos)
   {
-    int port(0);
-    std::stringstream lineNumberStr(message.substr(message.find_last_of(':') + 1, message.length() - message.find_last_of(':')));
-    lineNumberStr >> port;
-    m_PortList.push_back(port);
+    m_Suffix.append(message);
+    m_Suffix.append("\n");
+    m_DeviceSetSelectorWidget->SetDescriptionSuffix(QString(m_Suffix.c_str()));
   }
   else if (message.find("Server status: Server(s) are running.") != std::string::npos)
   {
-    // Server has finished spooling up, update the description text
-    std::string serverList("Server IP addresses:\n");
-
-    std::string ipAddresses;
-    QList<QHostAddress> list = QNetworkInterface::allAddresses();
-    for (int hostIndex = 0; hostIndex < list.count(); hostIndex++)
-    {
-      if (list[hostIndex].protocol() == QAbstractSocket::IPv4Protocol)
-      {
-        if (!ipAddresses.empty())
-        {
-          ipAddresses.append(",  ");
-        }
-        ipAddresses.append(list[hostIndex].toString().toLatin1().constData());
-      }
-    }
-
-    serverList = serverList + ipAddresses + "\non ports:\n";
-
-    std::stringstream portList;
-    for (unsigned int portIndex = 0; portIndex < m_PortList.size(); portIndex++)
-    {
-      if (!portList.str().empty())
-      {
-        portList << ",  ";
-      }
-      portList << m_PortList[portIndex];
-    }
-
-    serverList = serverList + portList.str();
-
-    m_DeviceSetSelectorWidget->SetDescriptionSuffix(QString(serverList.c_str()));
     m_DeviceSetSelectorWidget->SetConnectionSuccessful(true);
     m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Stop server"));
   }
