@@ -252,38 +252,38 @@ PlusStatus vtkPlusImageVisualizer::UpdateOrientationMarkerLabelling()
   // Change the letters on the display to indicate the new orientation
   switch (this->CurrentMarkerOrientation)
   {
-  case US_IMG_ORIENT_MF:
-    this->HorizontalOrientationTextActor->SetInput("M");
-    this->VerticalOrientationTextActor->SetInput("F");
-    break;
-  case US_IMG_ORIENT_MN:
-    this->HorizontalOrientationTextActor->SetInput("M");
-    this->VerticalOrientationTextActor->SetInput("N");
-    break;
-  case US_IMG_ORIENT_UN:
-    this->HorizontalOrientationTextActor->SetInput("U");
-    this->VerticalOrientationTextActor->SetInput("N");
-    break;
-  case US_IMG_ORIENT_UF:
-    this->HorizontalOrientationTextActor->SetInput("U");
-    this->VerticalOrientationTextActor->SetInput("F");
-    break;
-  case US_IMG_ORIENT_FM:
-    this->HorizontalOrientationTextActor->SetInput("F");
-    this->VerticalOrientationTextActor->SetInput("M");
-    break;
-  case US_IMG_ORIENT_FU:
-    this->HorizontalOrientationTextActor->SetInput("F");
-    this->VerticalOrientationTextActor->SetInput("U");
-    break;
-  case US_IMG_ORIENT_NM:
-    this->HorizontalOrientationTextActor->SetInput("N");
-    this->VerticalOrientationTextActor->SetInput("M");
-    break;
-  case US_IMG_ORIENT_NU:
-    this->HorizontalOrientationTextActor->SetInput("N");
-    this->VerticalOrientationTextActor->SetInput("U");
-    break;
+    case US_IMG_ORIENT_MF:
+      this->HorizontalOrientationTextActor->SetInput("M");
+      this->VerticalOrientationTextActor->SetInput("F");
+      break;
+    case US_IMG_ORIENT_MN:
+      this->HorizontalOrientationTextActor->SetInput("M");
+      this->VerticalOrientationTextActor->SetInput("N");
+      break;
+    case US_IMG_ORIENT_UN:
+      this->HorizontalOrientationTextActor->SetInput("U");
+      this->VerticalOrientationTextActor->SetInput("N");
+      break;
+    case US_IMG_ORIENT_UF:
+      this->HorizontalOrientationTextActor->SetInput("U");
+      this->VerticalOrientationTextActor->SetInput("F");
+      break;
+    case US_IMG_ORIENT_FM:
+      this->HorizontalOrientationTextActor->SetInput("F");
+      this->VerticalOrientationTextActor->SetInput("M");
+      break;
+    case US_IMG_ORIENT_FU:
+      this->HorizontalOrientationTextActor->SetInput("F");
+      this->VerticalOrientationTextActor->SetInput("U");
+      break;
+    case US_IMG_ORIENT_NM:
+      this->HorizontalOrientationTextActor->SetInput("N");
+      this->VerticalOrientationTextActor->SetInput("M");
+      break;
+    case US_IMG_ORIENT_NU:
+      this->HorizontalOrientationTextActor->SetInput("N");
+      this->VerticalOrientationTextActor->SetInput("U");
+      break;
   }
 
   return PLUS_SUCCESS;
@@ -338,46 +338,46 @@ PlusStatus vtkPlusImageVisualizer::UpdateCameraPose()
   double cameraPos[3] = {imageCenterX, imageCenterY, -MAX_WIDGET_THICKNESS - 1};
   switch (this->CurrentMarkerOrientation)
   {
-  case US_IMG_ORIENT_UN:
-  {
-    //Unmarked, near
-    this->ImageCamera->SetRoll(0);
-    if (cameraPos[2] > 0.0)
+    case US_IMG_ORIENT_UN:
     {
-      this->ImageCamera->SetPosition(cameraPos[0], cameraPos[1], -cameraPos[2]);
+      //Unmarked, near
+      this->ImageCamera->SetRoll(0);
+      if (cameraPos[2] > 0.0)
+      {
+        this->ImageCamera->SetPosition(cameraPos[0], cameraPos[1], -cameraPos[2]);
+      }
     }
-  }
-  break;
-  case US_IMG_ORIENT_UF:
-  {
-    // Unmarked, far
-    this->ImageCamera->SetRoll(-180);
-    if (cameraPos[2] < 0.0)
+    break;
+    case US_IMG_ORIENT_UF:
     {
-      this->ImageCamera->SetPosition(cameraPos[0], cameraPos[1], -cameraPos[2]);
+      // Unmarked, far
+      this->ImageCamera->SetRoll(-180);
+      if (cameraPos[2] < 0.0)
+      {
+        this->ImageCamera->SetPosition(cameraPos[0], cameraPos[1], -cameraPos[2]);
+      }
     }
-  }
-  break;
-  case US_IMG_ORIENT_MF:
-  {
-    // Marked, far
-    this->ImageCamera->SetRoll(-180);
-    if (cameraPos[2] > 0.0)
+    break;
+    case US_IMG_ORIENT_MF:
     {
-      this->ImageCamera->SetPosition(cameraPos[0], cameraPos[1], -cameraPos[2]);
+      // Marked, far
+      this->ImageCamera->SetRoll(-180);
+      if (cameraPos[2] > 0.0)
+      {
+        this->ImageCamera->SetPosition(cameraPos[0], cameraPos[1], -cameraPos[2]);
+      }
     }
-  }
-  break;
-  case US_IMG_ORIENT_MN:
-  {
-    // Marked, near
-    this->ImageCamera->SetRoll(0);
-    if (cameraPos[2] < 0.0)
+    break;
+    case US_IMG_ORIENT_MN:
     {
-      this->ImageCamera->SetPosition(cameraPos[0], cameraPos[1], -cameraPos[2]);
+      // Marked, near
+      this->ImageCamera->SetRoll(0);
+      if (cameraPos[2] < 0.0)
+      {
+        this->ImageCamera->SetPosition(cameraPos[0], cameraPos[1], -cameraPos[2]);
+      }
     }
-  }
-  break;
+    break;
   }
 
   if (this->UpdateScreenAlignedActors() != PLUS_SUCCESS)
@@ -405,8 +405,8 @@ PlusStatus vtkPlusImageVisualizer::SetScreenRightDownAxesOrientation(US_IMAGE_OR
     return PLUS_FAIL;
   }
 
-  const char* orientationValue = PlusVideoFrame::GetStringFromUsImageOrientation(aOrientation);
-  renderingParameters->SetAttribute("DisplayedImageOrientation", orientationValue);
+  std::string orientationValue = PlusVideoFrame::GetStringFromUsImageOrientation(aOrientation);
+  renderingParameters->SetAttribute("DisplayedImageOrientation", orientationValue.c_str());
 
   return UpdateCameraPose();
 }
@@ -601,30 +601,30 @@ PlusStatus vtkPlusImageVisualizer::UpdateScreenAlignedActors()
     double newPosition[3] = {0};
     switch (this->CurrentMarkerOrientation)
     {
-    case US_IMG_ORIENT_MF:
-      newPosition[0] = originalPosition[0];
-      newPosition[1] = originalPosition[1];
-      newPosition[2] = originalPosition[2];
-      break;
-    case US_IMG_ORIENT_MN:
-      prop->RotateX(180);
-      newPosition[0] = originalPosition[0];
-      newPosition[1] = dimensions[1] - originalPosition[1];
-      newPosition[2] = -originalPosition[2];
-      break;
-    case US_IMG_ORIENT_UN:
-      prop->RotateX(180);
-      prop->RotateY(180);
-      newPosition[0] = dimensions[0] - originalPosition[0];
-      newPosition[1] = dimensions[1] - originalPosition[1];
-      newPosition[2] = originalPosition[2];
-      break;
-    case US_IMG_ORIENT_UF:
-      prop->RotateY(180);
-      newPosition[0] = dimensions[0] - originalPosition[0];
-      newPosition[1] = originalPosition[1];
-      newPosition[2] = -originalPosition[2];
-      break;
+      case US_IMG_ORIENT_MF:
+        newPosition[0] = originalPosition[0];
+        newPosition[1] = originalPosition[1];
+        newPosition[2] = originalPosition[2];
+        break;
+      case US_IMG_ORIENT_MN:
+        prop->RotateX(180);
+        newPosition[0] = originalPosition[0];
+        newPosition[1] = dimensions[1] - originalPosition[1];
+        newPosition[2] = -originalPosition[2];
+        break;
+      case US_IMG_ORIENT_UN:
+        prop->RotateX(180);
+        prop->RotateY(180);
+        newPosition[0] = dimensions[0] - originalPosition[0];
+        newPosition[1] = dimensions[1] - originalPosition[1];
+        newPosition[2] = originalPosition[2];
+        break;
+      case US_IMG_ORIENT_UF:
+        prop->RotateY(180);
+        newPosition[0] = dimensions[0] - originalPosition[0];
+        newPosition[1] = originalPosition[1];
+        newPosition[2] = -originalPosition[2];
+        break;
     }
 
     prop->SetPosition(newPosition);
@@ -633,22 +633,22 @@ PlusStatus vtkPlusImageVisualizer::UpdateScreenAlignedActors()
   // Now update the member variables so that future rotations correctly undo the current rotations
   switch (this->CurrentMarkerOrientation)
   {
-  case US_IMG_ORIENT_MF:
-    this->ScreenAlignedCurrentXRotation = 0;
-    this->ScreenAlignedCurrentYRotation = 0;
-    break;
-  case US_IMG_ORIENT_MN:
-    this->ScreenAlignedCurrentYRotation = 0;
-    this->ScreenAlignedCurrentXRotation = 180;
-    break;
-  case US_IMG_ORIENT_UN:
-    this->ScreenAlignedCurrentXRotation = 180.0;
-    this->ScreenAlignedCurrentYRotation = 180.0;
-    break;
-  case US_IMG_ORIENT_UF:
-    this->ScreenAlignedCurrentYRotation = 180.0;
-    this->ScreenAlignedCurrentXRotation = 0;
-    break;
+    case US_IMG_ORIENT_MF:
+      this->ScreenAlignedCurrentXRotation = 0;
+      this->ScreenAlignedCurrentYRotation = 0;
+      break;
+    case US_IMG_ORIENT_MN:
+      this->ScreenAlignedCurrentYRotation = 0;
+      this->ScreenAlignedCurrentXRotation = 180;
+      break;
+    case US_IMG_ORIENT_UN:
+      this->ScreenAlignedCurrentXRotation = 180.0;
+      this->ScreenAlignedCurrentYRotation = 180.0;
+      break;
+    case US_IMG_ORIENT_UF:
+      this->ScreenAlignedCurrentYRotation = 180.0;
+      this->ScreenAlignedCurrentXRotation = 0;
+      break;
   }
 
   return PLUS_SUCCESS;

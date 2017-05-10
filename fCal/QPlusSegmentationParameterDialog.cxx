@@ -1453,7 +1453,7 @@ void QPlusSegmentationParameterDialog::ExportImage()
     {
       // Save config file next to the tracked frame list
       std::string configFileName = vtkPlusConfig::GetInstance()->GetImagePath(fileName + "_Config.xml");
-      PlusCommon::PrintXML(configFileName.c_str(), vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
+      PlusCommon::XML::PrintXML(configFileName, vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
     }
   }
   else

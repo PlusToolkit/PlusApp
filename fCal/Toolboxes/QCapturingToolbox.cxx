@@ -545,7 +545,7 @@ void QCapturingToolbox::WriteToFile(const QString& aFilename)
   std::string path = vtksys::SystemTools::GetFilenamePath(aFilename.toLatin1().constData());
   std::string filename = vtksys::SystemTools::GetFilenameWithoutExtension(aFilename.toLatin1().constData());
   std::string configFileName = path + "/" + filename + "_config.xml";
-  PlusCommon::PrintXML(configFileName.c_str(), vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
+  PlusCommon::XML::PrintXML(configFileName, vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
 
   m_RecordedFrames->Clear();
   SetState(ToolboxState_Idle);
