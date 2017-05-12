@@ -23,7 +23,7 @@ Tool                                         | Description
 \subpage ApplicationSpatialSensorFusion      | Compute orientation from accelerometer, gyroscope, and magnetometer measurements
 \subpage ApplicationTemporalCalibration      | Compute time offset between two streams
 \subpage ApplicationTrackingTest             | View tracker tool positions in 3D
-\subpage ApplicationViewSeqMetaFile          | View sequence metafile frames in 3D
+\subpage ApplicationViewSequenceFile         | View sequence file frames in 3D
 \subpage ApplicationVolumeReconstructor      | Reconstruct 3D ultrasound volume from 2D slices
 
 */
