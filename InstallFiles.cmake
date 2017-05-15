@@ -14,157 +14,159 @@ IF(BUILD_DOCUMENTATION)
     )
 ENDIF()
 
-SET(PLUSLIB_CONFIG_FILES
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_PivotCalibration.xml
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_RecordPhantomLandmarks.xml
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_SpatialCalibration_2.0.xml
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_TemporalCalibration.xml
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_VolumeReconstruction.xml
-
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ChRobotics.xml
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Microchip.xml
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Sim_NwirePhantom.xml  
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SimulatedUltrasound_3DSlicer.xml
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_GelBlockModel_Reference.stl
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_NeedleModel_NeedleTip.stl
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_VesselModel_Reference.stl
-  ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_Scene.mrb
-
-  ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_1.0.stl
-  ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_1.2.stl
-  ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_2.0.stl
-  ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_3.1.stl
-  ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_L1.4.stl
-  ${PLUSLIB_DATA_DIR}/CADModels/LinearProbe/Probe_L14-5_38.stl
-  ${PLUSLIB_DATA_DIR}/CADModels/EndocavityProbe/Probe_EC9-5_10.stl
-  ${PLUSLIB_DATA_DIR}/CADModels/CurvilinearProbe/Probe_C5-2_60.stl 
-  ${PLUSLIB_DATA_DIR}/CADModels/Stylus/Stylus_Example.stl
-  )
-
-IF(PLUS_USE_3dConnexion_TRACKER)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_3dConnexion.xml)
-ENDIF()
-
-IF(PLUS_USE_Ascension3DG)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ascension3DG.xml)
-ENDIF()
-
-IF(PLUS_USE_BKPROFOCUS_VIDEO)
-  LIST(APPEND PLUSLIB_CONFIG_FILES
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_BkProFocus_OpenIGTLinkTracker.xml
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_BkProFocusOem.xml 
-    )  
-  SET(BK_SETTINGS
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/BkSettings/IniFile.ccf
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/BkSettings/IniFile.ini
+IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
+  SET(PLUSLIB_CONFIG_FILES
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_PivotCalibration.xml
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_RecordPhantomLandmarks.xml
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_SpatialCalibration_2.0.xml
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_TemporalCalibration.xml
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_VolumeReconstruction.xml
+  
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ChRobotics.xml
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Microchip.xml
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Sim_NwirePhantom.xml  
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SimulatedUltrasound_3DSlicer.xml
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_GelBlockModel_Reference.stl
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_NeedleModel_NeedleTip.stl
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_VesselModel_Reference.stl
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_Scene.mrb
+  
+    ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_1.0.stl
+    ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_1.2.stl
+    ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_2.0.stl
+    ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_3.1.stl
+    ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_L1.4.stl
+    ${PLUSLIB_DATA_DIR}/CADModels/LinearProbe/Probe_L14-5_38.stl
+    ${PLUSLIB_DATA_DIR}/CADModels/EndocavityProbe/Probe_EC9-5_10.stl
+    ${PLUSLIB_DATA_DIR}/CADModels/CurvilinearProbe/Probe_C5-2_60.stl 
+    ${PLUSLIB_DATA_DIR}/CADModels/Stylus/Stylus_Example.stl
     )
-ENDIF()
 
-IF(PLUS_USE_IntuitiveDaVinci)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/daVinci/daVinci.xml)
-ENDIF()
-
-IF(PLUS_USE_EPIPHAN)
-  LIST(APPEND PLUSLIB_CONFIG_FILES
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_EpiphanVideoCapture.xml
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_EpiphanColorVideoCapture.xml
-    )
-  IF(PLUS_USE_NDI)
-    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Epiphan_NDIPolaris.xml)    
+  IF(PLUS_USE_3dConnexion_TRACKER)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_3dConnexion.xml)
   ENDIF()
-ENDIF()
-
-IF(PLUS_USE_ICCAPTURING_VIDEO)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ImagingControlsVideoCapture.xml)
-ENDIF()
-
-IF(PLUS_USE_INTERSON_VIDEO)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_IntersonVideoCapture.xml)
-ENDIF()
-
-IF(PLUS_USE_MICRONTRACKER)
-  LIST(APPEND PLUSLIB_CONFIG_FILES
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MicronTracker.xml
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/MicronTracker.ini
-    )
-  SET(MICRONTRACKER_TOOL_DEFINITIONS 
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/1b
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/2b
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/a
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/COOLCARD
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/TTblock
-    )
-  IF(PLUS_USE_ULTRASONIX_VIDEO)
-    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_MicronTracker_2.0.xml)  
-  ENDIF()  
-ENDIF()
-
-IF(PLUS_USE_MMF_VIDEO)
-  LIST(APPEND PLUSLIB_CONFIG_FILES
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MmfVideoCapture.xml
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MmfColorVideoCapture.xml
-    )  
-ENDIF()
-
-IF(PLUS_USE_PHIDGET_SPATIAL_TRACKER)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_PhidgetSpatial.xml)  
-ENDIF()
-
-IF(PLUS_USE_PHILIPS_3D_ULTRASOUND)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Philips_ie33_NDIAurora.xml)
-ENDIF()
-
-IF(PLUS_USE_NDI)
-  LIST(APPEND PLUSLIB_CONFIG_FILES
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_NDIPolaris_2.0.xml
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_NDIPolaris.xml
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_NDIAurora.xml
-    )
-  SET(NDI_TOOL_DEFINITIONS 
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700339.rom
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700340.rom
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700449.rom
-    )
-ENDIF()
-
-IF (PLUS_USE_STEALTHLINK)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_StealthLinkTracker.xml)
-ENDIF()
-
-IF(PLUS_USE_TELEMED_VIDEO)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_TelemedVideoCapture.xml)
-ENDIF()
-
-IF(PLUS_USE_THORLABS_VIDEO)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ThorLabsVideoCapture.xml)
-ENDIF()
-
-IF(PLUS_USE_ULTRASONIX_VIDEO)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_L14-5.xml)
-
+  
   IF(PLUS_USE_Ascension3DG)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ascension3DG.xml)
+  ENDIF()
+  
+  IF(PLUS_USE_BKPROFOCUS_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_Ascension3DG_2.0.xml
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_Ascension3DG_3.0.xml
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_Ascension3DG_L1.4.xml
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_L14-5_Ascension3DG_calibrated.xml
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_C5-2_Ascension3DG_calibrated.xml
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_4DL14-5_Porta_calibrated.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_BkProFocus_OpenIGTLinkTracker.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_BkProFocusOem.xml 
+      )  
+    SET(BK_SETTINGS
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/BkSettings/IniFile.ccf
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/BkSettings/IniFile.ini
       )
   ENDIF()
+  
+  IF(PLUS_USE_IntuitiveDaVinci)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/daVinci/daVinci.xml)
+  ENDIF()
+  
+  IF(PLUS_USE_EPIPHAN)
+    LIST(APPEND PLUSLIB_CONFIG_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_EpiphanVideoCapture.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_EpiphanColorVideoCapture.xml
+      )
+    IF(PLUS_USE_NDI)
+      LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Epiphan_NDIPolaris.xml)    
+    ENDIF()
+  ENDIF()
+  
+  IF(PLUS_USE_ICCAPTURING_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ImagingControlsVideoCapture.xml)
+  ENDIF()
+  
+  IF(PLUS_USE_INTERSON_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_IntersonVideoCapture.xml)
+  ENDIF()
+  
+  IF(PLUS_USE_MICRONTRACKER)
+    LIST(APPEND PLUSLIB_CONFIG_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MicronTracker.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/MicronTracker.ini
+      )
+    SET(MICRONTRACKER_TOOL_DEFINITIONS 
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/1b
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/2b
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/a
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/COOLCARD
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/TTblock
+      )
+    IF(PLUS_USE_ULTRASONIX_VIDEO)
+      LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_MicronTracker_2.0.xml)  
+    ENDIF()  
+  ENDIF()
+  
+  IF(PLUS_USE_MMF_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MmfVideoCapture.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MmfColorVideoCapture.xml
+      )  
+  ENDIF()
+  
+  IF(PLUS_USE_PHIDGET_SPATIAL_TRACKER)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_PhidgetSpatial.xml)  
+  ENDIF()
+  
+  IF(PLUS_USE_PHILIPS_3D_ULTRASOUND)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Philips_ie33_NDIAurora.xml)
+  ENDIF()
+  
+  IF(PLUS_USE_NDI)
+    LIST(APPEND PLUSLIB_CONFIG_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_NDIPolaris_2.0.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_NDIPolaris.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_NDIAurora.xml
+      )
+    SET(NDI_TOOL_DEFINITIONS 
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700339.rom
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700340.rom
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700449.rom
+      )
+  ENDIF()
+  
+  IF (PLUS_USE_STEALTHLINK)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_StealthLinkTracker.xml)
+  ENDIF()
+  
+  IF(PLUS_USE_TELEMED_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_TelemedVideoCapture.xml)
+  ENDIF()
+  
+  IF(PLUS_USE_THORLABS_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ThorLabsVideoCapture.xml)
+  ENDIF()
+  
+  IF(PLUS_USE_ULTRASONIX_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_L14-5.xml)
+  
+    IF(PLUS_USE_Ascension3DG)
+      LIST(APPEND PLUSLIB_CONFIG_FILES
+        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_Ascension3DG_2.0.xml
+        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_Ascension3DG_3.0.xml
+        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_Ascension3DG_L1.4.xml
+        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_L14-5_Ascension3DG_calibrated.xml
+        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_C5-2_Ascension3DG_calibrated.xml
+        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_4DL14-5_Porta_calibrated.xml
+        )
+    ENDIF()
+  ENDIF()
+  
+  IF(PLUS_USE_VFW_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_VfwVideoCapture.xml)
+  ENDIF()
+  
+  SET(PLUSLIB_DATA_FILES
+    ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires.mha
+    ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires_fCal2.0.mha
+    ${PLUSLIB_DATA_DIR}/TestImages/WaterTankBottomTranslationTrackerBuffer-trimmed.mha
+    ${PLUSLIB_DATA_DIR}/TestImages/WaterTankBottomTranslationVideoBuffer.mha
+    ${PLUSLIB_DATA_DIR}/TestImages/EightLandmarkPointsTrackedForPhantomRegistration.mha
+    )
 ENDIF()
-
-IF(PLUS_USE_VFW_VIDEO)
-  LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_VfwVideoCapture.xml)
-ENDIF()
-
-SET(PLUSLIB_DATA_FILES
-  ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires.mha
-  ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires_fCal2.0.mha
-  ${PLUSLIB_DATA_DIR}/TestImages/WaterTankBottomTranslationTrackerBuffer-trimmed.mha
-  ${PLUSLIB_DATA_DIR}/TestImages/WaterTankBottomTranslationVideoBuffer.mha
-  ${PLUSLIB_DATA_DIR}/TestImages/EightLandmarkPointsTrackedForPhantomRegistration.mha
-  )
 
 # Install Qt libs
 SET(PlusApp_QT_INSTALL_FILES
