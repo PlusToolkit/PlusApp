@@ -12,6 +12,7 @@ Tool                                         | Description
 \subpage ApplicationDrawClipRegion           | Show clip rectangle and fan over ultrasound images
 \subpage ApplicationDrawScanLines            | Show scanlines over scan-converted ultrasound images
 \subpage ApplicationEditSequenceFile         | Edit sequence files (trim, merge, compress/uncompress, etc.)
+\subpage ApplicationEnhanceUsTrpSequence     | Command line tool to use vtkPlusTransverseProcessEnhancer device on US image sequence mha file
 \subpage ApplicationExtractScanLines         | Extract scan lines and write into rectangular images
 \subpage ApplicationfCal                     | Calibrate tracked ultrasound probe and tracked tools spatially and temporally
 \subpage ApplicationPlusServer               | Acquire data from devices and broadcast through OpenIGTLink
