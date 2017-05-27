@@ -1,13 +1,13 @@
 # --------------------------------------------------------------------------
 # Install
-# 
-IF(BUILD_DOCUMENTATION)  
+#
+IF(BUILD_DOCUMENTATION)
   IF(WIN32)
     SET(COMPRESSED_HELP_TARGET_FILE_EXT ".chm")
   ELSE()
     SET(COMPRESSED_HELP_TARGET_FILE_EXT ".tar.gz")
   ENDIF()
-  INSTALL(FILES 
+  INSTALL(FILES
     ${PLUS_EXECUTABLE_OUTPUT_PATH}/Doc/PlusApp-UserManual${COMPRESSED_HELP_TARGET_FILE_EXT}
     DESTINATION ${PLUSAPP_INSTALL_DOCUMENTATION_DIR}
     COMPONENT Documentation
@@ -21,16 +21,16 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_SpatialCalibration_2.0.xml
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_TemporalCalibration.xml
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_VolumeReconstruction.xml
-  
+
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ChRobotics.xml
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Microchip.xml
-    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Sim_NwirePhantom.xml  
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Sim_NwirePhantom.xml
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SimulatedUltrasound_3DSlicer.xml
     ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_GelBlockModel_Reference.stl
     ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_NeedleModel_NeedleTip.stl
     ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_VesselModel_Reference.stl
     ${PLUSLIB_DATA_DIR}/ConfigFiles/SimulatedUltrasound_Scene.mrb
-  
+
     ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_1.0.stl
     ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_1.2.stl
     ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_2.0.stl
@@ -38,57 +38,57 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_L1.4.stl
     ${PLUSLIB_DATA_DIR}/CADModels/LinearProbe/Probe_L14-5_38.stl
     ${PLUSLIB_DATA_DIR}/CADModels/EndocavityProbe/Probe_EC9-5_10.stl
-    ${PLUSLIB_DATA_DIR}/CADModels/CurvilinearProbe/Probe_C5-2_60.stl 
+    ${PLUSLIB_DATA_DIR}/CADModels/CurvilinearProbe/Probe_C5-2_60.stl
     ${PLUSLIB_DATA_DIR}/CADModels/Stylus/Stylus_Example.stl
     )
 
   IF(PLUS_USE_3dConnexion_TRACKER)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_3dConnexion.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_Ascension3DG)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ascension3DG.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_BKPROFOCUS_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_BkProFocus_OpenIGTLinkTracker.xml
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_BkProFocusOem.xml 
-      )  
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_BkProFocusOem.xml
+      )
     SET(BK_SETTINGS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/BkSettings/IniFile.ccf
       ${PLUSLIB_DATA_DIR}/ConfigFiles/BkSettings/IniFile.ini
       )
   ENDIF()
-  
+
   IF(PLUS_USE_IntuitiveDaVinci)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/daVinci/daVinci.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_EPIPHAN)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_EpiphanVideoCapture.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_EpiphanColorVideoCapture.xml
       )
     IF(PLUS_USE_NDI)
-      LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Epiphan_NDIPolaris.xml)    
+      LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Epiphan_NDIPolaris.xml) 
     ENDIF()
   ENDIF()
-  
+
   IF(PLUS_USE_ICCAPTURING_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ImagingControlsVideoCapture.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_INTERSON_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_IntersonVideoCapture.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_MICRONTRACKER)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MicronTracker.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/MicronTracker.ini
       )
-    SET(MICRONTRACKER_TOOL_DEFINITIONS 
+    SET(MicronTracker_TOOL_DEFINITIONS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/1b
       ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/2b
       ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/a
@@ -96,53 +96,53 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/Markers/TTblock
       )
     IF(PLUS_USE_ULTRASONIX_VIDEO)
-      LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_MicronTracker_2.0.xml)  
-    ENDIF()  
+      LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_MicronTracker_2.0.xml)
+    ENDIF()
   ENDIF()
-  
+
   IF(PLUS_USE_MMF_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MmfVideoCapture.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MmfColorVideoCapture.xml
-      )  
+      )
   ENDIF()
-  
+
   IF(PLUS_USE_PHIDGET_SPATIAL_TRACKER)
-    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_PhidgetSpatial.xml)  
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_PhidgetSpatial.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_PHILIPS_3D_ULTRASOUND)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Philips_ie33_NDIAurora.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_NDI)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_NDIPolaris_2.0.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_NDIPolaris.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_NDIAurora.xml
       )
-    SET(NDI_TOOL_DEFINITIONS 
+    SET(NDI_TOOL_DEFINITIONS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700339.rom
       ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700340.rom
       ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700449.rom
       )
   ENDIF()
-  
-  IF (PLUS_USE_STEALTHLINK)
+
+  IF(PLUS_USE_STEALTHLINK)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_StealthLinkTracker.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_TELEMED_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_TelemedVideoCapture.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_THORLABS_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ThorLabsVideoCapture.xml)
   ENDIF()
-  
+
   IF(PLUS_USE_ULTRASONIX_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Ultrasonix_L14-5.xml)
-  
+
     IF(PLUS_USE_Ascension3DG)
       LIST(APPEND PLUSLIB_CONFIG_FILES
         ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_Ascension3DG_2.0.xml
@@ -154,11 +154,11 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
         )
     ENDIF()
   ENDIF()
-  
+
   IF(PLUS_USE_VFW_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_VfwVideoCapture.xml)
   ENDIF()
-  
+
   SET(PLUSLIB_DATA_FILES
     ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires.mha
     ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires_fCal2.0.mha
@@ -168,37 +168,36 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     )
 ENDIF()
 
-# Install Qt libs
-SET(PlusApp_QT_INSTALL_FILES
-  ${QT_BINARY_DIR}/Qt5Core${CMAKE_SHARED_LIBRARY_SUFFIX}
-  ${QT_BINARY_DIR}/Qt5Gui${CMAKE_SHARED_LIBRARY_SUFFIX}
-  ${QT_BINARY_DIR}/Qt5Network${CMAKE_SHARED_LIBRARY_SUFFIX}
-  ${QT_BINARY_DIR}/Qt5Sql${CMAKE_SHARED_LIBRARY_SUFFIX}
-  ${QT_BINARY_DIR}/Qt5XmlPatterns${CMAKE_SHARED_LIBRARY_SUFFIX}
-  ${QT_BINARY_DIR}/Qt5OpenGL${CMAKE_SHARED_LIBRARY_SUFFIX}
-  ${QT_BINARY_DIR}/Qt5Widgets${CMAKE_SHARED_LIBRARY_SUFFIX}
-  ${QT_BINARY_DIR}/Qt5Xml${CMAKE_SHARED_LIBRARY_SUFFIX}
-  )
-
-IF(${QT_VERSION_MINOR} LESS 6)
-  # Qt Webkit discontinued in 5.6+
-  SET(PlusApp_QT_INSTALL_FILES ${PlusApp_QT_INSTALL_FILES}
-    ${QT_BINARY_DIR}/Qt5WebKit${CMAKE_SHARED_LIBRARY_SUFFIX}
-    )
-ENDIF()
+FOREACH(_qt_component Core;Gui;Network;Sql;XmlPatterns;OpenGL;Widgets;Xml;WebKit)
+  IF(TARGET Qt5::${_qt_component})
+    GET_TARGET_PROPERTY(_configs Qt5::${_qt_component} IMPORTED_CONFIGURATIONS)
+    FOREACH(_config IN LISTS _configs)
+    GET_TARGET_PROPERTY(_location Qt5::${_qt_component} IMPORTED_LOCATION_${_config})
+      IF(${_config} STREQUAL RELEASE OR ${_config} STREQUAL NOCONFIG)
+        LIST(APPEND _entries ${_config})
+        LIST(APPEND PlusApp_QT_INSTALL_FILES ${_location})
+        BREAK()
+      ENDIF()
+    ENDFOREACH()
+  ENDIF()
+  
+  LIST(LENGTH _entries _size)
+  IF(_size EQUAL 0)
+    MESSAGE(FATAL_ERROR "Unable to locate Qt5::${_qt_component} library file for install.")
+  ENDIF()
+ENDFOREACH()
 
 INSTALL(FILES ${PlusApp_QT_INSTALL_FILES}
   DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
   COMPONENT RuntimeLibraries
   )
-INSTALL(FILES ${QT_ROOT_DIR}/plugins/platforms/qwindows${CMAKE_SHARED_LIBRARY_SUFFIX}
-  DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}/platforms
-  COMPONENT RuntimeLibraries
-  )
-
 IF(WIN32)
+  INSTALL(FILES ${QT_ROOT_DIR}/plugins/platforms/qwindows${CMAKE_SHARED_LIBRARY_SUFFIX}
+    DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}/platforms
+    COMPONENT RuntimeLibraries
+    )
   # Install Plus command prompt starting script
-  INSTALL(FILES 
+  INSTALL(FILES
       ${PLUSLIB_SOURCE_DIR}/src/scripts/StartPlusCommandPrompt.bat
       ${PLUSLIB_SOURCE_DIR}/src/scripts/StartPlusCommandPrompt.ico
     DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
@@ -224,10 +223,10 @@ IF(PLUSAPP_INSTALL_CONFIG_DIR)
       )
   ENDIF()
   IF(PLUS_USE_MICRONTRACKER)
-    INSTALL(FILES ${MICRONTRACKER_TOOL_DEFINITIONS}
+    INSTALL(FILES ${MicronTracker_TOOL_DEFINITIONS}
       DESTINATION ${PLUSAPP_INSTALL_CONFIG_DIR}/Markers
       COMPONENT Data
-      )  
+      )
   ENDIF()
 ENDIF()
 
@@ -238,7 +237,7 @@ IF(PLUSAPP_INSTALL_DATA_DIR)
     )
 ENDIF()
 
-INSTALL(FILES 
+INSTALL(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/PlusConfig.xml
   DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
   COMPONENT Data
