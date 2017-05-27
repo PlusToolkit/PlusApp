@@ -26,7 +26,7 @@ ENDIF()
 
 SET(PLUSAPP_PACKAGE_EDITION "" CACHE STRING "Specifies a name that refers to the combination of hardware devices the created install package supports. The name is added to the package filename.")
 
-MESSAGE(STATUS "PlusApp version: ${PLUSAPP_VERSION}" )
+MESSAGE(STATUS "PlusApp version: ${PLUSAPP_VERSION}")
 
 # --------------------------------------------------------------------------
 # Testing
@@ -82,7 +82,7 @@ ENDIF()
 # --------------------------------------------------------------------------
 # Find git for revision information status and automatic update of the repository
 # --------------------------------------------------------------------------
-IF (PLUSAPP_OFFLINE_BUILD)
+IF(PLUSAPP_OFFLINE_BUILD)
   SET(PLUSAPP_REVISION "NA")
   SET(PLUSAPP_SHORT_REVISION "NA")
 ELSE()
@@ -268,7 +268,7 @@ ADD_SUBDIRECTORY(Documentation)
 INCLUDE_PLUSLIB_MS_PROJECTS()
 GROUP_PLUSLIB_MS_PROJECTS("PlusLib")
 
-SET (PLUSAPP_INCLUDE_DIRS
+SET(PLUSAPP_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   )
