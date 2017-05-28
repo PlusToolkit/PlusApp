@@ -77,8 +77,15 @@ corresponding to speed of sound in room temperature water), or use a mixture in 
 glycol and water, degassed, could be a suitable mixture - see Goldstein et al. "Design of Quality Assurance for
 Sonographic Prostate Brachytherapy Needle Guides", 2002.
 
+Set a low gain value and adjust dynamic range on your ultrasound machine to make the image mostly black, with
+only the wires visible. Try to use a water tank large enough so that the bottom (or reflection from the bottom
+or sides) is not visible in the image. It is better to make the wire intersections appear as small, barely
+visible gray points than large, very bright spots for two reasons. 1. Wire intersection positions cannot be
+determined accurately if the it appears as a large bright blob. 2. If the image is too bright then the calibration algorithm
+may detect too many point candidates and the application may slow down or may appear to hang for minutes.
+
 1. Click "Start"
-2. Move the transducer into a position where all the phantom wires are visible. Green dots should appear over the wire points in the image, which indicates that the wire positions are successully detected.
+2. Move the transducer into a position where all the phantom wires are visible. Green dots should appear over the wire points in the image, which indicates that the wire positions are successully detected. If fCal appears to hang (due to too many potential wire intersection points are detected in the image) then lower the gain settings on your ultrasound system.
 3. Keep the probe approximately orthogonal to the wires to have optimal image quality and move it slowly. There is no need to tilt or rotate the probe, only translate between the front and back face of the phantom and optionally move slightly up&down and left&right so that the fiducial positions throughout the calibration are distributed over the region of interest that will later be used for imaging.
 4. Once the calibration has been done, the result transformation matrix and the errors appear in the toolbox, and the Show devices checkbox becomes enabled
 5. Check Show devices to see the devices in 3D
