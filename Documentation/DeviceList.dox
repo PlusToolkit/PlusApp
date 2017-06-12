@@ -24,6 +24,8 @@
 \par Generic pose tracking devices
 - \subpage DeviceAscension3DG
 - \subpage DeviceMicron
+- \subpage DeviceOpticalMarkerTracker
+- \subpage DeviceOptiTrack
 - \subpage DevicePolaris
 - \subpage DeviceNDICertus
 - \subpage DeviceStealthLink
@@ -38,7 +40,6 @@
 - \subpage DeviceOpenIGTLinkTracker
 - \subpage DeviceBrachy
 - \subpage Device3dConnexion
-- \subpage DeviceOptiTrack
 
 \par Simulators
 - \subpage DeviceSavedDataSource
