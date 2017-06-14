@@ -111,6 +111,8 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     SET(OpticalMarkerTracker_TOOL_DEFINITIONS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/aruco_calibration_board_a4.pdf
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/realsense_gen2_calibration.yml
+      )
+    SET(OpticalMarkerTracker_MARKERS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00000.png
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00001.png
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00002.png
@@ -135,6 +137,11 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00021.png
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00022.png
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00023.png 
+      )
+    SET(OpticalMarkerTracker_UTIL_EXECUTABLES
+      ${PLUSLIB_DATA_DIR}/../bin/Release/aruco_calibration.exe
+      ${PLUSLIB_DATA_DIR}/../bin/Release/aruco_print_marker.exe
+      ${PLUSLIB_DATA_DIR}/../bin/Release/aruco_print_dictionary.exe
       )
     IF(PLUS_USE_MMF_VIDEO)
       LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OpticalMarkerTracker_Mmf.xml)
@@ -256,6 +263,16 @@ IF(PLUSAPP_INSTALL_CONFIG_DIR)
       COMPONENT Data
       )
   ENDIF()
+  IF(PLUS_USE_OPTICAL_MARKER_TRACKER)
+    INSTALL(FILES ${OpticalMarkerTracker_TOOL_DEFINITIONS}
+      DESTINATION ${PLUSAPP_INSTALL_CONFIG_DIR}/OpticalMarkerTracker
+      COMPONENT Data
+      )
+    INSTALL(FILES ${OpticalMarkerTracker_MARKERS}
+      DESTINATION ${PLUSAPP_INSTALL_CONFIG_DIR}/OpticalMarkerTracker/markers
+      COMPONENT Data
+      )
+  ENDIF()
   IF(PLUS_USE_BKPROFOCUS_VIDEO)
     INSTALL(FILES ${BK_SETTINGS}
       DESTINATION ${PLUSAPP_INSTALL_CONFIG_DIR}/BkSettings
@@ -282,3 +299,10 @@ INSTALL(FILES
   DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
   COMPONENT Data
   )
+  
+# add aruco calibration/marker executables
+IF(PLUS_USE_OPTICAL_MARKER_TRACKER)
+  INSTALL(FILES ${OpticalMarkerTracker_UTIL_EXECUTABLES}
+    DESTINATION ${PLUSAPP_INSTALL_CONFIG_DIR}/../bin
+    )
+ENDIF()
