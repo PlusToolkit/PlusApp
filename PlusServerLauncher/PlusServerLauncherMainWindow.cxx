@@ -321,7 +321,6 @@ void PlusServerLauncherMainWindow::ConnectToDevicesByConfigFile(std::string aCon
   if (StartServer(QString(aConfigFile.c_str())))
   {
     m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Launching..."));
-    vtkPlusConfig::GetInstance()->SaveApplicationConfigurationToFile();
   }
   else
   {
