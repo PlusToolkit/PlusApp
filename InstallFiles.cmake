@@ -138,11 +138,6 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00022.png
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00023.png 
       )
-    SET(OpticalMarkerTracker_UTIL_EXECUTABLES
-      ${PLUSLIB_DATA_DIR}/../bin/Release/aruco_calibration.exe
-      ${PLUSLIB_DATA_DIR}/../bin/Release/aruco_print_marker.exe
-      ${PLUSLIB_DATA_DIR}/../bin/Release/aruco_print_dictionary.exe
-      )
     IF(PLUS_USE_MMF_VIDEO)
       LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OpticalMarkerTracker_Mmf.xml)
     ENDIF()
@@ -210,6 +205,32 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     )
 ENDIF()
 
+IF(PLUS_USE_aruco)
+
+  FOREACH(_target aruco aruco_calibration aruco_print_marker aruco_print_dictionary)
+    GET_TARGET_PROPERTY(_configs ${_target} IMPORTED_CONFIGURATIONS)
+    FOREACH(_config IN LISTS _configs)
+    GET_TARGET_PROPERTY(_location ${_target} IMPORTED_LOCATION_${_config})
+      IF(${_config} STREQUAL RELEASE OR ${_config} STREQUAL NOCONFIG)
+        LIST(APPEND _entries ${_config})
+        LIST(APPEND PlusApp_aruco_INSTALL_FILES ${_location})
+        BREAK()
+      ENDIF()
+    ENDFOREACH()
+
+    LIST(LENGTH _entries _size)
+    IF(_size EQUAL 0)
+      MESSAGE(FATAL_ERROR "Unable to locate ${_target} file for install.")
+    ENDIF()
+  ENDFOREACH()
+
+  INSTALL(FILES ${PlusApp_aruco_INSTALL_FILES}
+    DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
+    COMPONENT RuntimeLibraries
+    )
+
+ENDIF()
+
 FOREACH(_qt_component Core;Gui;Network;Sql;XmlPatterns;OpenGL;Widgets;Xml;WebKit)
   IF(TARGET Qt5::${_qt_component})
     GET_TARGET_PROPERTY(_configs Qt5::${_qt_component} IMPORTED_CONFIGURATIONS)
@@ -273,6 +294,7 @@ IF(PLUSAPP_INSTALL_CONFIG_DIR)
       COMPONENT Data
       )
   ENDIF()
+
   IF(PLUS_USE_BKPROFOCUS_VIDEO)
     INSTALL(FILES ${BK_SETTINGS}
       DESTINATION ${PLUSAPP_INSTALL_CONFIG_DIR}/BkSettings
@@ -299,10 +321,3 @@ INSTALL(FILES
   DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
   COMPONENT Data
   )
-  
-# add aruco calibration/marker executables
-IF(PLUS_USE_OPTICAL_MARKER_TRACKER)
-  INSTALL(FILES ${OpticalMarkerTracker_UTIL_EXECUTABLES}
-    DESTINATION ${PLUSAPP_INSTALL_CONFIG_DIR}/../bin
-    )
-ENDIF()
