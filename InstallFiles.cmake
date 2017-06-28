@@ -71,7 +71,7 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_EpiphanColorVideoCapture.xml
       )
     IF(PLUS_USE_NDI)
-      LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Epiphan_NDIPolaris.xml) 
+      LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Epiphan_NDIPolaris.xml)
     ENDIF()
   ENDIF()
 
@@ -137,14 +137,14 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00020.png
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00021.png
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00022.png
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00023.png 
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00023.png
       )
     IF(PLUS_USE_MMF_VIDEO)
       LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OpticalMarkerTracker_Mmf.xml)
     ENDIF()
   ENDIF()
 
-  
+
   IF(PLUS_USE_PHIDGET_SPATIAL_TRACKER)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_PhidgetSpatial.xml)
   ENDIF()
@@ -209,15 +209,31 @@ ENDIF()
 IF(PLUS_USE_aruco)
 
   FOREACH(_target aruco aruco_calibration aruco_print_marker aruco_print_dictionary)
+    # Try to find target based on properties (should find aruco dll)
     GET_TARGET_PROPERTY(_configs ${_target} IMPORTED_CONFIGURATIONS)
+    SET(_entries "")
     FOREACH(_config IN LISTS _configs)
-    GET_TARGET_PROPERTY(_location ${_target} IMPORTED_LOCATION_${_config})
+      GET_TARGET_PROPERTY(_location ${_target} IMPORTED_LOCATION_${_config})
       IF(${_config} STREQUAL RELEASE OR ${_config} STREQUAL NOCONFIG)
         LIST(APPEND _entries ${_config})
         LIST(APPEND PlusApp_aruco_INSTALL_FILES ${_location})
         BREAK()
       ENDIF()
     ENDFOREACH()
+
+    # Try to find target in binary directory (should find executables)
+    LIST(LENGTH _entries _size)
+    IF(_size EQUAL 0)
+      FOREACH(_config "Release" "Debug" "RelWithDebInfo" "MinSizeRel" "")
+        SET(_location "${PLUS_EXECUTABLE_OUTPUT_PATH}/${_config}/${_target}${CMAKE_EXECUTABLE_SUFFIX}")
+        message(STATUS "Try ${_location}")
+        if(EXISTS ${_location})
+          LIST(APPEND _entries ${_config})
+          LIST(APPEND PlusApp_aruco_INSTALL_FILES ${_location})
+          BREAK()
+        ENDIF()
+      ENDFOREACH()
+    ENDIF()
 
     LIST(LENGTH _entries _size)
     IF(_size EQUAL 0)
@@ -232,7 +248,7 @@ IF(PLUS_USE_aruco)
 
 ENDIF()
 
-FOREACH(_qt_component Core;Gui;Network;Sql;XmlPatterns;OpenGL;Widgets;Xml;WebKit)
+FOREACH(_qt_component Core;Gui;Network;Sql;XmlPatterns;OpenGL;Test;Widgets;Xml;WebKit)
   IF(TARGET Qt5::${_qt_component})
     GET_TARGET_PROPERTY(_configs Qt5::${_qt_component} IMPORTED_CONFIGURATIONS)
     FOREACH(_config IN LISTS _configs)
@@ -244,7 +260,7 @@ FOREACH(_qt_component Core;Gui;Network;Sql;XmlPatterns;OpenGL;Widgets;Xml;WebKit
       ENDIF()
     ENDFOREACH()
   ENDIF()
-  
+
   LIST(LENGTH _entries _size)
   IF(_size EQUAL 0)
     MESSAGE(FATAL_ERROR "Unable to locate Qt5::${_qt_component} library file for install.")
