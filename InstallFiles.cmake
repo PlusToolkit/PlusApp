@@ -111,6 +111,7 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     SET(OpticalMarkerTracker_TOOL_DEFINITIONS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/aruco_calibration_board_a4.pdf
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/realsense_gen2_calibration.yml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/OpticalMarkerTracker_Scene.mrb
       )
     SET(OpticalMarkerTracker_MARKERS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/OpticalMarkerTracker/markers/aruco_mip_36h12_00000.png
