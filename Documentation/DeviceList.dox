@@ -18,7 +18,8 @@
 - \subpage DeviceVideoForWindows
 - \subpage DeviceOvrvisionPro
 
-\par Other imaging devices
+\par Network imaging devices
+- \subpage DeviceRTSP
 - \subpage DeviceOpenIGTLinkVideo
 
 \par Generic pose tracking devices
@@ -26,7 +27,7 @@
 - \subpage DeviceMicron
 - \subpage DeviceOpticalMarkerTracker
 - \subpage DeviceOptiTrack
-- \subpage DevicePolaris
+- \subpage DeviceNDI
 - \subpage DeviceNDICertus
 - \subpage DeviceStealthLink
 - \subpage DeviceIntelRealSense
