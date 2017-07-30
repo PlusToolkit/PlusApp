@@ -19,7 +19,7 @@
 - \subpage DeviceOvrvisionPro
 
 \par Network imaging devices
-- \subpage DeviceRTSP
+- \subpage DeviceOpenCV
 - \subpage DeviceOpenIGTLinkVideo
 
 \par Generic pose tracking devices
