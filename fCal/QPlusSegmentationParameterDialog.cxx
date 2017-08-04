@@ -1157,8 +1157,13 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
     }
   }
 
+  bool oldValue = ui.doubleSpinBox_ReferenceHeight->blockSignals(true);
   ui.doubleSpinBox_ReferenceHeight->setValue(maxZ - minZ);
+  ui.doubleSpinBox_ReferenceHeight->blockSignals(oldValue);
+
+  oldValue = ui.doubleSpinBox_ReferenceWidth->blockSignals(true);
   ui.doubleSpinBox_ReferenceWidth->setValue(maxX - minX);
+  ui.doubleSpinBox_ReferenceWidth->blockSignals(oldValue);
 
   return PLUS_SUCCESS;
 }
@@ -1522,7 +1527,7 @@ PlusStatus QPlusSegmentationParameterDialog::ComputeSpacingFromMeasuredLengthSum
 {
   LOG_TRACE("QPlusSegmentationParameterDialog::ComputeSpacingFromMeasuredLengthSum");
 
-  double spacing = (ui.doubleSpinBox_ReferenceWidth->text().toDouble() + ui.doubleSpinBox_ReferenceHeight->text().toDouble()) / m_SpacingModeHandler->GetLineLengthSumImagePixel();
+  double spacing = (ui.doubleSpinBox_ReferenceWidth->value() + ui.doubleSpinBox_ReferenceHeight->value()) / m_SpacingModeHandler->GetLineLengthSumImagePixel();
   ui.label_SpacingResult->setText(QString("%1").arg(spacing));
 
   m_PatternRecognition->GetFidSegmentation()->SetApproximateSpacingMmPerPixel(spacing);
@@ -1537,7 +1542,7 @@ double QPlusSegmentationParameterDialog::GetSpacingReferenceWidth()
 {
   LOG_TRACE("QPlusSegmentationParameterDialog::GetSpacingReferenceWidth");
 
-  return ui.doubleSpinBox_ReferenceWidth->text().toDouble();
+  return ui.doubleSpinBox_ReferenceWidth->value();
 }
 
 //-----------------------------------------------------------------------------
@@ -1545,7 +1550,7 @@ double QPlusSegmentationParameterDialog::GetSpacingReferenceHeight()
 {
   LOG_TRACE("QPlusSegmentationParameterDialog::GetSpacingReferenceHeight");
 
-  return ui.doubleSpinBox_ReferenceHeight->text().toDouble();
+  return ui.doubleSpinBox_ReferenceHeight->value();
 }
 
 //-----------------------------------------------------------------------------
