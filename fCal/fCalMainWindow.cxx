@@ -728,6 +728,11 @@ bool fCalMainWindow::IsOrientationMarkersEnabled()
 //----------------------------------------------------------------------------
 void fCalMainWindow::SetStylusModelId(const char* aObjectId)
 {
+  if (aObjectId == nullptr)
+  {
+    m_StylusModelId = "";
+    return;
+  }
   m_StylusModelId = aObjectId;
 }
 
@@ -740,6 +745,11 @@ const char* fCalMainWindow::GetTransducerModelId()
 //----------------------------------------------------------------------------
 void fCalMainWindow::SetTransducerModelId(const char* aObjectId)
 {
+  if (aObjectId == nullptr)
+  {
+    m_TransducerModelId = "";
+    return;
+  }
   m_TransducerModelId = aObjectId;
 }
 
@@ -752,6 +762,11 @@ const char* fCalMainWindow::GetImageObjectId()
 //----------------------------------------------------------------------------
 void fCalMainWindow::SetImageObjectId(const char* aObjectId)
 {
+  if (aObjectId == nullptr)
+  {
+    m_ImageObjectId = "";
+    return;
+  }
   m_ImageObjectId = aObjectId;
 }
 
@@ -776,6 +791,11 @@ std::string fCalMainWindow::GetImageCoordinateFrame()
 //----------------------------------------------------------------------------
 void fCalMainWindow::SetImageCoordinateFrame(const char* aImageCoordinateFrame)
 {
+  if (aImageCoordinateFrame == nullptr)
+  {
+    aImageCoordinateFrame = "";
+    return;
+  }
   m_ImageCoordinateFrame = aImageCoordinateFrame;
 }
 
@@ -788,6 +808,11 @@ std::string fCalMainWindow::GetProbeCoordinateFrame()
 //----------------------------------------------------------------------------
 void fCalMainWindow::SetProbeCoordinateFrame(const char* aProbeCoordinateFrame)
 {
+  if (aProbeCoordinateFrame == nullptr)
+  {
+    m_ProbeCoordinateFrame = "";
+    return;
+  }
   m_ProbeCoordinateFrame = aProbeCoordinateFrame;
 }
 
@@ -800,6 +825,11 @@ std::string fCalMainWindow::GetReferenceCoordinateFrame()
 //----------------------------------------------------------------------------
 void fCalMainWindow::SetReferenceCoordinateFrame(const char* aReferenceCoordinateFrame)
 {
+  if (aReferenceCoordinateFrame == nullptr)
+  {
+    m_ReferenceCoordinateFrame = "";
+    return;
+  }
   m_ReferenceCoordinateFrame = aReferenceCoordinateFrame;
 }
 
@@ -884,7 +914,7 @@ void fCalMainWindow::BuildChannelMenu()
   {
     QPlusChannelAction* action = *it;
     disconnect(action, SIGNAL(triggered()));
-    delete(action);
+    delete (action);
   }
   m_3DActionList.clear();
 

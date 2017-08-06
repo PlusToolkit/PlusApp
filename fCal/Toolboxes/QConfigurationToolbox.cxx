@@ -476,7 +476,10 @@ PlusStatus QConfigurationToolbox::ReadConfiguration(vtkXMLDataElement* aConfig)
   {
     LOG_WARNING("Stylus model ID not specified in the fCal section of the configuration. Can't visualize the stylus.");
   }
-  m_ParentMainWindow->SetStylusModelId(stylusModelId);
+  else
+  {
+    m_ParentMainWindow->SetStylusModelId(stylusModelId);
+  }
 
   // stylus model id
   const char* probeModelId = fCalElement->GetAttribute("TransducerModelId");
@@ -484,7 +487,10 @@ PlusStatus QConfigurationToolbox::ReadConfiguration(vtkXMLDataElement* aConfig)
   {
     LOG_WARNING("Transducer model ID not specified in the fCal section of the configuration. Can't visualize the probe.");
   }
-  m_ParentMainWindow->SetTransducerModelId(probeModelId);
+  else
+  {
+    m_ParentMainWindow->SetTransducerModelId(probeModelId);
+  }
 
   // stylus model id
   const char* imageObjectId = fCalElement->GetAttribute("ImageDisplayableObjectId");
@@ -492,7 +498,10 @@ PlusStatus QConfigurationToolbox::ReadConfiguration(vtkXMLDataElement* aConfig)
   {
     LOG_WARNING("Image object ID not specified in the fCal section of the configuration. Can't visualize the stylus.");
   }
-  m_ParentMainWindow->SetImageObjectId(imageObjectId);
+  else
+  {
+    m_ParentMainWindow->SetImageObjectId(imageObjectId);
+  }
 
   return PLUS_SUCCESS;
 }
