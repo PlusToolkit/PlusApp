@@ -206,48 +206,6 @@ IF(PLUSBUILD_DOWNLOAD_PlusDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     )
 ENDIF()
 
-IF(PLUS_USE_aruco)
-  FOREACH(_target aruco aruco_calibration aruco_print_marker aruco_print_dictionary)
-    # Try to find target based on properties (should find aruco dll)
-    GET_TARGET_PROPERTY(_configs ${_target} IMPORTED_CONFIGURATIONS)
-    UNSET(_entries)
-    FOREACH(_config IN LISTS _configs)
-      GET_TARGET_PROPERTY(_location ${_target} IMPORTED_LOCATION_${_config})
-      IF(_location)
-        IF(${_config} STREQUAL RELEASE OR ${_config} STREQUAL NOCONFIG)
-          LIST(APPEND _entries ${_config})
-          LIST(APPEND PlusApp_aruco_INSTALL_FILES ${_location})
-          BREAK()
-        ENDIF()
-      ENDIF()
-    ENDFOREACH()
-
-    # Try to find target in binary directory (should find executables)
-    LIST(LENGTH _entries _size)
-    IF(_size EQUAL 0)
-      FOREACH(_config "Release" "Debug" "RelWithDebInfo" "MinSizeRel" "")
-        SET(_location "${PLUS_EXECUTABLE_OUTPUT_PATH}/${_config}/${_target}${CMAKE_EXECUTABLE_SUFFIX}")
-        IF(EXISTS ${_location})
-          LIST(APPEND _entries ${_config})
-          LIST(APPEND PlusApp_aruco_INSTALL_FILES ${_location})
-          BREAK()
-        ENDIF()
-      ENDFOREACH()
-    ENDIF()
-
-    LIST(LENGTH _entries _size)
-    IF(_size EQUAL 0)
-      MESSAGE(FATAL_ERROR "Unable to locate ${_target} file for install.")
-    ENDIF()
-  ENDFOREACH()
-
-  INSTALL(FILES ${PlusApp_aruco_INSTALL_FILES}
-    DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
-    COMPONENT RuntimeLibraries
-    )
-
-ENDIF()
-
 FOREACH(_qt_component Core;Gui;Network;Sql;XmlPatterns;OpenGL;Test;Widgets;Xml;WebKit)
   IF(TARGET Qt5::${_qt_component})
     GET_TARGET_PROPERTY(_configs Qt5::${_qt_component} IMPORTED_CONFIGURATIONS)
