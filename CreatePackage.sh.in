@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# First we need to build a Release version 
-${CMAKE_COMMAND} --build . --config Release --target ALL_BUILD
+# First we need to build a Release version
+${CMAKE_COMMAND} --build . --config Release
 
 # Build documentation
 if [ "${BUILD_DOCUMENTATION}" == "ON"]; then
@@ -9,11 +9,12 @@ if [ "${BUILD_DOCUMENTATION}" == "ON"]; then
   echo User manual generation DONE
 fi
 
-# Build the package 
-if [`"${CMAKE_CPACK_COMMAND}" --config ./CPackConfig.cmake` -ne 0]; then
+# Build the package
+"${CMAKE_CPACK_COMMAND}" --config ./CPackConfig.cmake
+if [ $? -ne 0 ]; then
   echo Unable to complete package
   exit 1
 fi
 
-ECHO Package generation is successfully completed.
+echo Package generation is successfully completed.
 exit 0
