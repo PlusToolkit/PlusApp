@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo Build UserManual...
+
+echo   Clear old files to force rebuild of documentation
+if [`"${CMAKE_MAKE_PROGRAM}" clean 1> CreateUserManual.log 2>&1` -ne 0]; then
+  echo   Unable to clean project before building documentation
+  exit 1
+fi
+
+echo   Generating documentation
+if [`"${CMAKE_MAKE_PROGRAM}" Documentation-PlusApp-UserManual.vcxproj 1>> CreateUserManual.log 2>&1` -ne 0]; then
+  echo   Unable to create documentation. See CreateUserManual.log
+  exit 1
+fi
+
+echo Documentation available at: ${PLUS_EXECUTABLE_OUTPUT_PATH}/Doc
+exit 0

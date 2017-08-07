@@ -51,11 +51,21 @@ CONFIGURE_FILE(
   @ONLY
   )
 
-# Documentation generator
-CONFIGURE_FILE(
-  CreateUserManual.bat.in
-  ${CMAKE_CURRENT_BINARY_DIR}/CreateUserManual.bat
-  )
+  # Documentation generator
+IF(WIN32)
+  CONFIGURE_FILE(
+    CreateUserManual.bat.in
+    ${CMAKE_CURRENT_BINARY_DIR}/CreateUserManual.bat
+    )
+ELSE()
+  CONFIGURE_FILE(
+    CreateUserManual.sh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CreateUserManual.sh
+    )
+  FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CreateUserManual.sh
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ)
+ENDIF()
 
 # --------------------------------------------------------------------------
 # Developer setup
@@ -315,6 +325,13 @@ IF(WIN32)
     ${CMAKE_CURRENT_BINARY_DIR}/BuildAndTest.bat
     )
 ELSE()
+  CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/CreatePackage.sh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CreatePackage.sh
+    )
+  FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CreatePackage.sh
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ)
   CONFIGURE_FILE(
     ${CMAKE_CURRENT_SOURCE_DIR}/BuildAndTest.sh.in
     ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/BuildAndTest.sh
