@@ -6,6 +6,8 @@
 
 Typically tracking and imaging devices require spatial and temporal calibration after they are set up.
 
+# Calibration using fCal
+
 Spatial calibration algorithms determine unknown transformations that remain constant after the system is set up.
 Typically these are transformations between the coordinate systems of an object (e.g., image slice, calibration phantom, stylus)
 and a tracking marker that is rigidly attached to that object.
@@ -19,8 +21,6 @@ the coordinate system of the image (`Image`) and the marker that is attached to 
 
 \ref AlgorithmTemporalCalibration determines time offset between data streams acquired by different devices. Temporal calibration
 is essential if data is acquired while tracked tools are moving, because then any temporal misalignment results in spatial errors.
-
-# Calibration using fCal
 
 \ref ApplicationfCal implements all the above described calibration algorithms in a single application.
 

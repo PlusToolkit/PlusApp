@@ -264,10 +264,6 @@ IF(NOT EXISTS ${DOXYGEN_DOT_EXECUTABLE})
     DOC "Graphviz Dot tool for using Doxygen"
     NO_SYSTEM_ENVIRONMENT_PATH
     )
-
-  IF(WIN32)
-    SET(DOXYGEN_HHC_EXECUTABLE "${PLUSLIB_TOOLS_DIR}/HtmlHelp/hhc.exe" CACHE FILEPATH "Path to the Windows HTML Help Compiler tool." FORCE)
-  ENDIF()
 ENDIF()
 
 ADD_SUBDIRECTORY(Documentation)
