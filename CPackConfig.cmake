@@ -1,5 +1,3 @@
-INCLUDE(InstallRequiredSystemLibraries)
-
 IF("${PLUSAPP_PACKAGE_EDITION}" STREQUAL "")
   SET(PLUSAPP_PACKAGE_EDITION_PLATFORM "${PLUSLIB_PLATFORM}")
 ELSE()
@@ -111,6 +109,11 @@ IF(PLUS_USE_OpenCV)
   ENDIF()
 ENDIF()
 
+# OpenCV uses OpenMP. Set CMAKE_INSTALL_OPENMP_LIBRARIES flag to make
+# InstallRequiredSystemLibraries install OpenMP libraries.
+# Without this, Plus may fail to start due to missing vcomp120.dll.
+SET(CMAKE_INSTALL_OPENMP_LIBRARIES ${PLUS_USE_OpenCV})
+
 IF(PLUS_USE_OvrvisionPro)
   IF(EXISTS "${OvrvisionPro_DIR}/CMakeCache.txt")
     LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${OvrvisionPro_DIR};OvrvisionPro;RuntimeLibraries;/")
@@ -181,4 +184,5 @@ IF(NOT PLUSAPP_INSTALL_NO_DOCUMENTATION)
   SET(PLUSAPP_INSTALL_NO_DOCUMENTATION 0)
 ENDIF()
 
+INCLUDE(InstallRequiredSystemLibraries)
 INCLUDE(CPack)
