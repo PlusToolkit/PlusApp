@@ -153,6 +153,19 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     ENDIF()
   ENDIF()
 
+  IF(PLUS_USE_OPTITRACK)
+    SET(OPTITRACK_ADDITIONAL_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/EmptyProfile.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/Reference.tra
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/SampleProfile.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/Stylus.tra
+      )
+    LIST(APPEND PLUSLIB_CONFIG_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_AddMarkersUsingTRA.xml 
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_Profile.xml 
+      ${OPTITRACK_ADDITIONAL_FILES}
+      )
+  ENDIF()
 
   IF(PLUS_USE_PHIDGET_SPATIAL_TRACKER)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_PhidgetSpatial.xml)
@@ -207,8 +220,12 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
   ENDIF()
 
   IF(PLUS_USE_OPTITRACK)
-    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_TTPandTRA.xml)
-    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_TTPOnly.xml)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_Profile.xml)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_AddMarkersUsingTRA.xml)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/SampleProfile.xml)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/EmptyProfile.xml)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/Reference.tra)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/Stylus.tra)
   ENDIF()
 
   SET(PLUSLIB_DATA_FILES
