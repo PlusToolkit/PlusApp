@@ -23,7 +23,6 @@ See License.txt for details.
 #include <QHostInfo>
 #include <QIcon>
 #include <QKeyEvent>
-#include <QMimeData>
 #include <QNetworkInterface>
 #include <QProcess>
 #include <QRegExp>
@@ -59,9 +58,6 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   m_RemoteControlServerCallbackCommand = vtkSmartPointer<vtkCallbackCommand>::New();
   m_RemoteControlServerCallbackCommand->SetCallback(PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived);
   m_RemoteControlServerCallbackCommand->SetClientData(this);
-
-  // Accept drop of files from explorer (and others)
-  setAcceptDrops(true);
 
   // Set up UI
   ui.setupUi(this);
@@ -342,33 +338,6 @@ void PlusServerLauncherMainWindow::keyPressEvent(QKeyEvent* e)
   {
     QMainWindow::keyPressEvent(e);
   }
-}
-
-//----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::dragEnterEvent(QDragEnterEvent* event)
-{
-  if (event->mimeData()->hasUrls() && event->mimeData()->urls().size() == 1)
-  {
-    QString filename = event->mimeData()->urls()[0].toLocalFile();
-    if (filename.lastIndexOf('.') == -1)
-    {
-      return;
-    }
-    QString extension = filename.mid(filename.lastIndexOf('.'));
-    if (extension.contains("xml"))
-    {
-      event->acceptProposedAction();
-    }
-  }
-}
-
-//----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::dropEvent(QDropEvent* event)
-{
-  QUrl url = event->mimeData()->urls().first();
-  QString fileName = url.toLocalFile();
-
-  m_DeviceSetSelectorWidget->SetConfigurationFile(fileName);
 }
 
 //-----------------------------------------------------------------------------
