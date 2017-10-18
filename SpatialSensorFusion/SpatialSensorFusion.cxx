@@ -30,7 +30,11 @@ See License.txt for details.
 
 // Define tolerance used for comparing double numbers.
 // There are relatively large differences between results computed by different compiler versions.
+#if defined(_WIN32)
 const double DOUBLE_DIFF = 0.001;
+#else
+const double DOUBLE_DIFF = 0.04;
+#endif
 
 void Update(AhrsAlgo* ahrsAlgo, PlusTrackedFrame* frame, const std::string& trackerReferenceFrame, int westAxisIndex, bool useTimestamps, vtkMatrix4x4* filteredTiltSensorToTrackerTransformReturn = NULL);
 
