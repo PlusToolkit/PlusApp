@@ -67,6 +67,7 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceVirtualMixer
 - \subpage DeviceVirtualSwitcher
 - \subpage DeviceVirtualTextRecognizer
+- \subpage DeviceEnhanceUsTrpSequence
 
 \subsection DevicesMisc Other data acquisition and control devices
 - \subpage DeviceThorLabs
