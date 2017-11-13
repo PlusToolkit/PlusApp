@@ -10,7 +10,6 @@ See License.txt for details.
 #include "vtkPlusImageVisualizer.h"
 
 // PlusLib includes
-#include <PlusConfigure.h>
 #include <PlusTrackedFrame.h>
 #include <vtkPlusDevice.h>
 #include <vtkPlusTrackedFrameList.h>
