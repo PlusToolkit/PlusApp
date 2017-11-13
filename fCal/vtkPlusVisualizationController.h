@@ -8,6 +8,7 @@ See License.txt for details.
 #define __vtkVisualizationController_h
 
 // PlusLib includes
+#include <PlusConfigure.h>
 #include <PlusCommon.h>
 #include <PlusVideoFrame.h>
 #include <vtkPlusDataCollector.h>
