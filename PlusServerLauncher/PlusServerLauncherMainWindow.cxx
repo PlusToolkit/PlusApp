@@ -155,7 +155,7 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
 
     LOG_INFO("Start remote control server at port: " << m_RemoteControlServerPort);
     m_RemoteControlServerLogic = igtlio::LogicPointer::New();
-    m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandQueryReceivedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandReceivedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandResponseReceivedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector = m_RemoteControlServerLogic->CreateConnector();
     m_RemoteControlServerConnector->SetTypeServer(m_RemoteControlServerPort);
@@ -481,7 +481,7 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 
   switch (eventId)
   {
-    case igtlio::Logic::CommandQueryReceivedEvent:
+    case igtlio::Logic::CommandReceivedEvent:
       break;
     case igtlio::Logic::CommandResponseReceivedEvent:
       break;
