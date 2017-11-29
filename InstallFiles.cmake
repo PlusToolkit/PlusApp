@@ -197,6 +197,11 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_VfwVideoCapture.xml)
   ENDIF()
 
+  IF(PLUS_USE_OPTITRACK)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_TTPandTRA.xml)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_TTPOnly.xml)
+  ENDIF()
+
   SET(PLUSLIB_DATA_FILES
     ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires.mha
     ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires_fCal2.0.mha
