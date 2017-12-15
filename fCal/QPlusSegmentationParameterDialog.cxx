@@ -145,7 +145,7 @@ protected:
   virtual void GetEventPositionWorld(int* eventPosition, double* eventPosition_World)
   {
     int* canvasSize = m_ParentDialog->GetCanvasRenderer()->GetRenderWindow()->GetSize();
-    int imageDimensions[3] = { 0, 0, 1 };
+    FrameSizeType imageDimensions = { 0, 0, 1 };
     m_ParentDialog->GetFrameSize(imageDimensions);
 
     double offsetXMonitor = 0.0;
@@ -645,7 +645,7 @@ protected:
     // Get offsets (distance between the canvas edge and the image) and reference lengths
     int* canvasSize;
     canvasSize = m_ParentDialog->GetCanvasRenderer()->GetRenderWindow()->GetSize();
-    int imageDimensions[3] = { 0, 0, 1 };
+    FrameSizeType imageDimensions = { 0, 0, 1 };
     m_ParentDialog->GetFrameSize(imageDimensions);
 
     double offsetXImage = 0.0;
@@ -1554,7 +1554,7 @@ double QPlusSegmentationParameterDialog::GetSpacingReferenceHeight()
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus QPlusSegmentationParameterDialog::GetFrameSize(int aImageDimensions[3])
+PlusStatus QPlusSegmentationParameterDialog::GetFrameSize(FrameSizeType& aImageDimensions)
 {
   LOG_TRACE("QPlusSegmentationParameterDialog::GetFrameSize");
 
@@ -1580,7 +1580,7 @@ PlusStatus QPlusSegmentationParameterDialog::SetROI(unsigned int roi[4])
   // Validate the set region of interest (e.g., the image is padded with the opening bar size)
   // but only if a valid frame size is already set (otherwise we could overwrite the region of interest
   // if the region is initialized before the frame size)
-  unsigned int* frameSize = m_PatternRecognition->GetFidSegmentation()->GetFrameSize();
+  FrameSizeType frameSize = m_PatternRecognition->GetFidSegmentation()->GetFrameSize();
   if (frameSize[0] > 0 && frameSize[1] > 0)
   {
     m_PatternRecognition->GetFidSegmentation()->ValidateRegionOfInterest();

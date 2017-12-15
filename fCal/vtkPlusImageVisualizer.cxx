@@ -301,7 +301,7 @@ PlusStatus vtkPlusImageVisualizer::UpdateCameraPose()
   }
 
   // Calculate image center
-  int dimensions[3] = {0, 0, 0};
+  FrameSizeType dimensions = {0, 0, 0};
   this->SelectedChannel->GetBrightnessFrameSize(dimensions);
   double imageCenterX = dimensions[0] / 2.0;
   double imageCenterY = dimensions[1] / 2.0;
@@ -576,7 +576,7 @@ PlusStatus vtkPlusImageVisualizer::UpdateScreenAlignedActors()
     return PLUS_SUCCESS;
   }
 
-  int dimensions[3] = {0, 0, 0};
+  FrameSizeType dimensions = {0, 0, 0};
   this->SelectedChannel->GetBrightnessFrameSize(dimensions);
 
   vtkCollectionSimpleIterator pit;
@@ -666,12 +666,12 @@ PlusStatus vtkPlusImageVisualizer::ReadRoiConfiguration(vtkXMLDataElement* aXMLE
     return PLUS_FAIL;
   }
   // clipping parameters
-  int clipRectangleOrigin[2] = { -1, -1};
+  int clipRectangleOrigin[3] = {PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP};
   if (!segmentationParameters->GetVectorAttribute("ClipRectangleOrigin", 2, clipRectangleOrigin))
   {
     LOG_WARNING("Cannot find ClipRectangleOrigin attribute in the segmentation parameters section of the configuration, region of interest will not be displayed");
   }
-  int clipRectangleSize[2] = { -1, -1};
+  int clipRectangleSize[3] = { PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP };
   if (!segmentationParameters->GetVectorAttribute("ClipRectangleSize", 2, clipRectangleSize))
   {
     LOG_WARNING("Cannot find ClipRectangleSize attribute in the segmentation parameters section of the configuration, region of interest will not be displayed");

@@ -178,7 +178,7 @@ protected:
   ///  Image slice mapper of image actor
   vtkSmartPointer<vtkImageSliceMapper>                  ImageMapper;
   ///  Polydata holding the result points (eg. stylus tip, segmented points)
-  vtkSmartPointer<vtkPolyData>                         ResultPolyData;
+  vtkSmartPointer<vtkPolyData>                          ResultPolyData;
   ///  Actor for displaying the result points (eg. stylus tip, segmented points)
   vtkSmartPointer<vtkActor>                             ResultActor;
   ///  Glyph producer for result
@@ -198,9 +198,9 @@ protected:
   ///  Record the current state of the marker orientation
   US_IMAGE_ORIENTATION                                  CurrentMarkerOrientation;
   ///  List of objects maintained by the visualizer to be screen aligned
-  vtkSmartPointer<vtkProp3DCollection>                 ScreenAlignedProps;
+  vtkSmartPointer<vtkProp3DCollection>                  ScreenAlignedProps;
   ///  List of original positions of screen-aligned objects
-  std::vector<std::vector<double> >                     ScreenAlignedPropOriginalPosition;
+  std::vector<std::vector<double>>                      ScreenAlignedPropOriginalPosition;
   ///  Flag to hold value of show/hide ROI
   bool                                                  ShowROI;
   ///  Assembly to hold all of the actors of the ROI for easy hide/show
