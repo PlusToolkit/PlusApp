@@ -8,9 +8,9 @@ Plus (Public software Library for UltraSound) is an open-source software package
 
 Overview papers and presentations:
 - <a href="http://perk.cs.queensu.ca/contents/plus-open-source-toolkit-ultrasound-guided-intervention-systems">Paper published in IEEE-TBME</a>
-- <a href="https://subversion.assembla.com/svn/plus/trunk/doc/overview/PlusOverview.pptx">Technology overview presentation</a>
-- <a href="https://subversion.assembla.com/svn/plus/trunk/doc/overview/SlicerIgtPlusIntro-NCIGT2013.pptx">Overview presentation with some clinical applications</a>
-- <a href="https://subversion.assembla.com/svn/plus/trunk/doc/overview/PlusArchitectureOverview.pptx">Multi-channel architecture overview presentation</a>
+- <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/overview/PlusOverview.pptx">Technology overview presentation</a>
+- <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/overview/SlicerIgtPlusIntro-NCIGT2013.pptx">Overview presentation with some clinical applications</a>
+- <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/overview/PlusArchitectureOverview.pptx">Multi-channel architecture overview presentation</a>
 
 \par How to cite
 
@@ -35,14 +35,14 @@ Please cite the following paper when referring to Plus in your publication:
 
 \par License
 
-Plus has a BSD-style license, which allows any kind of use for free. See more details in&nbsp;<a href="https://subversion.assembla.com/svn/plus/trunk/PlusLib/src/License.txt">License.txt</a>
+Plus has a BSD-style license, which allows any kind of use for free. See more details in&nbsp;<a href="https://github.com/PlusToolkit/PlusLib/blob/master/src/License.txt">License.txt</a>
 
 \par Download
 
-<a href="https://www.assembla.com/spaces/plus/wiki/Downloads">Click here to download pre-compiled Plus applications releases</a>
+<a href="https://plustoolkit.github.io/download">Click here to download pre-compiled Plus applications releases</a>
 
 \par More information
 
-All information about the Plus project is publicly available at <a href="http://www.plustoolkit.org">www.plustoolkit.org</a>. Register at <a href="http://www.assembla.com">www.assembla.com</a> and <a href="https://www.assembla.com/spaces/watch/plus">join the Plus space as watcher</a> to submit messages, bug reports, feature requests, and get email notifications. Write a message to any of the <a href="https://www.assembla.com/spaces/plus/team">Owner users</a> to request write access to the repository.
+All information about the Plus project is publicly available at <a href="http://www.plustoolkit.org">www.plustoolkit.org</a>. Register at <a href="https://github.com/">github.com</a> and visit the <a href="https://github.com/PlusToolkit/PlusLib">PlusLib GitHub page</a> to submit messages, bug reports, feature requests, and get email notifications.
 
 */

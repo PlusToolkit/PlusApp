@@ -68,7 +68,7 @@ ELSEIF(UNIX AND NOT APPLE)
   SET(CPACK_DEBIAN_COMPRESSION_TYPE gzip)
   SET(CPACK_DEBIAN_PACKAGE_SECTION science)
   SET(CPACK_DEBIAN_PACKAGE_PRIORITY optional)
-  SET(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://app.assembla.com/spaces/plus/wiki")
+  SET(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://plustoolkit.github.io/")
 ENDIF()
 
 IF(EXISTS "${PlusLib_DIR}/CMakeCache.txt")

@@ -8,11 +8,11 @@ in the Phantom coordinate system and coordinates of the same points are also acq
 coordinate system by using a tracked stylus (StylusTip).
 
 \section SystemCalibrationTutorials Tutorials
-- <a href="https://subversion.assembla.com/svn/plus/trunk/doc/tutorials/PlusTutorialfCalCalibrationProcess.pptx">Performing tracked
+- <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/tutorials/PlusTutorialfCalCalibrationProcess.pptx">Performing tracked
 ultrasound probe calibration using fCal</a>, see also the <a href="http://www.youtube.com/watch?v=lx9GbPupBxA">video tutorial</a> 
-- <a href="https://subversion.assembla.com/svn/plus/trunk/doc/tutorials/PlusTutorialBuildingfCalPrintedPhantom.pptx">
+- <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/tutorials/PlusTutorialBuildingfCalPrintedPhantom.pptx">
 How to build an fCal calibration phantom using 3D printer</a>
-- <a href="https://subversion.assembla.com/svn/plus/trunk/doc/tutorials/PlusTutorialBuildingfCalLegoPhantom.pdf">
+- <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/tutorials/PlusTutorialBuildingfCalLegoPhantom.pdf">
 How to build an fCal calibration phantom from Lego bricks</a>
 
 \subpage ApplicationfCalCoordinateSystemDefinitions

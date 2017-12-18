@@ -6,8 +6,7 @@
 
 If you encounter an error, please follow the following instructions to help us to find and fix it more quickly.
 - Try to reproduce the error and filter out what steps are really required for the error to occur  
-- <a href="https://www.assembla.com/spaces/plus/tickets/new">Create a ticket.</a> If you are not a member of Plus, <a href="https://www.assembla.com/spaces/join/plus">join the Plus project space on Assembla</a> (if you do not have an Assembla user, you will have to <a href="https://www.assembla.com/sign-up">sign up for a free account at Assembla</a>).
-- Set the issue type to Bug
+- <a href="https://github.com/PlusToolkit/PlusLib/issues/new">Create an issue on GitHub.</a>
 - Describe exactly what steps you made before the error occurred
 - Describe what is the unexpected behaviour
 - Attach the log file to the ticket
@@ -20,6 +19,6 @@ Thank you for helping to improve Plus!
 
 # Documentation error
 
-If you find a documentation error on the wiki then either <a href="https://www.assembla.com/spaces/plus/messages/new">post a message</a> (for smaller, trivial tasks) or <a href="https://www.assembla.com/spaces/plus/tickets/new">create a ticket</a>. If you are not a member of Plus, <a href="https://www.assembla.com/spaces/join/plus">join the Plus project space on Assembla</a> (if you do not have an Assembla user, you will have to <a href="https://www.assembla.com/sign-up">sign up for a free account at Assembla</a>).
+If you find a documentation error on the wiki then <a href="https://github.com/PlusToolkit/PlusLib/issues/new">create an issue on GitHub.</a>
 
 */
