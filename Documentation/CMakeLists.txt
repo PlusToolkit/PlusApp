@@ -43,6 +43,18 @@ IF(DOXYGEN_FOUND)
     # Other parameters
     SET(DOC_OUTPUT_FILE "${COMPRESSED_HELP_TARGET_DIR}/${COMPRESSED_HELP_TARGET_FILE}")
     SET(DOC_GENERATION_CMAKE_FILE ${UNCOMPRESSED_HELP_TARGET_DIR}/GenerateDoc.cmake)
+
+    # If a Google Analytics tracking ID is set, configure and specify the modified footer file.
+    # otherwise, default Doxygen footer will be used
+    SET(FOOTER_FILE "")
+    IF (PLUSAPP_DOCUMENTATION_GOOGLE_ANALYTICS_TRACKING_ID STREQUAL "")
+    ELSE()
+      SET(FOOTER_FILE ${UNCOMPRESSED_HELP_TARGET_DIR}/html/AnalyticsFooter.html)
+      CONFIGURE_FILE( AnalyticsFooter.html.in
+        ${FOOTER_FILE}
+        )
+    ENDIF()
+
     # Generate doxygen configuration and generator file
     CONFIGURE_FILE( Doxyfile.txt.in
       ${DOXYGEN_CONFIG_FILE}
