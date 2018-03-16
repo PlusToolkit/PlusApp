@@ -153,7 +153,7 @@ Typical stylus calibration error is typically less than 0.5mm. If you have highe
 - The stylus shall be rotated in as large angle range as possible
 - The stylus should not be moved quickly because most for trackers accuracy is lower if the tracked object is moving too quickly
 - The pose marker should not be farther than a couple of centimeters from the tip of the stylus
-- If an electromagnetic tracker is used then the pose marker on the stylus and the reference pose marker shall be well within the working range of the field generator and there should be no metallic object nearby that could cause field distortion
+- If an electromagnetic tracker is used then the pose marker on the stylus and the reference pose marker shall be well within the working range of the field generator and there should be no metallic object nearby that could cause field distortion. This includes surfaces such as tables that are supported using small metal beams
 
 \subsection SystemCalibrationFaqLargeProbeCalibrationError I get large (>2-3mm) probe spatial calibration error - what's wrong?
 
