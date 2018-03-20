@@ -369,15 +369,39 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
         it = tokens.begin();
       }
     }
-    for (unsigned int index = 0; index < tokens.size(); ++index)
+    unsigned int index = 0;
+    if (tokens.size() == 0)
     {
-      if (vtkPlusLogger::GetLogLevelType(tokens[index]) != vtkPlusLogger::LOG_LEVEL_UNDEFINED)
-      {
-        vtkPlusLogger::LogLevelType logLevel = vtkPlusLogger::GetLogLevelType(tokens[index++]);
-        std::string timeStamp = tokens[index++];
-        std::string message = tokens[index++];
-        std::string location = tokens[index++];
+      LOG_ERROR("Incorrectly formatted message received from server. Cannot parse.");
+      return;
+    }
 
+    if (vtkPlusLogger::GetLogLevelType(tokens[0]) != vtkPlusLogger::LOG_LEVEL_UNDEFINED)
+    {
+      vtkPlusLogger::LogLevelType logLevel = vtkPlusLogger::GetLogLevelType(tokens[index++]);
+      std::string timeStamp("time???");
+      if (tokens.size() > 1)
+      {
+        timeStamp = tokens[1];
+      }
+      std::string message("message???");
+      if (tokens.size() > 2)
+      {
+        message = tokens[2];
+      }
+      std::string location("location???");
+      if (tokens.size() > 3)
+      {
+        location = tokens[3];
+      }
+
+      if (location.find('(') == std::string::npos)
+      {
+        // Malformed server message, print as is
+        vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str());
+      }
+      else
+      {
         std::string file = location.substr(4, location.find_last_of('(') - 4);
         int lineNumber(0);
         std::stringstream lineNumberStr(location.substr(location.find_last_of('(') + 1, location.find_last_of(')') - location.find_last_of('(') - 1));
