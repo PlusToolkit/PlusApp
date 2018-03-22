@@ -9,6 +9,7 @@ See License.txt for details.
 
 // PlusLib includes
 #include <vtkPlusDevice.h>
+#include <PlusFidSegmentation.h>
 
 // VTK includes
 #include <vtkConeSource.h>
@@ -661,9 +662,9 @@ PlusStatus vtkPlusImageVisualizer::ReadRoiConfiguration(vtkXMLDataElement* aXMLE
   vtkXMLDataElement* segmentationParameters = aXMLElement->FindNestedElementWithName("Segmentation");
   if (segmentationParameters == NULL)
   {
-    LOG_WARNING("No Segmentation element is found in the XML tree!");
-    this->EnableROI(false);
-    return PLUS_FAIL;
+    LOG_WARNING("No Segmentation element is found in the XML tree! Using default values");
+    segmentationParameters = PlusXmlUtils::GetNestedElementWithName(aXMLElement, "Segmentation");
+    PlusFidSegmentation::SetDefaultSegmentationParameters(segmentationParameters);
   }
   // clipping parameters
   int clipRectangleOrigin[3] = {PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP};

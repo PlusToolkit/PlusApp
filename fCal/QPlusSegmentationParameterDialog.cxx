@@ -978,13 +978,14 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   vtkXMLDataElement* segmentationParameters = vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()->FindNestedElementWithName("Segmentation");
   if (segmentationParameters == NULL)
   {
-    LOG_ERROR("No Segmentation element is found in the XML tree!");
-    return PLUS_FAIL;
+    LOG_WARNING("No Segmentation element is found in the XML tree! Using default values");
+    segmentationParameters = PlusXmlUtils::GetNestedElementWithName(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData(), "Segmentation");
+    PlusFidSegmentation::SetDefaultSegmentationParameters(segmentationParameters);
   }
 
   // Feed parameters
   double approximateSpacingMmPerPixel(0.0);
-  if (segmentationParameters->GetScalarAttribute("ApproximateSpacingMmPerPixel", approximateSpacingMmPerPixel))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("ApproximateSpacingMmPerPixel", approximateSpacingMmPerPixel))
   {
     m_ApproximateSpacingMmPerPixel = approximateSpacingMmPerPixel;
     ui.label_SpacingResult->setText(QString("%1 (original)").arg(approximateSpacingMmPerPixel));
@@ -995,7 +996,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double morphologicalOpeningCircleRadiusMm(0.0);
-  if (segmentationParameters->GetScalarAttribute("MorphologicalOpeningCircleRadiusMm", morphologicalOpeningCircleRadiusMm))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("MorphologicalOpeningCircleRadiusMm", morphologicalOpeningCircleRadiusMm))
   {
     ui.doubleSpinBox_OpeningCircleRadius->setValue(morphologicalOpeningCircleRadiusMm);
   }
@@ -1005,7 +1006,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double morphologicalOpeningBarSizeMm(0.0);
-  if (segmentationParameters->GetScalarAttribute("MorphologicalOpeningBarSizeMm", morphologicalOpeningBarSizeMm))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("MorphologicalOpeningBarSizeMm", morphologicalOpeningBarSizeMm))
   {
     ui.doubleSpinBox_OpeningBarSize->setValue(morphologicalOpeningBarSizeMm);
   }
@@ -1016,7 +1017,8 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
 
   int clipOrigin[2] = { 0 };
   int clipSize[2] = { 0 };
-  if (segmentationParameters->GetVectorAttribute("ClipRectangleOrigin", 2, clipOrigin) &&
+  if (segmentationParameters &&
+      segmentationParameters->GetVectorAttribute("ClipRectangleOrigin", 2, clipOrigin) &&
       segmentationParameters->GetVectorAttribute("ClipRectangleSize", 2, clipSize))
   {
     if (clipOrigin[0] < 0 || clipOrigin[1] < 0)
@@ -1039,7 +1041,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double maxLinePairDistanceErrorPercent(0.0);
-  if (segmentationParameters->GetScalarAttribute("MaxLinePairDistanceErrorPercent", maxLinePairDistanceErrorPercent))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("MaxLinePairDistanceErrorPercent", maxLinePairDistanceErrorPercent))
   {
     ui.doubleSpinBox_LinePairDistanceError->setValue(maxLinePairDistanceErrorPercent);
   }
@@ -1049,7 +1051,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double maxAngleDifferenceDegrees(0.0);
-  if (segmentationParameters->GetScalarAttribute("MaxAngleDifferenceDegrees", maxAngleDifferenceDegrees))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("MaxAngleDifferenceDegrees", maxAngleDifferenceDegrees))
   {
     ui.doubleSpinBox_AngleDifference->setValue(maxAngleDifferenceDegrees);
   }
@@ -1059,7 +1061,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double minThetaDegrees(0.0);
-  if (segmentationParameters->GetScalarAttribute("MinThetaDegrees", minThetaDegrees))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("MinThetaDegrees", minThetaDegrees))
   {
     ui.doubleSpinBox_MinTheta->setValue(minThetaDegrees);
   }
@@ -1069,7 +1071,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double maxThetaDegrees(0.0);
-  if (segmentationParameters->GetScalarAttribute("MaxThetaDegrees", maxThetaDegrees))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("MaxThetaDegrees", maxThetaDegrees))
   {
     ui.doubleSpinBox_MaxTheta->setValue(maxThetaDegrees);
   }
@@ -1079,7 +1081,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double angleToleranceDegrees(0.0);
-  if (segmentationParameters->GetScalarAttribute("AngleToleranceDegrees", angleToleranceDegrees))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("AngleToleranceDegrees", angleToleranceDegrees))
   {
     ui.doubleSpinBox_AngleTolerance->setValue(angleToleranceDegrees);
   }
@@ -1089,7 +1091,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double thresholdImagePercent(0.0);
-  if (segmentationParameters->GetScalarAttribute("ThresholdImagePercent", thresholdImagePercent))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("ThresholdImagePercent", thresholdImagePercent))
   {
     ui.doubleSpinBox_ImageThreshold->setValue(thresholdImagePercent);
   }
@@ -1099,7 +1101,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double collinearPointsMaxDistanceFromLineMm(0.0);
-  if (segmentationParameters->GetScalarAttribute("CollinearPointsMaxDistanceFromLineMm", collinearPointsMaxDistanceFromLineMm))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("CollinearPointsMaxDistanceFromLineMm", collinearPointsMaxDistanceFromLineMm))
   {
     ui.doubleSpinBox_CollinearPointsMaxDistanceFromLine->setValue(collinearPointsMaxDistanceFromLineMm);
   }
@@ -1109,7 +1111,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double useOriginalImageIntensityForDotIntensityScore(-1);
-  if (segmentationParameters->GetScalarAttribute("UseOriginalImageIntensityForDotIntensityScore", useOriginalImageIntensityForDotIntensityScore))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("UseOriginalImageIntensityForDotIntensityScore", useOriginalImageIntensityForDotIntensityScore))
   {
     if (useOriginalImageIntensityForDotIntensityScore == 0)
     {
@@ -1130,7 +1132,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   }
 
   double maxCandidates(PlusFidSegmentation::DEFAULT_NUMBER_OF_MAXIMUM_FIDUCIAL_POINT_CANDIDATES);
-  if (segmentationParameters->GetScalarAttribute("NumberOfMaximumFiducialPointCandidates", maxCandidates))
+  if (segmentationParameters && segmentationParameters->GetScalarAttribute("NumberOfMaximumFiducialPointCandidates", maxCandidates))
   {
     ui.doubleSpinBox_MaxCandidates->setValue(maxCandidates);
   }
