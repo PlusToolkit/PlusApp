@@ -29,10 +29,14 @@ See License.txt for details.
 #include <QStringList>
 #include <QTimer>
 
+// VTK includes
+#include <vtkDirectory.h>
+
 // STL includes
 #include <algorithm>
 
 // OpenIGTLinkIO includes
+#include <igtlioCommandDevice.h>
 #include <igtlioDevice.h>
 
 namespace
@@ -291,6 +295,37 @@ void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
   }
 }
 
+//----------------------------------------------------------------------------
+PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_id, std::string command, std::string content, const igtl::MessageBase::MetaDataMap& metaData)
+{
+  igtlio::DeviceKeyType key(igtlio::CommandConverter::GetIGTLTypeName(), device_id);
+  igtlio::CommandDevicePointer device = igtlio::CommandDevice::SafeDownCast(m_RemoteControlServerConnector->GetDevice(key));
+
+  igtlio::CommandConverter::ContentData contentdata = device->GetContent();
+
+  if (command != contentdata.name)
+  {
+    LOG_ERROR("Requested command response " << command << " does not match the existing query: " << contentdata.name);
+    return PLUS_FAIL;
+  }
+
+  contentdata.name = command;
+  contentdata.content = content;
+  device->SetContent(contentdata);
+  for (const std::pair<std::string, std::pair<IANA_ENCODING_TYPE, std::string>>& entry : metaData)
+  {
+    device->SetMetaDataElement(entry.first, entry.second.first, entry.second.second);
+  }
+
+  if (m_RemoteControlServerConnector->SendMessage(CreateDeviceKey(device), igtlio::Device::MESSAGE_PREFIX_RTS) == 1)
+  {
+    return PLUS_SUCCESS;
+  }
+  LOG_ERROR("Unable to send command response to client: " << device_id << ", " << command);
+
+  return PLUS_FAIL;
+}
+
 //-----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::ConnectToDevicesByConfigFile(std::string aConfigFile)
 {
@@ -506,8 +541,51 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
   switch (eventId)
   {
     case igtlio::Logic::CommandReceivedEvent:
+    {
+      igtlio::CommandDevicePointer clientDevice = reinterpret_cast<igtlio::CommandDevice*>(device);
+      if (clientDevice == nullptr)
+      {
+        return;
+      }
+      std::string name = clientDevice->GetContent().name;
+      std::string content = clientDevice->GetContent().content;
+      int id = clientDevice->GetContent().id;
+
+      if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
+      {
+        vtkSmartPointer<vtkDirectory> dir = vtkSmartPointer<vtkDirectory>::New();
+        if (dir->Open(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationDirectory().c_str()) == 0)
+        {
+          return;
+        }
+
+        std::stringstream ss;
+        for (vtkIdType i = 0; i < dir->GetNumberOfFiles(); ++i)
+        {
+          std::string file = dir->GetFile(i);
+          std::string ext = vtksys::SystemTools::GetFilenameLastExtension(file);
+          if (PlusCommon::IsEqualInsensitive(ext, ".xml"))
+          {
+            ss << file << ";";
+          }
+        }
+
+        igtl::MessageBase::MetaDataMap map;
+        map["ConfigFiles"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ss.str());
+        map["Separator"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ";");
+
+        if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+        {
+          LOG_ERROR("Command received but response could not be sent.");
+          return;
+        }
+      }
+
       break;
+    }
     case igtlio::Logic::CommandResponseReceivedEvent:
+    {
       break;
+    }
   }
 }

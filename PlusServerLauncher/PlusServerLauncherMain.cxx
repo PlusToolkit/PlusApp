@@ -2,7 +2,7 @@
   Program: Plus
   Copyright (c) Laboratory for Percutaneous Surgery. All rights reserved.
   See License.txt for details.
-=========================================================Plus=header=end*/ 
+=========================================================Plus=header=end*/
 
 #include "PlusConfigure.h"
 
@@ -11,10 +11,9 @@
   #include <signal.h>
 #endif
 
-#include "vtksys/CommandLineArguments.hxx" 
+#include "vtksys/CommandLineArguments.hxx"
 #include "vtksys/SystemTools.hxx"
-// TODO: uncomment this when VTK is updated to a version that contains vtksys::Encoding
-//#include "vtksys/Encoding.hxx"
+#include "vtksys/Encoding.hxx"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -32,29 +31,35 @@
 class QMessageBoxResize: public QMessageBox
 {
 public:
-  QMessageBoxResize() 
+  QMessageBoxResize()
   {
     setMouseTracking(true);
     setSizeGripEnabled(true);
   }
 private:
-  virtual bool event(QEvent *e) 
+  virtual bool event(QEvent* e)
   {
     bool res = QMessageBox::event(e);
     switch (e->type())
     {
-    case QEvent::MouseMove:
-    case QEvent::MouseButtonPress:
-      setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-      if (QWidget *textEdit = findChild<QTextEdit *>())
+      case QEvent::MouseMove:
+      case QEvent::MouseButtonPress:
       {
-        textEdit->setMaximumHeight(QWIDGETSIZE_MAX);
+        setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        if (QWidget* textEdit = findChild<QTextEdit*>())
+        {
+          textEdit->setMaximumHeight(QWIDGETSIZE_MAX);
+        }
       }
+      break;
+      default:
+        break;
     }
     return res;
   }
 };
 
+//-----------------------------------------------------------------------------
 void DisplayMessage(QString msg, QString detail, bool isError)
 {
   QMessageBoxResize msgBox;
@@ -65,7 +70,7 @@ void DisplayMessage(QString msg, QString detail, bool isError)
 
   // Set width to half of screen size
   QRect rec = QApplication::desktop()->screenGeometry();
-  QSpacerItem* horizontalSpacer = new QSpacerItem(0.5*rec.width(), 0, QSizePolicy::Minimum, QSizePolicy::Fixed);
+  QSpacerItem* horizontalSpacer = new QSpacerItem(0.5 * rec.width(), 0, QSizePolicy::Minimum, QSizePolicy::Fixed);
   QGridLayout* layout = (QGridLayout*)msgBox.layout();
   layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
 
@@ -73,7 +78,7 @@ void DisplayMessage(QString msg, QString detail, bool isError)
   if (!detail.isEmpty())
   {
     msgBox.setDetailedText(detail);
-    if (QWidget *textEdit = msgBox.findChild<QTextEdit *>())
+    if (QWidget* textEdit = msgBox.findChild<QTextEdit*>())
     {
       QFont font;
       font.setFamily("Courier");
@@ -87,11 +92,12 @@ void DisplayMessage(QString msg, QString detail, bool isError)
 
 #else
 
+//-----------------------------------------------------------------------------
 void DisplayMessage(QString msg, QString detail, bool isError)
 {
   if (isError)
   {
-    QTextStream ts( stderr );
+    QTextStream ts(stderr);
     ts << "ERROR: " << msg << "\n";
     if (!detail.isEmpty())
     {
@@ -100,25 +106,26 @@ void DisplayMessage(QString msg, QString detail, bool isError)
   }
   else
   {
-    QTextStream ts( stdout );
+    QTextStream ts(stdout);
     ts << msg << "\n";
     if (!detail.isEmpty())
     {
       ts << detail << "\n";
-}
+    }
   }
 }
 
 #endif
 
-int appMain(int argc, char *argv[])
+//-----------------------------------------------------------------------------
+int appMain(int argc, char* argv[])
 {
   QApplication app(argc, argv);
 
   bool printHelp(false);
   std::string deviceSetConfigurationDirectoryPath;
   std::string inputConfigFileName;
-  bool autoConnect=false;
+  bool autoConnect = false;
   int remoteControlServerPort = PlusServerLauncherMainWindow::RemoteControlServerPortUseDefault;
 
   if (argc > 1)
@@ -137,15 +144,15 @@ int appMain(int argc, char *argv[])
     cmdargs.AddArgument("--port", vtksys::CommandLineArguments::EQUAL_ARGUMENT, &inputConfigFileName, "OpenIGTLink port number where the launcher will listen for remote control requests. If set to -1 then no remote control server will be launched. Default = 18904.");
     cmdargs.AddArgument("--verbose", vtksys::CommandLineArguments::EQUAL_ARGUMENT, &verboseLevel, "Verbose level (1=error only, 2=warning, 3=info, 4=debug)");
 
-    if ( !cmdargs.Parse() )
+    if (!cmdargs.Parse())
     {
       QString cmdArgsString;
-      for (int i=0; i<argc; i++)
+      for (int i = 0; i < argc; i++)
       {
         cmdArgsString.append(argv[i]);
         cmdArgsString.append(" ");
       }
-      QString msg = QString("<html><b>Problem parsing command-line argument [%1]: %2</b><p>Complete command line:<br>%3</html>").arg(cmdargs.GetLastArgument()+1).arg(argv[cmdargs.GetLastArgument()+1]).arg(cmdArgsString);
+      QString msg = QString("<html><b>Problem parsing command-line argument [%1]: %2</b><p>Complete command line:<br>%3</html>").arg(cmdargs.GetLastArgument() + 1).arg(argv[cmdargs.GetLastArgument() + 1]).arg(cmdArgsString);
       QString details;
       details.append("Command-line options:\n");
       details.append(cmdargs.GetHelp());
@@ -153,7 +160,7 @@ int appMain(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
 
-    if ( printHelp )
+    if (printHelp)
     {
       QString msg;
       msg.append("<html><b>Command-line options:</b><p><pre>");
@@ -161,7 +168,7 @@ int appMain(int argc, char *argv[])
       msg.append("</pre></html>");
       QString details;
       DisplayMessage(msg, details, false);
-      exit(EXIT_SUCCESS); 
+      exit(EXIT_SUCCESS);
     }
 
     if (!deviceSetConfigurationDirectoryPath.empty())
@@ -179,40 +186,16 @@ int appMain(int argc, char *argv[])
     }
   }
 
-  // Start the application  
+  // Start the application
   PlusServerLauncherMainWindow PlusServerLauncherMainWindow(0, 0, autoConnect, remoteControlServerPort);
   PlusServerLauncherMainWindow.show();
 
-  int retValue=app.exec();
+  int retValue = app.exec();
 
   return retValue;
 }
 
 #ifdef _WIN32
-
-// TODO: remove these two functions when VTK is updated to a version that contains vtksys::Encoding
-size_t vtksys_Encoding_wcstombs(char* dest, const wchar_t* str, size_t n)
-{
-  if(str == 0)
-    {
-    return (size_t)-1;
-    }
-  return WideCharToMultiByte(CP_ACP, 0, str, -1, dest, (int)n, NULL, NULL) - 1;
-}
-std::string vtksys_Encoding_ToNarrow(const std::wstring& wcstr)
-{
-  std::string str;
-  size_t length = vtksys_Encoding_wcstombs(0, wcstr.c_str(), 0) + 1;
-  if(length > 0)
-    {
-    std::vector<char> chars(length);
-    if(vtksys_Encoding_wcstombs(&chars[0], wcstr.c_str(), length) > 0)
-      {
-      str = &chars[0];
-      }
-    }
-  return str; 
-}
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -222,17 +205,16 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
   // CommandLineToArgvW has no narrow-character version, so we get the arguments in wide strings
   // and then convert to regular string.
-  int argc=0;
+  int argc = 0;
   LPWSTR* argvStringW = CommandLineToArgvW(GetCommandLineW(), &argc);
 
   std::vector< const char* > argv(argc); // usual const char** array used in main() functions
   std::vector< std::string > argvString(argc); // this stores the strings that the argv pointers point to
-  for(int i=0; i<argc; i++)
-    {
-    // TODO: replace this by vtksys::Encoding::ToNarrow when VTK is updated to a version that contains vtksys::Encoding
-    argvString[i] = vtksys_Encoding_ToNarrow(argvStringW[i]);
+  for (int i = 0; i < argc; i++)
+  {
+    argvString[i] = vtksys::Encoding::ToNarrow(argvStringW[i]);
     argv[i] = argvString[i].c_str();
-    }
+  }
 
   LocalFree(argvStringW);
 
@@ -241,7 +223,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 #else
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   return appMain(argc, argv);
 }

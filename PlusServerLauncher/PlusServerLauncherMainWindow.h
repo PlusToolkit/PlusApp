@@ -14,8 +14,9 @@
 #include <QProcess>
 
 // OpenIGTLinkIO includes
-#include <igtlioLogic.h>
+#include <igtlioCommandDevice.h>
 #include <igtlioConnector.h>
+#include <igtlioLogic.h>
 
 class QComboBox;
 class QPlusDeviceSetSelectorWidget;
@@ -87,6 +88,9 @@ protected:
 
   /*! Parse a given log line for salient information from the PlusServer */
   void ParseContent(const std::string& message);
+
+  /*! Send a response to a commmand */
+  PlusStatus SendCommandResponse(std::string device_id, std::string command, std::string content, const igtl::MessageBase::MetaDataMap& metaData);
 
 protected:
   /*! Device set selector widget */
