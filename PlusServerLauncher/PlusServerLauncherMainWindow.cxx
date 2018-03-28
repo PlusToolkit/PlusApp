@@ -312,9 +312,9 @@ PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_
   contentdata.name = command;
   contentdata.content = content;
   device->SetContent(contentdata);
-  for (const std::pair<std::string, std::pair<IANA_ENCODING_TYPE, std::string>>& entry : metaData)
+  for (igtl::MessageBase::MetaDataMap::const_iterator entry = metaData.begin(); entry != metaData.end(); ++entry)
   {
-    device->SetMetaDataElement(entry.first, entry.second.first, entry.second.second);
+    device->SetMetaDataElement((*entry).first, (*entry).second.first, (*entry).second.second);
   }
 
   if (m_RemoteControlServerConnector->SendMessage(CreateDeviceKey(device), igtlio::Device::MESSAGE_PREFIX_RTS) == 1)
