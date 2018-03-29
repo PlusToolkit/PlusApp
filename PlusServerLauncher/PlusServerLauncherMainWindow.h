@@ -76,6 +76,8 @@ protected slots:
 
   static void OnRemoteControlServerEventReceived(vtkObject* caller, unsigned long eventId, void* clientdata, void* calldata);
 
+  void OnWritePermissionClicked();
+
 protected:
   /*! Receive standard output or error and send it to the log */
   void SendServerOutputToLogger(const QByteArray& strData);
@@ -90,7 +92,7 @@ protected:
   void ParseContent(const std::string& message);
 
   /*! Send a response to a commmand */
-  PlusStatus SendCommandResponse(std::string device_id, std::string command, std::string content, const igtl::MessageBase::MetaDataMap& metaData);
+  PlusStatus SendCommandResponse(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData = igtl::MessageBase::MetaDataMap());
 
 protected:
   /*! Device set selector widget */

@@ -17,6 +17,7 @@ See License.txt for details.
 #include <vtkPlusTransformRepository.h>
 
 // Qt includes
+#include <QCheckBox>
 #include <QComboBox>
 #include <QFileInfo>
 #include <QHostAddress>
@@ -34,6 +35,7 @@ See License.txt for details.
 
 // STL includes
 #include <algorithm>
+#include <fstream>
 
 // OpenIGTLinkIO includes
 #include <igtlioCommandDevice.h>
@@ -54,7 +56,7 @@ namespace
 
 //-----------------------------------------------------------------------------
 PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*/, Qt::WindowFlags flags/*=0*/, bool autoConnect /*=false*/, int remoteControlServerPort/*=RemoteControlServerPortUseDefault*/)
-  : QMainWindow(parent, flags | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint)
+  : QMainWindow(parent, flags)
   , m_DeviceSetSelectorWidget(NULL)
   , m_CurrentServerInstance(NULL)
   , m_RemoteControlServerPort(remoteControlServerPort)
@@ -68,7 +70,6 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
 
   // Create device set selector widget
   m_DeviceSetSelectorWidget = new QPlusDeviceSetSelectorWidget(NULL);
-  m_DeviceSetSelectorWidget->setMaximumWidth(1200);
   m_DeviceSetSelectorWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Launch server"));
   connect(m_DeviceSetSelectorWidget, SIGNAL(ConnectToDevicesByConfigFileInvoked(std::string)), this, SLOT(ConnectToDevicesByConfigFile(std::string)));
@@ -98,7 +99,7 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   connect(ui.comboBox_LogLevel, SIGNAL(currentIndexChanged(int)), this, SLOT(LogLevelChanged()));
 
   // Insert widgets into placeholders
-  ui.centralLayout->setMargin(4);
+  ui.centralLayout->removeWidget(ui.placeholder);
   ui.centralLayout->insertWidget(0, m_DeviceSetSelectorWidget);
 
   // Log basic info (Plus version, supported devices)
@@ -165,6 +166,8 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
     m_RemoteControlServerConnector->SetTypeServer(m_RemoteControlServerPort);
     m_RemoteControlServerConnector->Start();
   }
+
+  connect(ui.checkBox_writePermission, &QCheckBox::clicked, this, &PlusServerLauncherMainWindow::OnWritePermissionClicked);
 }
 
 //-----------------------------------------------------------------------------
@@ -182,6 +185,9 @@ PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
     delete m_DeviceSetSelectorWidget;
     m_DeviceSetSelectorWidget = NULL;
   }
+
+
+  disconnect(ui.checkBox_writePermission, &QCheckBox::clicked, this, &PlusServerLauncherMainWindow::OnWritePermissionClicked);
 }
 
 //-----------------------------------------------------------------------------
@@ -296,7 +302,7 @@ void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
 }
 
 //----------------------------------------------------------------------------
-PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_id, std::string command, std::string content, const igtl::MessageBase::MetaDataMap& metaData)
+PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData)
 {
   igtlio::DeviceKeyType key(igtlio::CommandConverter::GetIGTLTypeName(), device_id);
   igtlio::CommandDevicePointer device = igtlio::CommandDevice::SafeDownCast(m_RemoteControlServerConnector->GetDevice(key));
@@ -312,7 +318,7 @@ PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_
   contentdata.name = command;
   contentdata.content = content;
   device->SetContent(contentdata);
-  for (igtl::MessageBase::MetaDataMap::const_iterator entry = metaData.begin(); entry != metaData.end(); ++entry)
+  for (igtl::MessageBase::MetaDataMap::iterator entry = metaData.begin(); entry != metaData.end(); ++entry)
   {
     device->SetMetaDataElement((*entry).first, (*entry).second.first, (*entry).second.second);
   }
@@ -556,6 +562,13 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
         vtkSmartPointer<vtkDirectory> dir = vtkSmartPointer<vtkDirectory>::New();
         if (dir->Open(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationDirectory().c_str()) == 0)
         {
+          igtl::MessageBase::MetaDataMap map;
+          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
+          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Unable to open device set directory.");
+          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+          {
+            LOG_ERROR("Command received but response could not be sent.");
+          }
           return;
         }
 
@@ -573,14 +586,112 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
         igtl::MessageBase::MetaDataMap map;
         map["ConfigFiles"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ss.str());
         map["Separator"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ";");
-
+        map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
         if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
         {
           LOG_ERROR("Command received but response could not be sent.");
           return;
         }
       }
+      else if (PlusCommon::IsEqualInsensitive(name, "AddConfigFile"))
+      {
+        std::string configFile;
+        bool hasFilename = clientDevice->GetMetaDataElement("ConfigFileName", configFile);
+        std::string configFileContent;
+        bool hasFileContent = clientDevice->GetMetaDataElement("ConfigFileContent", configFileContent);
 
+        // Check write permissions
+        if (!self->ui.checkBox_writePermission->isChecked())
+        {
+          LOG_INFO("Request from client to add config file, but write permissions not enabled. File: " << (hasFilename ? configFile : "unknown"));
+
+          igtl::MessageBase::MetaDataMap map;
+          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Write permission denied.");
+          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+          {
+            LOG_ERROR("Command received but response could not be sent.");
+          }
+
+          return;
+        }
+
+        if (!hasFilename || !hasFileContent)
+        {
+          igtl::MessageBase::MetaDataMap map;
+          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Required metadata \'ConfigFileName\' and/or \'ConfigFileContent\' missing.");
+          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+          {
+            LOG_ERROR("Command received but response could not be sent.");
+          }
+          return;
+        }
+
+        // Strip any path sent over
+        configFile = vtksys::SystemTools::GetFilenameName(configFile);
+        // If filename already exists, check overwrite permissions
+        if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile)))
+        {
+          if (!self->ui.checkBox_overwritePermission->isChecked())
+          {
+            std::string oldConfigFile = configFile;
+            int i = 0;
+            while (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile)))
+            {
+              configFile = oldConfigFile + "[" + PlusCommon::ToString<int>(i) + "]";
+              i++;
+            }
+            LOG_INFO("Config file: " << oldConfigFile << " already exists. Changing to: " << configFile);
+          }
+          else
+          {
+            // Overwrite, backup in case writing of new file fails
+            vtksys::SystemTools::CopyAFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile),
+                                           vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
+            vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
+          }
+        }
+
+        std::fstream file(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
+        if (!file.is_open())
+        {
+          if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
+          {
+            // Restore backup
+            vtksys::SystemTools::CopyAFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak",
+                                           vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
+          }
+
+          igtl::MessageBase::MetaDataMap map;
+          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Unable to write to device set configuration directory.");
+          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+          {
+            LOG_ERROR("Command received but response could not be sent.");
+            if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
+            {
+              vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
+            }
+          }
+          return;
+        }
+
+        file << configFileContent;
+        file.close();
+
+        igtl::MessageBase::MetaDataMap map;
+        map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
+        if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+        {
+          LOG_ERROR("Command received but response could not be sent.");
+        }
+
+        if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
+        {
+          vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
+        }
+      }
       break;
     }
     case igtlio::Logic::CommandResponseReceivedEvent:
@@ -588,4 +699,10 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
       break;
     }
   }
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::OnWritePermissionClicked()
+{
+  ui.checkBox_overwritePermission->setEnabled(ui.checkBox_writePermission->isChecked());
 }
