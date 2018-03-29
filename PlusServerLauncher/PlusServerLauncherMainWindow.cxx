@@ -58,7 +58,6 @@ namespace
 PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*/, Qt::WindowFlags flags/*=0*/, bool autoConnect /*=false*/, int remoteControlServerPort/*=RemoteControlServerPortUseDefault*/)
   : QMainWindow(parent, flags)
   , m_DeviceSetSelectorWidget(NULL)
-  , m_CurrentServerInstance(NULL)
   , m_RemoteControlServerPort(remoteControlServerPort)
 {
   m_RemoteControlServerCallbackCommand = vtkSmartPointer<vtkCallbackCommand>::New();
@@ -173,7 +172,7 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
 //-----------------------------------------------------------------------------
 PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
 {
-  StopServer(); // deletes m_CurrentServerInstance
+  LocalStopServer(); // deletes m_CurrentServerInstance
 
   if (m_RemoteControlServerLogic)
   {
@@ -193,32 +192,26 @@ PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
 //-----------------------------------------------------------------------------
 bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath)
 {
-  if (m_CurrentServerInstance != NULL)
-  {
-    StopServer();
-  }
-
-  m_CurrentServerInstance = new QProcess();
+  QProcess* newServerProcess = new QProcess();
+  m_ServerInstances[vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())] = newServerProcess;
   std::string plusServerExecutable = vtkPlusConfig::GetInstance()->GetPlusExecutablePath("PlusServer");
   std::string plusServerLocation = vtksys::SystemTools::GetFilenamePath(plusServerExecutable);
-  m_CurrentServerInstance->setWorkingDirectory(QString(plusServerLocation.c_str()));
+  newServerProcess->setWorkingDirectory(QString(plusServerLocation.c_str()));
 
-  connect(m_CurrentServerInstance, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
-  connect(m_CurrentServerInstance, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
-  connect(m_CurrentServerInstance, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
-  connect(m_CurrentServerInstance, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
+  connect(newServerProcess, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
+  connect(newServerProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
 
   // PlusServerLauncher wants at least LOG_LEVEL_INFO to parse status information from the PlusServer executable
   // Un-requested log entries that are captured from the PlusServer executable are parsed and dropped from output
   int logLevelToPlusServer = std::max<int>(ui.comboBox_LogLevel->currentData().toInt(), vtkPlusLogger::LOG_LEVEL_INFO);
   QString cmdLine = QString("\"%1\" --config-file=\"%2\" --verbose=%3").arg(plusServerExecutable.c_str()).arg(configFilePath).arg(logLevelToPlusServer);
   LOG_INFO("Server process command line: " << cmdLine.toLatin1().constData());
-  m_CurrentServerInstance->start(cmdLine);
-  m_CurrentServerInstance->waitForFinished(500);
+  newServerProcess->start(cmdLine);
+  newServerProcess->waitForFinished(500);
 
   // During waitForFinished an error signal may be emitted, which may delete m_CurrentServerInstance,
   // therefore we need to check if m_CurrentServerInstance is still not NULL
-  if (m_CurrentServerInstance && m_CurrentServerInstance->state() == QProcess::Running)
+  if (newServerProcess && newServerProcess->state() == QProcess::Running)
   {
     LOG_INFO("Server process started successfully");
     ui.comboBox_LogLevel->setEnabled(false);
@@ -231,40 +224,54 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath)
   }
 }
 
-//-----------------------------------------------------------------------------
-bool PlusServerLauncherMainWindow::StopServer()
+//----------------------------------------------------------------------------
+bool PlusServerLauncherMainWindow::LocalStartServer()
 {
-  if (m_CurrentServerInstance == NULL)
+  if (!StartServer(QString::fromStdString(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile))))
   {
-    // already stopped
+    return false;
+  }
+  QProcess* newServerProcess = m_ServerInstances[vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)];
+  connect(newServerProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
+  connect(newServerProcess, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
+{
+  if (m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())) == m_ServerInstances.end())
+  {
+    // Server at config file isn't running
     return true;
   }
 
-  disconnect(m_CurrentServerInstance, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
-  disconnect(m_CurrentServerInstance, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
-  disconnect(m_CurrentServerInstance, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
-  disconnect(m_CurrentServerInstance, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
+  QProcess* process = m_ServerInstances[vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())];
+  disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
+  disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
 
   bool forcedShutdown = false;
-  if (m_CurrentServerInstance->state() == QProcess::Running)
+  if (process->state() == QProcess::Running)
   {
-    m_CurrentServerInstance->terminate();
-    if (m_CurrentServerInstance->state() == QProcess::Running)
+    process->terminate();
+    if (process->state() == QProcess::Running)
     {
       LOG_INFO("Server process stop request sent successfully");
     }
     const int totalTimeoutSec = 15;
     const double retryDelayTimeoutSec = 0.3;
     double timePassedSec = 0;
-    while (!m_CurrentServerInstance->waitForFinished(retryDelayTimeoutSec * 1000))
+    // TODO : make this asynchronous so server can continue performing other actions
+    while (!process->waitForFinished(retryDelayTimeoutSec * 1000))
     {
-      m_CurrentServerInstance->terminate(); // in release mode on Windows the first terminate request may go unnoticed
+      process->terminate(); // in release mode on Windows the first terminate request may go unnoticed
       timePassedSec += retryDelayTimeoutSec;
       if (timePassedSec > totalTimeoutSec)
       {
         // graceful termination was not successful, force the process to quit
         LOG_WARNING("Server process did not stop on request for " << timePassedSec << " seconds, force it to quit now");
-        m_CurrentServerInstance->kill();
+        process->kill();
         forcedShutdown = true;
         break;
       }
@@ -272,10 +279,31 @@ bool PlusServerLauncherMainWindow::StopServer()
     LOG_INFO("Server process stopped successfully");
     ui.comboBox_LogLevel->setEnabled(true);
   }
-  delete m_CurrentServerInstance;
-  m_CurrentServerInstance = NULL;
+
+  delete process;
+  m_ServerInstances.erase(m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())));
+
   m_Suffix.clear();
   return (!forcedShutdown);
+}
+
+//----------------------------------------------------------------------------
+bool PlusServerLauncherMainWindow::LocalStopServer()
+{
+  if (m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)) == m_ServerInstances.end())
+  {
+    // Server at config file isn't running
+    return true;
+  }
+
+  QProcess* process = m_ServerInstances[vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)];
+
+  disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
+  disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
+
+  bool result = StopServer(QString::fromStdString(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)));
+  m_LocalConfigFile = "";
+  return result;
 }
 
 //----------------------------------------------------------------------------
@@ -336,9 +364,9 @@ PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_
 void PlusServerLauncherMainWindow::ConnectToDevicesByConfigFile(std::string aConfigFile)
 {
   // Either a connect or disconnect, we always start from a clean slate: delete any previously active servers
-  if (m_CurrentServerInstance != NULL)
+  if (!m_LocalConfigFile.empty())
   {
-    StopServer();
+    LocalStopServer();
   }
 
   // Disconnect
@@ -355,7 +383,8 @@ void PlusServerLauncherMainWindow::ConnectToDevicesByConfigFile(std::string aCon
   LOG_INFO("Connect using configuration file: " << aConfigFile);
 
   // Connect
-  if (StartServer(QString(aConfigFile.c_str())))
+  m_LocalConfigFile = aConfigFile;
+  if (LocalStartServer())
   {
     m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Launching..."));
   }
@@ -470,14 +499,14 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
 //-----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::StdOutMsgReceived()
 {
-  QByteArray strData = m_CurrentServerInstance->readAllStandardOutput();
+  QByteArray strData = m_ServerInstances[vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)]->readAllStandardOutput();
   SendServerOutputToLogger(strData);
 }
 
 //-----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::StdErrMsgReceived()
 {
-  QByteArray strData = m_CurrentServerInstance->readAllStandardError();
+  QByteArray strData = m_ServerInstances[vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)]->readAllStandardError();
   SendServerOutputToLogger(strData);
 }
 
@@ -559,68 +588,22 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 
       if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
       {
-        vtkSmartPointer<vtkDirectory> dir = vtkSmartPointer<vtkDirectory>::New();
-        if (dir->Open(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationDirectory().c_str()) == 0)
-        {
-          igtl::MessageBase::MetaDataMap map;
-          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Unable to open device set directory.");
-          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
-          {
-            LOG_ERROR("Command received but response could not be sent.");
-          }
-          return;
-        }
-
-        std::stringstream ss;
-        for (vtkIdType i = 0; i < dir->GetNumberOfFiles(); ++i)
-        {
-          std::string file = dir->GetFile(i);
-          std::string ext = vtksys::SystemTools::GetFilenameLastExtension(file);
-          if (PlusCommon::IsEqualInsensitive(ext, ".xml"))
-          {
-            ss << file << ";";
-          }
-        }
-
-        igtl::MessageBase::MetaDataMap map;
-        map["ConfigFiles"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ss.str());
-        map["Separator"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ";");
-        map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-        if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
-        {
-          LOG_ERROR("Command received but response could not be sent.");
-          return;
-        }
+        self->GetConfigFiles(clientDevice);
+        return;
       }
       else if (PlusCommon::IsEqualInsensitive(name, "AddConfigFile"))
       {
-        std::string configFile;
-        bool hasFilename = clientDevice->GetMetaDataElement("ConfigFileName", configFile);
-        std::string configFileContent;
-        bool hasFileContent = clientDevice->GetMetaDataElement("ConfigFileContent", configFileContent);
-
-        // Check write permissions
-        if (!self->ui.checkBox_writePermission->isChecked())
-        {
-          LOG_INFO("Request from client to add config file, but write permissions not enabled. File: " << (hasFilename ? configFile : "unknown"));
-
-          igtl::MessageBase::MetaDataMap map;
-          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Write permission denied.");
-          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
-          {
-            LOG_ERROR("Command received but response could not be sent.");
-          }
-
-          return;
-        }
-
-        if (!hasFilename || !hasFileContent)
+        self->AddOrUpdateConfigFile(clientDevice);
+        return;
+      }
+      else if (PlusCommon::IsEqualInsensitive(name, "StartServer"))
+      {
+        std::string filename;
+        if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
         {
           igtl::MessageBase::MetaDataMap map;
           map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Required metadata \'ConfigFileName\' and/or \'ConfigFileContent\' missing.");
+          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Config file not specified.");
           if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
           {
             LOG_ERROR("Command received but response could not be sent.");
@@ -628,69 +611,53 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
           return;
         }
 
-        // Strip any path sent over
-        configFile = vtksys::SystemTools::GetFilenameName(configFile);
-        // If filename already exists, check overwrite permissions
-        if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile)))
+        if (!self->StartServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename)))))
         {
-          if (!self->ui.checkBox_overwritePermission->isChecked())
-          {
-            std::string oldConfigFile = configFile;
-            int i = 0;
-            while (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile)))
-            {
-              configFile = oldConfigFile + "[" + PlusCommon::ToString<int>(i) + "]";
-              i++;
-            }
-            LOG_INFO("Config file: " << oldConfigFile << " already exists. Changing to: " << configFile);
-          }
-          else
-          {
-            // Overwrite, backup in case writing of new file fails
-            vtksys::SystemTools::CopyAFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile),
-                                           vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
-            vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
-          }
-        }
-
-        std::fstream file(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
-        if (!file.is_open())
-        {
-          if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
-          {
-            // Restore backup
-            vtksys::SystemTools::CopyAFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak",
-                                           vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
-          }
-
           igtl::MessageBase::MetaDataMap map;
           map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Unable to write to device set configuration directory.");
+          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Failed to start server process.");
           if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
           {
             LOG_ERROR("Command received but response could not be sent.");
-            if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
-            {
-              vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
-            }
+          }
+          return;
+        }
+        else
+        {
+          igtl::MessageBase::MetaDataMap map;
+          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
+          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+          {
+            LOG_ERROR("Command received but response could not be sent.");
+          }
+          return;
+        }
+      }
+      else if (PlusCommon::IsEqualInsensitive(name, "StopServer"))
+      {
+        std::string filename;
+        if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
+        {
+          igtl::MessageBase::MetaDataMap map;
+          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Config file not specified.");
+          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+          {
+            LOG_ERROR("Command received but response could not be sent.");
           }
           return;
         }
 
-        file << configFileContent;
-        file.close();
+        self->StopServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))));
 
+        // Forced stop or not, the server is down
         igtl::MessageBase::MetaDataMap map;
         map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
         if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
         {
           LOG_ERROR("Command received but response could not be sent.");
         }
-
-        if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
-        {
-          vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
-        }
+        return;
       }
       break;
     }
@@ -698,6 +665,144 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
     {
       break;
     }
+  }
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::GetConfigFiles(igtlio::CommandDevicePointer clientDevice)
+{
+  vtkSmartPointer<vtkDirectory> dir = vtkSmartPointer<vtkDirectory>::New();
+  if (dir->Open(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationDirectory().c_str()) == 0)
+  {
+    igtl::MessageBase::MetaDataMap map;
+    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
+    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Unable to open device set directory.");
+    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Command received but response could not be sent.");
+    }
+    return;
+  }
+
+  std::stringstream ss;
+  for (vtkIdType i = 0; i < dir->GetNumberOfFiles(); ++i)
+  {
+    std::string file = dir->GetFile(i);
+    std::string ext = vtksys::SystemTools::GetFilenameLastExtension(file);
+    if (PlusCommon::IsEqualInsensitive(ext, ".xml"))
+    {
+      ss << file << ";";
+    }
+  }
+
+  igtl::MessageBase::MetaDataMap map;
+  map["ConfigFiles"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ss.str());
+  map["Separator"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ";");
+  map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
+  if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Command received but response could not be sent.");
+  }
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlio::CommandDevicePointer clientDevice)
+{
+  std::string configFile;
+  bool hasFilename = clientDevice->GetMetaDataElement("ConfigFileName", configFile);
+  std::string configFileContent;
+  bool hasFileContent = clientDevice->GetMetaDataElement("ConfigFileContent", configFileContent);
+
+  // Check write permissions
+  if (!ui.checkBox_writePermission->isChecked())
+  {
+    LOG_INFO("Request from client to add config file, but write permissions not enabled. File: " << (hasFilename ? configFile : "unknown"));
+
+    igtl::MessageBase::MetaDataMap map;
+    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Write permission denied.");
+    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Command received but response could not be sent.");
+    }
+
+    return;
+  }
+
+  if (!hasFilename || !hasFileContent)
+  {
+    igtl::MessageBase::MetaDataMap map;
+    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Required metadata \'ConfigFileName\' and/or \'ConfigFileContent\' missing.");
+    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Command received but response could not be sent.");
+    }
+    return;
+  }
+
+  // Strip any path sent over
+  configFile = vtksys::SystemTools::GetFilenameName(configFile);
+  // If filename already exists, check overwrite permissions
+  if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile)))
+  {
+    if (!ui.checkBox_overwritePermission->isChecked())
+    {
+      std::string oldConfigFile = configFile;
+      int i = 0;
+      while (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile)))
+      {
+        configFile = oldConfigFile + "[" + PlusCommon::ToString<int>(i) + "]";
+        i++;
+      }
+      LOG_INFO("Config file: " << oldConfigFile << " already exists. Changing to: " << configFile);
+    }
+    else
+    {
+      // Overwrite, backup in case writing of new file fails
+      vtksys::SystemTools::CopyAFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile),
+                                     vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
+      vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
+    }
+  }
+
+  std::fstream file(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
+  if (!file.is_open())
+  {
+    if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
+    {
+      // Restore backup
+      vtksys::SystemTools::CopyAFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak",
+                                     vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
+    }
+
+    igtl::MessageBase::MetaDataMap map;
+    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Unable to write to device set configuration directory.");
+    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Command received but response could not be sent.");
+      if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
+      {
+        vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
+      }
+    }
+    return;
+  }
+
+  file << configFileContent;
+  file.close();
+
+  igtl::MessageBase::MetaDataMap map;
+  map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
+  if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Command received but response could not be sent.");
+  }
+
+  if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
+  {
+    vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
   }
 }
 

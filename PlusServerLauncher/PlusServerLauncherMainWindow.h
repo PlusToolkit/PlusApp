@@ -84,25 +84,35 @@ protected:
 
   /*! Start server process, connect outputs to logger. Returns with true on success. */
   bool StartServer(const QString& configFilePath);
+  /*! Start server process from GUI */
+  bool LocalStartServer();
 
   /*! Stop server process, disconnect outputs. Returns with true on success (shutdown on request was successful, without forcing). */
-  bool StopServer();
+  bool StopServer(const QString& configFilePath);
+  bool LocalStopServer();
 
   /*! Parse a given log line for salient information from the PlusServer */
   void ParseContent(const std::string& message);
 
-  /*! Send a response to a commmand */
+  /*! Send a response to a command */
   PlusStatus SendCommandResponse(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData = igtl::MessageBase::MetaDataMap());
+
+  /*! Incoming command handling functions */
+  void AddOrUpdateConfigFile(igtlio::CommandDevicePointer clientDevice);
+  void GetConfigFiles(igtlio::CommandDevicePointer clientDevice);
 
 protected:
   /*! Device set selector widget */
   QPlusDeviceSetSelectorWidget*         m_DeviceSetSelectorWidget;
 
   /*! PlusServer instance that is responsible for all data collection and network transfer */
-  QProcess*                             m_CurrentServerInstance;
+  std::map<std::string, QProcess*>      m_ServerInstances;
 
   /*! List of active ports for PlusServers */
   std::string                           m_Suffix;
+
+  /*! Store local config file name */
+  std::string                           m_LocalConfigFile;
 
   /*! OpenIGTLink server that allows remote control of launcher (start/stop a PlusServer process, etc) */
   int m_RemoteControlServerPort;
