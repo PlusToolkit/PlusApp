@@ -583,7 +583,7 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 {
   PlusServerLauncherMainWindow* self = reinterpret_cast<PlusServerLauncherMainWindow*>(clientData);
 
-  auto device = dynamic_cast<igtlio::Device*>(caller);
+  igtlio::LogicPointer logic = dynamic_cast<igtlio::Logic*>(caller);
 
   switch (eventId)
   {
@@ -594,52 +594,72 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
     }
     case igtlio::Logic::CommandReceivedEvent:
     {
-      if (device == nullptr)
+      if (logic == nullptr)
       {
         return;
       }
-
-      igtlio::CommandDevicePointer clientDevice = reinterpret_cast<igtlio::CommandDevice*>(device);
-      if (clientDevice == nullptr)
-      {
-        return;
-      }
-      std::string name = clientDevice->GetContent().name;
-      std::string content = clientDevice->GetContent().content;
-      int id = clientDevice->GetContent().id;
-
-      self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
-
-      if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
-      {
-        self->GetConfigFiles(clientDevice);
-        return;
-      }
-      else if (PlusCommon::IsEqualInsensitive(name, "AddConfigFile"))
-      {
-        self->AddOrUpdateConfigFile(clientDevice);
-        return;
-      }
-      else if (PlusCommon::IsEqualInsensitive(name, "StartServer"))
-      {
-        self->RemoteStartServer(clientDevice);
-        return;
-      }
-      else if (PlusCommon::IsEqualInsensitive(name, "StopServer"))
-      {
-        self->RemoteStopServer(clientDevice);
-        return;
-      }
+      self->OnCommandReceivedEvent(logic);
       break;
     }
     case igtlio::Logic::CommandResponseReceivedEvent:
     {
-      if (device == nullptr)
+      if (logic == nullptr)
       {
         return;
       }
 
       break;
+    }
+  }
+}
+
+//---------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlio::LogicPointer logic)
+{
+  if (!logic)
+  {
+    LOG_ERROR("Command event could not be read!");
+  }
+
+  for (unsigned int i = 0; i < logic->GetNumberOfDevices(); ++i)
+  {
+    igtlio::DevicePointer device = logic->GetDevice(i);
+    if (STRCASECMP(device->GetDeviceType().c_str(), "COMMAND") == 0)
+    {
+      igtlio::CommandDevicePointer commandDevice = igtlio::CommandDevice::SafeDownCast(device);
+      if (commandDevice && commandDevice->MessageDirectionIsIn())
+      {
+        if (device == nullptr)
+        {
+          return;
+        }
+        std::string name = commandDevice->GetContent().name;
+        std::string content = commandDevice->GetContent().content;
+        int id = commandDevice->GetContent().id;
+
+        this->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
+
+        if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
+        {
+          this->GetConfigFiles(commandDevice);
+          return;
+        }
+        else if (PlusCommon::IsEqualInsensitive(name, "AddConfigFile"))
+        {
+          this->AddOrUpdateConfigFile(commandDevice);
+          return;
+        }
+        else if (PlusCommon::IsEqualInsensitive(name, "StartServer"))
+        {
+          this->RemoteStartServer(commandDevice);
+          return;
+        }
+        else if (PlusCommon::IsEqualInsensitive(name, "StopServer"))
+        {
+          this->RemoteStopServer(commandDevice);
+          return;
+        }
+      }
     }
   }
 }
