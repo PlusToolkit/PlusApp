@@ -27,6 +27,7 @@ See License.txt for details.
 #include <QNetworkInterface>
 #include <QProcess>
 #include <QRegExp>
+#include <QStatusBar>
 #include <QStringList>
 #include <QTimer>
 
@@ -59,6 +60,7 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   : QMainWindow(parent, flags)
   , m_DeviceSetSelectorWidget(NULL)
   , m_RemoteControlServerPort(remoteControlServerPort)
+  , m_RemoteControlServerConnectorProcessTimer(new QTimer())
 {
   m_RemoteControlServerCallbackCommand = vtkSmartPointer<vtkCallbackCommand>::New();
   m_RemoteControlServerCallbackCommand->SetCallback(PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived);
@@ -128,10 +130,10 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   }
 
   // Log server host name, domain, and IP addresses
-  LOG_INFO("Server host name: " << QHostInfo::localHostName().toLatin1().constData());
+  LOG_INFO("Server host name: " << QHostInfo::localHostName().toStdString());
   if (!QHostInfo::localDomainName().isEmpty())
   {
-    LOG_INFO("Server host domain: " << QHostInfo::localDomainName().toLatin1().constData());
+    LOG_INFO("Server host domain: " << QHostInfo::localDomainName().toStdString());
   }
 
   QString ipAddresses;
@@ -142,13 +144,13 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
     {
       if (!ipAddresses.isEmpty())
       {
-        ipAddresses.append(",  ");
+        ipAddresses.append(", ");
       }
       ipAddresses.append(list[hostIndex].toString());
     }
   }
 
-  LOG_INFO("Server IP addresses: " << ipAddresses.toLatin1().constData());
+  LOG_INFO("Server IP addresses: " << ipAddresses.toStdString());
 
   if (m_RemoteControlServerPort != PlusServerLauncherMainWindow::RemoteControlServerPortDisable)
   {
@@ -162,11 +164,18 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
     m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandReceivedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandResponseReceivedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector = m_RemoteControlServerLogic->CreateConnector();
+    m_RemoteControlServerConnector->AddObserver(igtlio::Connector::ConnectedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector->SetTypeServer(m_RemoteControlServerPort);
     m_RemoteControlServerConnector->Start();
+
+    ui.label_networkDetails->setText(ipAddresses + ", port " + QString::number(m_RemoteControlServerPort));
   }
 
   connect(ui.checkBox_writePermission, &QCheckBox::clicked, this, &PlusServerLauncherMainWindow::OnWritePermissionClicked);
+
+  connect(m_RemoteControlServerConnectorProcessTimer, &QTimer::timeout, this, &PlusServerLauncherMainWindow::OnTimerTimeout);
+
+  m_RemoteControlServerConnectorProcessTimer->start(5);
 }
 
 //-----------------------------------------------------------------------------
@@ -179,14 +188,22 @@ PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
     m_RemoteControlServerLogic->RemoveObserver(m_RemoteControlServerCallbackCommand);
   }
 
+  if (m_RemoteControlServerConnector)
+  {
+    m_RemoteControlServerConnector->RemoveObserver(m_RemoteControlServerCallbackCommand);
+  }
+
   if (m_DeviceSetSelectorWidget != NULL)
   {
     delete m_DeviceSetSelectorWidget;
     m_DeviceSetSelectorWidget = NULL;
   }
 
+  delete m_RemoteControlServerConnectorProcessTimer;
+  m_RemoteControlServerConnectorProcessTimer = nullptr;
 
   disconnect(ui.checkBox_writePermission, &QCheckBox::clicked, this, &PlusServerLauncherMainWindow::OnWritePermissionClicked);
+  connect(m_RemoteControlServerConnectorProcessTimer, &QTimer::timeout, this, &PlusServerLauncherMainWindow::OnTimerTimeout);
 }
 
 //-----------------------------------------------------------------------------
@@ -284,7 +301,7 @@ bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
   m_ServerInstances.erase(m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())));
 
   m_Suffix.clear();
-  return (!forcedShutdown);
+  return !forcedShutdown;
 }
 
 //----------------------------------------------------------------------------
@@ -465,7 +482,7 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
         location = tokens[3];
       }
 
-      if (location.find('(') == std::string::npos)
+      if (location.find('(') == std::string::npos || location.find(')') == std::string::npos)
       {
         // Malformed server message, print as is
         vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str());
@@ -568,15 +585,20 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 
   auto device = dynamic_cast<igtlio::Device*>(caller);
 
-  if (device == nullptr)
-  {
-    return;
-  }
-
   switch (eventId)
   {
+    case igtlio::Connector::ConnectedEvent:
+    {
+      self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client connected.");
+      break;
+    }
     case igtlio::Logic::CommandReceivedEvent:
     {
+      if (device == nullptr)
+      {
+        return;
+      }
+
       igtlio::CommandDevicePointer clientDevice = reinterpret_cast<igtlio::CommandDevice*>(device);
       if (clientDevice == nullptr)
       {
@@ -585,6 +607,8 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
       std::string name = clientDevice->GetContent().name;
       std::string content = clientDevice->GetContent().content;
       int id = clientDevice->GetContent().id;
+
+      self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
 
       if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
       {
@@ -598,73 +622,92 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
       }
       else if (PlusCommon::IsEqualInsensitive(name, "StartServer"))
       {
-        std::string filename;
-        if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
-        {
-          igtl::MessageBase::MetaDataMap map;
-          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Config file not specified.");
-          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
-          {
-            LOG_ERROR("Command received but response could not be sent.");
-          }
-          return;
-        }
-
-        if (!self->StartServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename)))))
-        {
-          igtl::MessageBase::MetaDataMap map;
-          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Failed to start server process.");
-          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
-          {
-            LOG_ERROR("Command received but response could not be sent.");
-          }
-          return;
-        }
-        else
-        {
-          igtl::MessageBase::MetaDataMap map;
-          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
-          {
-            LOG_ERROR("Command received but response could not be sent.");
-          }
-          return;
-        }
+        self->RemoteStartServer(clientDevice);
+        return;
       }
       else if (PlusCommon::IsEqualInsensitive(name, "StopServer"))
       {
-        std::string filename;
-        if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
-        {
-          igtl::MessageBase::MetaDataMap map;
-          map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-          map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Config file not specified.");
-          if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
-          {
-            LOG_ERROR("Command received but response could not be sent.");
-          }
-          return;
-        }
-
-        self->StopServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))));
-
-        // Forced stop or not, the server is down
-        igtl::MessageBase::MetaDataMap map;
-        map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-        if (self->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
-        {
-          LOG_ERROR("Command received but response could not be sent.");
-        }
+        self->RemoteStopServer(clientDevice);
         return;
       }
       break;
     }
     case igtlio::Logic::CommandResponseReceivedEvent:
     {
+      if (device == nullptr)
+      {
+        return;
+      }
+
       break;
     }
+  }
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::RemoteStopServer(igtlio::CommandDevicePointer clientDevice)
+{
+  std::string filename;
+  if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
+  {
+    igtl::MessageBase::MetaDataMap map;
+    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Config file not specified.");
+    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Command received but response could not be sent.");
+    }
+    return;
+  }
+
+  this->StopServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))));
+
+  // Forced stop or not, the server is down
+  igtl::MessageBase::MetaDataMap map;
+  map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
+  if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Command received but response could not be sent.");
+  }
+  return;
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::RemoteStartServer(igtlio::CommandDevicePointer clientDevice)
+{
+  std::string filename;
+  if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
+  {
+    igtl::MessageBase::MetaDataMap map;
+    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Config file not specified.");
+    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Command received but response could not be sent.");
+    }
+    return;
+  }
+
+  if (!this->StartServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename)))))
+  {
+    igtl::MessageBase::MetaDataMap map;
+    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
+    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Failed to start server process.");
+    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Command received but response could not be sent.");
+    }
+    return;
+  }
+  else
+  {
+    igtl::MessageBase::MetaDataMap map;
+    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
+    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Command received but response could not be sent.");
+    }
+    return;
   }
 }
 
@@ -703,6 +746,13 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlio::CommandDevicePointer c
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message)
+{
+  this->statusBar()->showMessage(QString::fromStdString(message));
+  LOG_DYNAMIC(message, level);
 }
 
 //----------------------------------------------------------------------------
@@ -810,4 +860,13 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlio::CommandDevicePo
 void PlusServerLauncherMainWindow::OnWritePermissionClicked()
 {
   ui.checkBox_overwritePermission->setEnabled(ui.checkBox_writePermission->isChecked());
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::OnTimerTimeout()
+{
+  if (m_RemoteControlServerConnector != nullptr)
+  {
+    m_RemoteControlServerConnector->PeriodicProcess();
+  }
 }

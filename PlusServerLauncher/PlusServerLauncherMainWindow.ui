@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>PlusServerLauncherMainWindow</class>
  <widget class="QMainWindow" name="PlusServerLauncherMainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>991</width>
-    <height>777</height>
-   </rect>
-  </property>
   <property name="minimumSize">
    <size>
     <width>480</width>
@@ -144,7 +136,17 @@
        <string>Remote Server Settings</string>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="checkBox_overwritePermission">
+         <property name="text">
+          <string>Allow overwrite?</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
         <widget class="QCheckBox" name="checkBox_writePermission">
          <property name="text">
           <string>Allow write?</string>
@@ -154,13 +156,20 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="checkBox_overwritePermission">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_networkDetailsCaption">
          <property name="text">
-          <string>Allow overwrite?</string>
+          <string>Server running on:</string>
          </property>
-         <property name="checked">
-          <bool>true</bool>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_networkDetails">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>

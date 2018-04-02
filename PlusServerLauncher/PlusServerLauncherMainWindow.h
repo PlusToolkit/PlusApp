@@ -21,6 +21,7 @@
 class QComboBox;
 class QPlusDeviceSetSelectorWidget;
 class QProcess;
+class QTimer;
 class QWidget;
 class vtkPlusDataCollector;
 class vtkPlusOpenIGTLinkServer;
@@ -78,6 +79,8 @@ protected slots:
 
   void OnWritePermissionClicked();
 
+  void OnTimerTimeout();
+
 protected:
   /*! Receive standard output or error and send it to the log */
   void SendServerOutputToLogger(const QByteArray& strData);
@@ -100,6 +103,10 @@ protected:
   /*! Incoming command handling functions */
   void AddOrUpdateConfigFile(igtlio::CommandDevicePointer clientDevice);
   void GetConfigFiles(igtlio::CommandDevicePointer clientDevice);
+  void RemoteStartServer(igtlio::CommandDevicePointer clientDevice);
+  void RemoteStopServer(igtlio::CommandDevicePointer clientDevice);
+
+  void LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message);
 
 protected:
   /*! Device set selector widget */
@@ -119,6 +126,8 @@ protected:
   vtkSmartPointer<vtkCallbackCommand>   m_RemoteControlServerCallbackCommand;
   igtlio::LogicPointer                  m_RemoteControlServerLogic;
   igtlio::ConnectorPointer              m_RemoteControlServerConnector;
+
+  QTimer*                               m_RemoteControlServerConnectorProcessTimer;
 
 private:
   Ui::PlusServerLauncherMainWindow ui;
