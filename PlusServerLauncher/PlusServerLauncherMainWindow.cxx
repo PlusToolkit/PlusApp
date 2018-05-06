@@ -160,11 +160,11 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
     }
 
     LOG_INFO("Start remote control server at port: " << m_RemoteControlServerPort);
-    m_RemoteControlServerLogic = igtlio::LogicPointer::New();
-    m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandReceivedEvent, m_RemoteControlServerCallbackCommand);
-    m_RemoteControlServerLogic->AddObserver(igtlio::Logic::CommandResponseReceivedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerLogic = igtlioLogicPointer::New();
+    m_RemoteControlServerLogic->AddObserver(igtlioLogic::CommandReceivedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerLogic->AddObserver(igtlioLogic::CommandResponseReceivedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector = m_RemoteControlServerLogic->CreateConnector();
-    m_RemoteControlServerConnector->AddObserver(igtlio::Connector::ConnectedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerConnector->AddObserver(igtlioConnector::ConnectedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector->SetTypeServer(m_RemoteControlServerPort);
     m_RemoteControlServerConnector->Start();
 
@@ -349,10 +349,10 @@ void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
 //----------------------------------------------------------------------------
 PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData)
 {
-  igtlio::DeviceKeyType key(igtlio::CommandConverter::GetIGTLTypeName(), device_id);
-  igtlio::CommandDevicePointer device = igtlio::CommandDevice::SafeDownCast(m_RemoteControlServerConnector->GetDevice(key));
+  igtlioDeviceKeyType key(igtlioCommandConverter::GetIGTLTypeName(), device_id);
+  igtlioCommandDevicePointer device = igtlioCommandDevice::SafeDownCast(m_RemoteControlServerConnector->GetDevice(key));
 
-  igtlio::CommandConverter::ContentData contentdata = device->GetContent();
+  igtlioCommandConverter::ContentData contentdata = device->GetContent();
 
   if (command != contentdata.name)
   {
@@ -368,7 +368,7 @@ PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_
     device->SetMetaDataElement((*entry).first, (*entry).second.first, (*entry).second.second);
   }
 
-  if (m_RemoteControlServerConnector->SendMessage(CreateDeviceKey(device), igtlio::Device::MESSAGE_PREFIX_RTS) == 1)
+  if (m_RemoteControlServerConnector->SendMessage(igtlioDeviceKeyType::CreateDeviceKey(device), igtlioDevice::MESSAGE_PREFIX_RTS) == 1)
   {
     return PLUS_SUCCESS;
   }
@@ -583,16 +583,16 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 {
   PlusServerLauncherMainWindow* self = reinterpret_cast<PlusServerLauncherMainWindow*>(clientData);
 
-  igtlio::LogicPointer logic = dynamic_cast<igtlio::Logic*>(caller);
+  igtlioLogicPointer logic = dynamic_cast<igtlioLogic*>(caller);
 
   switch (eventId)
   {
-    case igtlio::Connector::ConnectedEvent:
+    case igtlioConnector::ConnectedEvent:
     {
       self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client connected.");
       break;
     }
-    case igtlio::Logic::CommandReceivedEvent:
+    case igtlioLogic::CommandReceivedEvent:
     {
       if (logic == nullptr)
       {
@@ -601,7 +601,7 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
       self->OnCommandReceivedEvent(logic);
       break;
     }
-    case igtlio::Logic::CommandResponseReceivedEvent:
+    case igtlioLogic::CommandResponseReceivedEvent:
     {
       if (logic == nullptr)
       {
@@ -614,7 +614,7 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 }
 
 //---------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlio::LogicPointer logic)
+void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioLogicPointer logic)
 {
   if (!logic)
   {
@@ -623,10 +623,10 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlio::LogicPointer l
 
   for (unsigned int i = 0; i < logic->GetNumberOfDevices(); ++i)
   {
-    igtlio::DevicePointer device = logic->GetDevice(i);
+    igtlioDevicePointer device = logic->GetDevice(i);
     if (STRCASECMP(device->GetDeviceType().c_str(), "COMMAND") == 0)
     {
-      igtlio::CommandDevicePointer commandDevice = igtlio::CommandDevice::SafeDownCast(device);
+      igtlioCommandDevicePointer commandDevice = igtlioCommandDevice::SafeDownCast(device);
       if (commandDevice && commandDevice->MessageDirectionIsIn())
       {
         if (device == nullptr)
@@ -665,7 +665,7 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlio::LogicPointer l
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::RemoteStopServer(igtlio::CommandDevicePointer clientDevice)
+void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandDevicePointer clientDevice)
 {
   std::string filename;
   if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
@@ -693,7 +693,7 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlio::CommandDevicePointer
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::RemoteStartServer(igtlio::CommandDevicePointer clientDevice)
+void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandDevicePointer clientDevice)
 {
   std::string filename;
   if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
@@ -732,7 +732,7 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlio::CommandDevicePointe
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::GetConfigFiles(igtlio::CommandDevicePointer clientDevice)
+void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandDevicePointer clientDevice)
 {
   vtkSmartPointer<vtkDirectory> dir = vtkSmartPointer<vtkDirectory>::New();
   if (dir->Open(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationDirectory().c_str()) == 0)
@@ -776,7 +776,7 @@ void PlusServerLauncherMainWindow::LocalLog(vtkPlusLogger::LogLevelType level, c
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlio::CommandDevicePointer clientDevice)
+void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandDevicePointer clientDevice)
 {
   std::string configFile;
   bool hasFilename = clientDevice->GetMetaDataElement("ConfigFileName", configFile);
