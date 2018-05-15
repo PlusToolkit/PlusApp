@@ -45,6 +45,7 @@ public:
     RemoteControlServerPortUseDefault = 0
   };
   static const int DEFAULT_REMOTE_CONTROL_SERVER_PORT = 18904;
+  static const char* PLUS_SERVER_LAUNCHER_REMOTE_DEVICE_ID;
 
   /*!
     Constructor
@@ -77,6 +78,7 @@ protected slots:
 
   static void OnRemoteControlServerEventReceived(vtkObject* caller, unsigned long eventId, void* clientdata, void* calldata);
   void OnCommandReceivedEvent(igtlioLogicPointer logic);
+  static void OnLogEvent(vtkObject* caller, unsigned long eventId, void* clientData, void* callData);
 
   void OnWritePermissionClicked();
 
@@ -87,7 +89,7 @@ protected:
   void SendServerOutputToLogger(const QByteArray& strData);
 
   /*! Start server process, connect outputs to logger. Returns with true on success. */
-  bool StartServer(const QString& configFilePath);
+  bool StartServer(const QString& configFilePath, int logLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED);
   /*! Start server process from GUI */
   bool LocalStartServer();
 
@@ -97,6 +99,9 @@ protected:
 
   /*! Parse a given log line for salient information from the PlusServer */
   void ParseContent(const std::string& message);
+
+  /*! Send a command */
+  PlusStatus SendCommand(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData = igtl::MessageBase::MetaDataMap());
 
   /*! Send a response to a command */
   PlusStatus SendCommandResponse(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData = igtl::MessageBase::MetaDataMap());
@@ -108,6 +113,11 @@ protected:
   void RemoteStopServer(igtlioCommandDevicePointer clientDevice);
 
   void LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message);
+
+  std::string GetServersFromConfigFile(std::string filename);
+
+  void SendServerStartedCommand(std::string configFilePath);
+  void SendServerStoppedCommand(std::string configFilePath);
 
 protected:
   /*! Device set selector widget */
@@ -127,8 +137,11 @@ protected:
   vtkSmartPointer<vtkCallbackCommand>   m_RemoteControlServerCallbackCommand;
   igtlioLogicPointer                    m_RemoteControlServerLogic;
   igtlioConnectorPointer                m_RemoteControlServerConnector;
+  vtkSmartPointer<vtkCallbackCommand>   m_RemoteControlLogMessageCallbackCommand;
 
   QTimer*                               m_RemoteControlServerConnectorProcessTimer;
+
+  bool                                  m_RemoteControlLogSubscribed;
 
 private:
   Ui::PlusServerLauncherMainWindow ui;
