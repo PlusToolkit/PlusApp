@@ -32,6 +32,7 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceOvrvisionPro
 - \subpage DeviceInfraredSeekCam
 - \subpage DeviceInfraredTEQ1Cam
+- \subpage DeviceIntelRealSenseCamera
 
 \subsection DevicesNetworkImaging Network imaging devices
 - \subpage DeviceOpenCVVideo
