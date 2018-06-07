@@ -11,7 +11,7 @@ Use the \ref ApplicationVolumeReconstructor application.
 
 \section ProcedureVolumeReconstructionSlicer Volume reconstruction in 3D Slicer
 
-Use the <a href="http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/PlusRemote">PlusRemote</a> module in 3D Slicer, avaiable in the SlicerIGT extension.
+Use the <a href="http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/PlusRemote">PlusRemote</a> module in 3D Slicer, avaiable in the SlicerOpenIGTLink extension.
 
 \section ProcedureVolumeReconstructionfCal Volume reconstruction using fCal
 
