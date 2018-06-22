@@ -39,10 +39,8 @@ See License.txt for details.
 #include <fstream>
 
 // OpenIGTLinkIO includes
-#include <igtlioCommandDevice.h>
 #include <igtlioDevice.h>
-
-const char* PlusServerLauncherMainWindow::PLUS_SERVER_LAUNCHER_REMOTE_DEVICE_ID = "PlusRemoteDevice";
+#include <igtlioCommand.h>
 
 namespace
 {
@@ -168,8 +166,8 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
 
     LOG_INFO("Start remote control server at port: " << m_RemoteControlServerPort);
     m_RemoteControlServerLogic = igtlioLogicPointer::New();
-    m_RemoteControlServerLogic->AddObserver(igtlioLogic::CommandReceivedEvent, m_RemoteControlServerCallbackCommand);
-    m_RemoteControlServerLogic->AddObserver(igtlioLogic::CommandResponseReceivedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerLogic->AddObserver(igtlioCommand::CommandReceivedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerLogic->AddObserver(igtlioCommand::CommandResponseEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector = m_RemoteControlServerLogic->CreateConnector();
     m_RemoteControlServerConnector->AddObserver(igtlioConnector::ConnectedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector->SetTypeServer(m_RemoteControlServerPort);
@@ -382,55 +380,23 @@ void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
 }
 
 //----------------------------------------------------------------------------
-PlusStatus PlusServerLauncherMainWindow::SendCommand(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData)
+PlusStatus PlusServerLauncherMainWindow::SendCommand(igtlioCommandPointer command)
 {
-  igtlioDeviceKeyType key(igtlioCommandConverter::GetIGTLTypeName(), device_id);
-  igtlioCommandDevicePointer device = igtlioCommandDevice::SafeDownCast(m_RemoteControlServerConnector->AddDeviceIfNotPresent(key));
-
-  igtlioCommandConverter::ContentData contentdata;
-  contentdata.name = command;
-  contentdata.content = content;
-  device->SetContent(contentdata);
-  for (igtl::MessageBase::MetaDataMap::iterator entry = metaData.begin(); entry != metaData.end(); ++entry)
-  {
-    device->SetMetaDataElement((*entry).first, (*entry).second.first, (*entry).second.second);
-  }
-
-  if (m_RemoteControlServerConnector->SendMessage(igtlioDeviceKeyType::CreateDeviceKey(device)) == 1)
+  if (m_RemoteControlServerConnector->SendCommand(command))
   {
     return PLUS_SUCCESS;
   }
-
   return PLUS_FAIL;
 }
 
 //----------------------------------------------------------------------------
-PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData)
+PlusStatus PlusServerLauncherMainWindow::SendCommandResponse(igtlioCommandPointer command)
 {
-  igtlioDeviceKeyType key(igtlioCommandConverter::GetIGTLTypeName(), device_id);
-  igtlioCommandDevicePointer device = igtlioCommandDevice::SafeDownCast(m_RemoteControlServerConnector->GetDevice(key));
-
-  igtlioCommandConverter::ContentData contentdata = device->GetContent();
-
-  if (command != contentdata.name)
-  {
-    LOG_ERROR("Requested command response " << command << " does not match the existing query: " << contentdata.name);
-    return PLUS_FAIL;
-  }
-
-  contentdata.name = command;
-  contentdata.content = content;
-  device->SetContent(contentdata);
-  for (igtl::MessageBase::MetaDataMap::iterator entry = metaData.begin(); entry != metaData.end(); ++entry)
-  {
-    device->SetMetaDataElement((*entry).first, (*entry).second.first, (*entry).second.second);
-  }
-
-  if (m_RemoteControlServerConnector->SendMessage(igtlioDeviceKeyType::CreateDeviceKey(device), igtlioDevice::MESSAGE_PREFIX_RTS) == 1)
+  if (m_RemoteControlServerConnector->SendCommandResponse(command))
   {
     return PLUS_SUCCESS;
   }
-  LOG_ERROR("Unable to send command response to client: " << device_id << ", " << command);
+  LOG_ERROR("Unable to send command response to client: " << command);
 
   return PLUS_FAIL;
 }
@@ -661,7 +627,7 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 {
   PlusServerLauncherMainWindow* self = reinterpret_cast<PlusServerLauncherMainWindow*>(clientData);
 
-  igtlioLogicPointer logic = dynamic_cast<igtlioLogic*>(caller);
+  igtlioLogicPointer logic = igtlioLogic::SafeDownCast(caller);
 
   switch (eventId)
   {
@@ -670,16 +636,17 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
       self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client connected.");
       break;
     }
-    case igtlioLogic::CommandReceivedEvent:
+    case igtlioCommand::CommandReceivedEvent:
     {
       if (logic == nullptr)
       {
         return;
       }
-      self->OnCommandReceivedEvent(logic);
+      igtlioCommandPointer command = reinterpret_cast<igtlioCommand*>(callData);
+      self->OnCommandReceivedEvent(command);
       break;
     }
-    case igtlioLogic::CommandResponseReceivedEvent:
+    case igtlioCommand::CommandResponseEvent:
     {
       if (logic == nullptr)
       {
@@ -692,76 +659,63 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 }
 
 //---------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioLogicPointer logic)
+void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer command)
 {
-  if (!logic)
+  if (!command)
   {
     LOG_ERROR("Command event could not be read!");
   }
 
-  for (unsigned int i = 0; i < logic->GetNumberOfDevices(); ++i)
+  int id = command->GetCommandId();
+  std::string name = command->GetName();
+
+  this->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
+  
+  if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
   {
-    igtlioDevicePointer device = logic->GetDevice(i);
-    if (STRCASECMP(device->GetDeviceType().c_str(), "COMMAND") == 0)
-    {
-      igtlioCommandDevicePointer commandDevice = igtlioCommandDevice::SafeDownCast(device);
-      if (commandDevice && commandDevice->MessageDirectionIsIn())
-      {
-        if (device == nullptr)
-        {
-          return;
-        }
-        std::string name = commandDevice->GetContent().name;
-        std::string content = commandDevice->GetContent().content;
-        int id = commandDevice->GetContent().id;
-
-        this->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
-
-        if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
-        {
-          this->GetConfigFiles(commandDevice);
-          return;
-        }
-        else if (PlusCommon::IsEqualInsensitive(name, "AddConfigFile"))
-        {
-          this->AddOrUpdateConfigFile(commandDevice);
-          return;
-        }
-        else if (PlusCommon::IsEqualInsensitive(name, "StartServer"))
-        {
-          this->RemoteStartServer(commandDevice);
-          return;
-        }
-        else if (PlusCommon::IsEqualInsensitive(name, "StopServer"))
-        {
-          this->RemoteStopServer(commandDevice);
-          return;
-        }
-        else if (PlusCommon::IsEqualInsensitive(name, "LogSubscribe"))
-        {
-          m_RemoteControlLogSubscribed = true;
-          return;
-        }
-        else if (PlusCommon::IsEqualInsensitive(name, "LogUnsubscribe"))
-        {
-          m_RemoteControlLogSubscribed = false;
-          return;
-        }
-      }
-    }
+    this->GetConfigFiles(command);
+    return;
   }
+  else if (PlusCommon::IsEqualInsensitive(name, "AddConfigFile"))
+  {
+    this->AddOrUpdateConfigFile(command);
+    return;
+  }
+  else if (PlusCommon::IsEqualInsensitive(name, "StartServer"))
+  {
+    this->RemoteStartServer(command);
+    return;
+  }
+  else if (PlusCommon::IsEqualInsensitive(name, "StopServer"))
+  {
+    this->RemoteStopServer(command);
+    return;
+  }
+  else if (PlusCommon::IsEqualInsensitive(name, "LogSubscribe"))
+  {
+    m_RemoteControlLogSubscribed = true;
+    return;
+  }
+  else if (PlusCommon::IsEqualInsensitive(name, "LogUnsubscribe"))
+  {
+    m_RemoteControlLogSubscribed = false;
+    return;
+  }
+  
+  
+  
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandDevicePointer clientDevice)
+void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandPointer command)
 {
+  IANA_ENCODING_TYPE encodingType = IANA_TYPE_US_ASCII;
   std::string filename;
-  if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
+  if (!command->GetCommandMetaDataElement("ConfigFileName", filename, encodingType))
   {
-    igtl::MessageBase::MetaDataMap map;
-    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Config file not specified.");
-    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    command->SetSuccessful(false);
+    command->SetErrorMessage("Config file not specified.");
+    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -781,10 +735,9 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandDevicePointer c
   vtkXMLUtilities::FlattenElement(commandElement, commandSS);
 
   // Forced stop or not, the server is down
-  igtl::MessageBase::MetaDataMap map;
-  map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-  map["ConfigFileName"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, filename);
-  if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, commandSS.str(), map) != PLUS_SUCCESS)
+  command->SetSuccessful(true);
+  command->SetResponseMetaDataElement("ConfigFileName", filename);
+  if (this->SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
@@ -792,15 +745,16 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandDevicePointer c
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandDevicePointer clientDevice)
+void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandPointer command)
 {
+  IANA_ENCODING_TYPE encodingType = IANA_TYPE_US_ASCII;
   std::string filename;
-  if (!clientDevice->GetMetaDataElement("ConfigFileName", filename))
+  if (!command->GetCommandMetaDataElement("ConfigFileName", filename, encodingType))
   {
     igtl::MessageBase::MetaDataMap map;
-    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Config file not specified.");
-    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    command->SetSuccessful(false);
+    command->SetErrorMessage("Config file not specified.");
+    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -811,7 +765,7 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandDevicePointer 
   // Should probably solve by separating servers according to their origin and handle each separately
   int logLevel = -1;
   std::string logLevelString = "";
-  clientDevice->GetMetaDataElement("LogLevel", logLevelString);
+  command->GetCommandMetaDataElement("LogLevel", logLevelString, encodingType);
   if (PlusCommon::StringToInt<int>(logLevelString.c_str(), logLevel) == PLUS_FAIL)
   {
     logLevel = vtkPlusLogger::LOG_LEVEL_INFO;
@@ -819,10 +773,9 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandDevicePointer 
 
   if (!this->StartServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))), logLevel))
   {
-    igtl::MessageBase::MetaDataMap map;
-    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Failed to start server process.");
-    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    command->SetSuccessful(false);
+    command->SetErrorMessage("Failed to start server process.");
+    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -841,11 +794,10 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandDevicePointer 
     responseXML->AddNestedElement(resultXML);
     vtkXMLUtilities::FlattenElement(responseXML, responseSS);
 
-    igtl::MessageBase::MetaDataMap map;
-    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-    map["ConfigFileName"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, filename);
-    map["Servers"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, servers);
-    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, responseSS.str(), map) != PLUS_SUCCESS)
+    command->SetSuccessful(true);
+    command->SetResponseMetaDataElement("ConfigFileName", filename);
+    command->SetResponseMetaDataElement("Servers", servers);
+    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -854,15 +806,14 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandDevicePointer 
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandDevicePointer clientDevice)
+void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandPointer command)
 {
   vtkSmartPointer<vtkDirectory> dir = vtkSmartPointer<vtkDirectory>::New();
   if (dir->Open(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationDirectory().c_str()) == 0)
   {
-    igtl::MessageBase::MetaDataMap map;
-    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Unable to open device set directory.");
-    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    command->SetSuccessful(false);
+    command->SetErrorMessage("Unable to open device set directory.");
+    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -880,11 +831,10 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandDevicePointer cli
     }
   }
 
-  igtl::MessageBase::MetaDataMap map;
-  map["ConfigFiles"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ss.str());
-  map["Separator"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, ";");
-  map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-  if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+  command->SetSuccessful(true);
+  command->SetResponseMetaDataElement("ConfigFiles", ss.str());
+  command->SetResponseMetaDataElement("Separator", ";");
+  if (this->SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
@@ -898,22 +848,22 @@ void PlusServerLauncherMainWindow::LocalLog(vtkPlusLogger::LogLevelType level, c
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandDevicePointer clientDevice)
+void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandPointer command)
 {
+  IANA_ENCODING_TYPE encodingType = IANA_TYPE_US_ASCII;
   std::string configFile;
-  bool hasFilename = clientDevice->GetMetaDataElement("ConfigFileName", configFile);
+  bool hasFilename = command->GetCommandMetaDataElement("ConfigFileName", configFile, encodingType);
   std::string configFileContent;
-  bool hasFileContent = clientDevice->GetMetaDataElement("ConfigFileContent", configFileContent);
+  bool hasFileContent = command->GetCommandMetaDataElement("ConfigFileContent", configFileContent, encodingType);
 
   // Check write permissions
   if (!ui.checkBox_writePermission->isChecked())
   {
     LOG_INFO("Request from client to add config file, but write permissions not enabled. File: " << (hasFilename ? configFile : "unknown"));
 
-    igtl::MessageBase::MetaDataMap map;
-    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Write permission denied.");
-    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    command->SetSuccessful(false);
+    command->SetErrorMessage("Write permission denied.");
+    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -923,10 +873,9 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandDevicePoin
 
   if (!hasFilename || !hasFileContent)
   {
-    igtl::MessageBase::MetaDataMap map;
-    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Required metadata \'ConfigFileName\' and/or \'ConfigFileContent\' missing.");
-    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    command->SetSuccessful(false);
+    command->SetErrorMessage("Required metadata \'ConfigFileName\' and/or \'ConfigFileContent\' missing.");
+    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -968,10 +917,9 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandDevicePoin
                                      vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
     }
 
-    igtl::MessageBase::MetaDataMap map;
-    map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "FAIL");
-    map["ErrorMessage"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "Unable to write to device set configuration directory.");
-    if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+    command->SetSuccessful(false);
+    command->SetErrorMessage("Unable to write to device set configuration directory.");
+    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
       if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
@@ -985,10 +933,9 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandDevicePoin
   file << configFileContent;
   file.close();
 
-  igtl::MessageBase::MetaDataMap map;
-  map["Status"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, "SUCCESS");
-  map["ConfigFileName"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, configFile);
-  if (this->SendCommandResponse(clientDevice->GetDeviceName(), clientDevice->GetContent().name, "", map) != PLUS_SUCCESS)
+  command->SetSuccessful(true);
+  command->SetResponseMetaDataElement("ConfigFileName", configFile);
+  if (this->SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
@@ -1039,17 +986,20 @@ void PlusServerLauncherMainWindow::SendServerStartedCommand(std::string configFi
   }
   commandElement->AddNestedElement(startServerElement);
 
-  igtl::MessageBase::MetaDataMap map;
-  map["LogLevel"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, startServerElement->GetAttribute("LogLevel"));
-  map["ConfigFileName"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, startServerElement->GetAttribute("ConfigFileName"));
-  if (startServerElement->GetAttribute("Servers"))
-  {
-    map["Servers"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, startServerElement->GetAttribute("Servers"));
-  }
-
   std::stringstream commandStream;
   vtkXMLUtilities::FlattenElement(commandElement, commandStream);
-  this->SendCommand(PlusServerLauncherMainWindow::PLUS_SERVER_LAUNCHER_REMOTE_DEVICE_ID, "ServerStarted", commandStream.str(), map);
+
+  igtlioCommandPointer serverStartedCommand = igtlioCommandPointer::New();
+  serverStartedCommand->SetName("ServerStarted");
+  serverStartedCommand->SetCommandContent(commandStream.str());
+  serverStartedCommand->SetCommandMetaDataElement("LogLevel", startServerElement->GetAttribute("LogLevel"));
+  serverStartedCommand->SetCommandMetaDataElement("ConfigFileName", startServerElement->GetAttribute("ConfigFileName"));
+  if (startServerElement->GetAttribute("Servers"))
+  {
+    serverStartedCommand->SetCommandMetaDataElement("Servers", startServerElement->GetAttribute("Servers"));
+  }
+
+  this->SendCommand(serverStartedCommand);
 
 }
 
@@ -1065,12 +1015,15 @@ void PlusServerLauncherMainWindow::SendServerStoppedCommand(std::string configFi
   serverStoppedElement->SetAttribute("ConfigFileName", configFilePath.c_str());
   commandElement->AddNestedElement(serverStoppedElement);
 
-  igtl::MessageBase::MetaDataMap map;
-  map["ConfigFileName"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, configFilePath);
-
   std::stringstream commandStream;
   vtkXMLUtilities::FlattenElement(commandElement, commandStream);
-  this->SendCommand(PlusServerLauncherMainWindow::PLUS_SERVER_LAUNCHER_REMOTE_DEVICE_ID, "ServerStopped", commandStream.str(), map);
+
+  igtlioCommandPointer serverStoppedCommand = igtlioCommandPointer::New();
+  serverStoppedCommand->SetName("ServerStopped");
+  serverStoppedCommand->SetCommandContent(commandStream.str());
+  serverStoppedCommand->SetCommandMetaDataElement("ConfigFileName", configFilePath);
+
+  this->SendCommand(serverStoppedCommand);
 }
 
 //---------------------------------------------------------------------------
@@ -1143,11 +1096,14 @@ void PlusServerLauncherMainWindow::OnLogEvent(vtkObject* caller, unsigned long e
   std::stringstream messageCommand;
   vtkXMLUtilities::FlattenElement(commandElement, messageCommand);
 
-  igtl::MessageBase::MetaDataMap map;
-  map["Message"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, logMessageString);
-  map["LogLevel"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, logLevel);
-  map["Origin"] = std::pair<IANA_ENCODING_TYPE, std::string>(IANA_TYPE_US_ASCII, messageOrigin);
-  self->SendCommand(PLUS_SERVER_LAUNCHER_REMOTE_DEVICE_ID, "LogMessage", messageCommand.str(), map);
+  igtlioCommandPointer logMessageCommand = igtlioCommandPointer::New();
+  logMessageCommand->SetName("LogMessage");
+  logMessageCommand->SetCommandContent(messageCommand.str());
+  logMessageCommand->SetCommandMetaDataElement("Message", logMessageString);
+  logMessageCommand->SetCommandMetaDataElement("LogLevel", logLevel);
+  logMessageCommand->SetCommandMetaDataElement("Origin", messageOrigin);
+
+  self->SendCommand(logMessageCommand);
 }
 
 //---------------------------------------------------------------------------

@@ -14,7 +14,7 @@
 #include <QProcess>
 
 // OpenIGTLinkIO includes
-#include <igtlioCommandDevice.h>
+#include <igtlioCommand.h>
 #include <igtlioConnector.h>
 #include <igtlioLogic.h>
 
@@ -77,7 +77,7 @@ protected slots:
   void LogLevelChanged();
 
   static void OnRemoteControlServerEventReceived(vtkObject* caller, unsigned long eventId, void* clientdata, void* calldata);
-  void OnCommandReceivedEvent(igtlioLogicPointer logic);
+  void OnCommandReceivedEvent(igtlioCommandPointer command);
   static void OnLogEvent(vtkObject* caller, unsigned long eventId, void* clientData, void* callData);
 
   void OnWritePermissionClicked();
@@ -101,16 +101,16 @@ protected:
   void ParseContent(const std::string& message);
 
   /*! Send a command */
-  PlusStatus SendCommand(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData = igtl::MessageBase::MetaDataMap());
+  PlusStatus SendCommand(igtlioCommandPointer command);
 
   /*! Send a response to a command */
-  PlusStatus SendCommandResponse(std::string device_id, std::string command, std::string content, igtl::MessageBase::MetaDataMap metaData = igtl::MessageBase::MetaDataMap());
+  PlusStatus SendCommandResponse(igtlioCommandPointer command);
 
   /*! Incoming command handling functions */
-  void AddOrUpdateConfigFile(igtlioCommandDevicePointer clientDevice);
-  void GetConfigFiles(igtlioCommandDevicePointer clientDevice);
-  void RemoteStartServer(igtlioCommandDevicePointer clientDevice);
-  void RemoteStopServer(igtlioCommandDevicePointer clientDevice);
+  void AddOrUpdateConfigFile(igtlioCommandPointer clientDevice);
+  void GetConfigFiles(igtlioCommandPointer clientDevice);
+  void RemoteStartServer(igtlioCommandPointer clientDevice);
+  void RemoteStopServer(igtlioCommandPointer clientDevice);
 
   void LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message);
 
