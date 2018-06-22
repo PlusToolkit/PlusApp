@@ -990,6 +990,7 @@ void PlusServerLauncherMainWindow::SendServerStartedCommand(std::string configFi
   vtkXMLUtilities::FlattenElement(commandElement, commandStream);
 
   igtlioCommandPointer serverStartedCommand = igtlioCommandPointer::New();
+  serverStartedCommand->BlockingOff();
   serverStartedCommand->SetName("ServerStarted");
   serverStartedCommand->SetCommandContent(commandStream.str());
   serverStartedCommand->SetCommandMetaDataElement("LogLevel", startServerElement->GetAttribute("LogLevel"));
@@ -1019,6 +1020,7 @@ void PlusServerLauncherMainWindow::SendServerStoppedCommand(std::string configFi
   vtkXMLUtilities::FlattenElement(commandElement, commandStream);
 
   igtlioCommandPointer serverStoppedCommand = igtlioCommandPointer::New();
+  serverStoppedCommand->BlockingOff();
   serverStoppedCommand->SetName("ServerStopped");
   serverStoppedCommand->SetCommandContent(commandStream.str());
   serverStoppedCommand->SetCommandMetaDataElement("ConfigFileName", configFilePath);
@@ -1097,6 +1099,7 @@ void PlusServerLauncherMainWindow::OnLogEvent(vtkObject* caller, unsigned long e
   vtkXMLUtilities::FlattenElement(commandElement, messageCommand);
 
   igtlioCommandPointer logMessageCommand = igtlioCommandPointer::New();
+  logMessageCommand->BlockingOff();
   logMessageCommand->SetName("LogMessage");
   logMessageCommand->SetCommandContent(messageCommand.str());
   logMessageCommand->SetCommandMetaDataElement("Message", logMessageString);
