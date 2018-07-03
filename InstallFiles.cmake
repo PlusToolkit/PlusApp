@@ -52,7 +52,7 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
 
   IF(PLUS_USE_ATRACSYS)
     LIST(APPEND PLUSLIB_CONFIG_FILES
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_AtracsysSpryTrack180.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Atracsys.xml
       )
     SET(ATRACSYS_MARKERS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/stylus.ini
