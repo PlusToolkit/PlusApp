@@ -27,6 +27,7 @@ This section contains the list of all supported hardware and software devices. C
 \subsection DevicesFramegrabber Framegrabbers and cameras
 - \subpage DeviceEpiphan
 - \subpage DeviceICCapturing
+- \subpage DeviceIntelRealSense
 - \subpage DeviceMicrosoftMediaFoundation
 - \subpage DeviceVideoForWindows
 - \subpage DeviceOvrvisionPro
@@ -45,7 +46,7 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceNDI
 - \subpage DeviceNDICertus
 - \subpage DeviceStealthLink
-- \subpage DeviceIntelRealSense
+
 
 \subsection DevicesImu Inertial measurement units
 - \subpage DevicePhidgetSpatial
