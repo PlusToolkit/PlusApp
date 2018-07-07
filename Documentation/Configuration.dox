@@ -38,6 +38,7 @@ This section contains the list of all supported hardware and software devices. C
 
 \subsection DevicesGenericTracker Generic pose tracking devices
 - \subpage DeviceAscension3DG
+- \subpage DeviceAtracsys
 - \subpage DeviceMicron
 - \subpage DeviceOpticalMarkerTracker
 - \subpage DeviceOptiTrack
