@@ -77,6 +77,7 @@ protected slots:
   void LogLevelChanged();
 
   static void OnRemoteControlServerEventReceived(vtkObject* caller, unsigned long eventId, void* clientdata, void* calldata);
+  void OnClientDisconnectedEvent();
   void OnCommandReceivedEvent(igtlioCommandPointer command);
   static void OnLogEvent(vtkObject* caller, unsigned long eventId, void* clientData, void* callData);
 
@@ -141,7 +142,7 @@ protected:
 
   QTimer*                               m_RemoteControlServerConnectorProcessTimer;
 
-  bool                                  m_RemoteControlLogSubscribed;
+  std::set<int>                         m_RemoteControlLogSubscribedClients;
 
 private:
   Ui::PlusServerLauncherMainWindow ui;
