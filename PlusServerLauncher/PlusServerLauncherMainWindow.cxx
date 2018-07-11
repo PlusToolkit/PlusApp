@@ -61,7 +61,6 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   , m_DeviceSetSelectorWidget(NULL)
   , m_RemoteControlServerPort(remoteControlServerPort)
   , m_RemoteControlServerConnectorProcessTimer(new QTimer())
-  , m_RemoteControlLogSubscribed(false)
 {
   m_RemoteControlServerCallbackCommand = vtkSmartPointer<vtkCallbackCommand>::New();
   m_RemoteControlServerCallbackCommand->SetCallback(PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived);
@@ -170,6 +169,8 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
     m_RemoteControlServerLogic->AddObserver(igtlioCommand::CommandResponseEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector = m_RemoteControlServerLogic->CreateConnector();
     m_RemoteControlServerConnector->AddObserver(igtlioConnector::ConnectedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerConnector->AddObserver(igtlioConnector::ClientConnectedEvent, m_RemoteControlServerCallbackCommand);
+    m_RemoteControlServerConnector->AddObserver(igtlioConnector::ClientDisconnectedEvent, m_RemoteControlServerCallbackCommand);
     m_RemoteControlServerConnector->SetTypeServer(m_RemoteControlServerPort);
     m_RemoteControlServerConnector->Start();
 
@@ -631,9 +632,15 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 
   switch (eventId)
   {
-    case igtlioConnector::ConnectedEvent:
+    case igtlioConnector::ClientConnectedEvent:
     {
       self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client connected.");
+      break;
+    }
+    case igtlioConnector::ClientDisconnectedEvent:
+    {
+      self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client disconnected.");
+      self->OnClientDisconnectedEvent();
       break;
     }
     case igtlioCommand::CommandReceivedEvent:
@@ -659,6 +666,35 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 }
 
 //---------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::OnClientDisconnectedEvent()
+{
+  std::queue<int> unsubscribedClients;
+
+  std::vector<int> connectedClientIds = m_RemoteControlServerConnector->GetClientIds();
+  for (std::set<int>::iterator subscribedClientIt = m_RemoteControlLogSubscribedClients.begin(); subscribedClientIt != m_RemoteControlLogSubscribedClients.end(); ++subscribedClientIt)
+  {
+    int clientId = *subscribedClientIt;
+    std::vector<int>::iterator connectedClientIt = (std::find_if(
+      connectedClientIds.begin(),
+      connectedClientIds.end(),
+      [this, clientId](const int& entry)
+    { return entry == clientId; }));
+
+    // Subscribed client is not connected. Remove from list of clients subscribed to log messages
+    if (connectedClientIt == connectedClientIds.end())
+    {
+      unsubscribedClients.push(clientId);
+    }
+  }
+
+  while (!unsubscribedClients.empty())
+  {
+    m_RemoteControlLogSubscribedClients.erase(unsubscribedClients.front());
+    unsubscribedClients.pop();
+  }
+}
+
+//---------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer command)
 {
   if (!command)
@@ -670,7 +706,7 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer c
   std::string name = command->GetName();
 
   this->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
-  
+
   if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
   {
     this->GetConfigFiles(command);
@@ -693,17 +729,14 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer c
   }
   else if (PlusCommon::IsEqualInsensitive(name, "LogSubscribe"))
   {
-    m_RemoteControlLogSubscribed = true;
+    m_RemoteControlLogSubscribedClients.insert(command->GetClientId());
     return;
   }
   else if (PlusCommon::IsEqualInsensitive(name, "LogUnsubscribe"))
   {
-    m_RemoteControlLogSubscribed = false;
+    m_RemoteControlLogSubscribedClients.erase(command->GetClientId());
     return;
   }
-  
-  
-  
 }
 
 //----------------------------------------------------------------------------
@@ -1040,10 +1073,13 @@ void PlusServerLauncherMainWindow::OnLogEvent(vtkObject* caller, unsigned long e
   }
 
   // Return if the client has not subscribed to log messages
-  if (!self->m_RemoteControlLogSubscribed)
+  if (self->m_RemoteControlLogSubscribedClients.empty())
   {
     return;
   }
+
+  // We don't want to end up in an infinite loop of logging if something goes wrong, so remove the log observer
+  vtkPlusLogger::Instance()->RemoveObserver(self->m_RemoteControlLogMessageCallbackCommand);
 
   QString logMessage = QString();
   if (event == vtkPlusLogger::MessageLogged)
@@ -1057,56 +1093,60 @@ void PlusServerLauncherMainWindow::OnLogEvent(vtkObject* caller, unsigned long e
     logMessage = logMessage.fromWCharArray(logMessageWChar);
   }
 
-  if (logMessage.isEmpty())
+  if (!logMessage.isEmpty())
   {
-    return;
+
+    QStringList tokens = logMessage.split('|', QString::SkipEmptyParts);
+    if (tokens.size() > 0)
+    {
+      std::string logLevel = tokens[0].toStdString();
+      std::string messageOrigin;
+      if (tokens.size() > 2 && logMessage.toStdString().find("SERVER>") != std::string::npos)
+      {
+        messageOrigin = "SERVER";
+      }
+      else
+      {
+        messageOrigin = "LAUNCHER";
+      }
+
+      std::stringstream message;
+      for (int i = 1; i < tokens.size(); ++i)
+      {
+        message << "|" << tokens[i].toStdString();
+      }
+      std::string logMessageString = message.str();
+
+      vtkSmartPointer<vtkXMLDataElement> commandElement = vtkSmartPointer<vtkXMLDataElement>::New();
+      commandElement->SetName("Command");
+      vtkSmartPointer<vtkXMLDataElement> messageElement = vtkSmartPointer<vtkXMLDataElement>::New();
+      messageElement->SetName("LogMessage");
+      messageElement->SetAttribute("Message", logMessageString.c_str());
+      messageElement->SetAttribute("LogLevel", logLevel.c_str());
+      messageElement->SetAttribute("Origin", messageOrigin.c_str());
+      commandElement->AddNestedElement(messageElement);
+
+      std::stringstream messageCommand;
+      vtkXMLUtilities::FlattenElement(commandElement, messageCommand);
+
+      for (std::set<int>::iterator subscribedClientsIt = self->m_RemoteControlLogSubscribedClients.begin(); subscribedClientsIt != self->m_RemoteControlLogSubscribedClients.end(); ++subscribedClientsIt)
+      {
+        igtlioCommandPointer logMessageCommand = igtlioCommandPointer::New();
+        logMessageCommand->SetClientId(*subscribedClientsIt);
+        logMessageCommand->BlockingOff();
+        logMessageCommand->SetName("LogMessage");
+        logMessageCommand->SetCommandContent(messageCommand.str());
+        logMessageCommand->SetCommandMetaDataElement("Message", logMessageString);
+        logMessageCommand->SetCommandMetaDataElement("LogLevel", logLevel);
+        logMessageCommand->SetCommandMetaDataElement("Origin", messageOrigin);
+        self->SendCommand(logMessageCommand);
+      }
+    }
   }
 
-  QStringList tokens = logMessage.split('|', QString::SkipEmptyParts);
-  if (tokens.size() == 0)
-  {
-    return;
-  }
-
-  std::string logLevel = tokens[0].toStdString();
-  std::string messageOrigin;
-  if (tokens.size() > 2 && logMessage.toStdString().find("SERVER>") != std::string::npos)
-  {
-    messageOrigin = "SERVER";
-  }
-  else
-  {
-    messageOrigin = "LAUNCHER";
-  }
-
-  std::stringstream message;
-  for (int i = 1; i < tokens.size(); ++i)
-  {
-    message << "|" << tokens[i].toStdString();
-  }
-  std::string logMessageString = message.str();
-
-  vtkSmartPointer<vtkXMLDataElement> commandElement = vtkSmartPointer<vtkXMLDataElement>::New();
-  commandElement->SetName("Command");
-  vtkSmartPointer<vtkXMLDataElement> messageElement = vtkSmartPointer<vtkXMLDataElement>::New();
-  messageElement->SetName("LogMessage");
-  messageElement->SetAttribute("Message", logMessageString.c_str());
-  messageElement->SetAttribute("LogLevel", logLevel.c_str());
-  messageElement->SetAttribute("Origin", messageOrigin.c_str());
-  commandElement->AddNestedElement(messageElement);
-
-  std::stringstream messageCommand;
-  vtkXMLUtilities::FlattenElement(commandElement, messageCommand);
-
-  igtlioCommandPointer logMessageCommand = igtlioCommandPointer::New();
-  logMessageCommand->BlockingOff();
-  logMessageCommand->SetName("LogMessage");
-  logMessageCommand->SetCommandContent(messageCommand.str());
-  logMessageCommand->SetCommandMetaDataElement("Message", logMessageString);
-  logMessageCommand->SetCommandMetaDataElement("LogLevel", logLevel);
-  logMessageCommand->SetCommandMetaDataElement("Origin", messageOrigin);
-
-  self->SendCommand(logMessageCommand);
+  // Re-apply the log observers
+  vtkPlusLogger::Instance()->AddObserver(vtkPlusLogger::MessageLogged, self->m_RemoteControlLogMessageCallbackCommand);
+  vtkPlusLogger::Instance()->AddObserver(vtkPlusLogger::WideMessageLogged, self->m_RemoteControlLogMessageCallbackCommand);
 }
 
 //---------------------------------------------------------------------------
