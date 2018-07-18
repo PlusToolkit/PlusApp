@@ -134,7 +134,7 @@ protected:
   std::string                           m_LocalConfigFile;
 
   /*! OpenIGTLink server that allows remote control of launcher (start/stop a PlusServer process, etc) */
-  int m_RemoteControlServerPort;
+  int                                   m_RemoteControlServerPort;
   vtkSmartPointer<vtkCallbackCommand>   m_RemoteControlServerCallbackCommand;
   igtlioLogicPointer                    m_RemoteControlServerLogic;
   igtlioConnectorPointer                m_RemoteControlServerConnector;

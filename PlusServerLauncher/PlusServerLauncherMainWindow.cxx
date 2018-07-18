@@ -207,6 +207,13 @@ PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
     }
   }
 
+  // Close all currently running servers
+  std::map<std::string, QProcess*> runningServers = m_ServerInstances;
+  for (std::map<std::string, QProcess*>::iterator serverIt = runningServers.begin(); serverIt != runningServers.end(); ++serverIt)
+  {
+    StopServer(QString::fromStdString(serverIt->first));
+  }
+
   if (m_DeviceSetSelectorWidget != NULL)
   {
     delete m_DeviceSetSelectorWidget;
