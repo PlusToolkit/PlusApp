@@ -11,11 +11,9 @@ configuration file, etc. Requests are received through OpenIGTLink commands. See
 
 \section ApplicationPlusServerUsage Usage
 
-The most convenient way to launch PlusServer is to install Plus Applications package and run
-the Plus Server from the start menu. Then select a configuration file (e.g.,
-"PlusServer: Replay fCal phantom scan ...") and click Connect.
-
-\image html ApplicationPlusServerLauncher.png
+The most convenient way to launch PlusServer is using PlusServerLauncher.
+After installing the Plus Applications package, the Plus Server Launcher can be found from the start menu.
+See more details at \subpage ApplicationPlusServerLauncher .
 
 \subsection ApplicationPlusServerUsageVisualization Visualization of acquired data
 
@@ -29,14 +27,6 @@ To visualize the images and transforms broadcasted by the PlusServer use an appl
 \subsection ApplicationPlusServerUsageCommandLine Command-line usage
 
 PlusServer can be also started from the command-line. The list of available command-line parameters are printed if the --help parameter is specified.
-
-Launch the server with the last used device set and connect:
-
-    PlusServerLauncher --connect
-
-Launch the server with a specified device set and connect:
-
-    PlusServerLauncher --connect --config-file=PlusDeviceSet_Server_Sim_NwirePhantom.xml
 
 Launch the command-line-only version of PlusServer (no graphical user interface):
 
@@ -56,7 +46,7 @@ Launch the command-line-only version of PlusServer (no graphical user interface)
   --verbose=opt                       Verbose level (1=error only, 2=warning,
                                       3=info, 4=debug)
 ~~~
- 
+
 \section ApplicationPlusServerConfigSettings Configuration settings
 
 - \xmlElem \b PlusOpenIGTLinkServer
@@ -98,21 +88,21 @@ Launch the command-line-only version of PlusServer (no graphical user interface)
 
 This is an example element that needs to be added to the PLUS configuration xml file to use PlusServer:
 
-    <PlusOpenIGTLinkServer 
-      MaxNumberOfIgtlMessagesToSend="10" 
-      MaxTimeSpentWithProcessingMs="50" 
-      ListeningPort="18944" 
+    <PlusOpenIGTLinkServer
+      MaxNumberOfIgtlMessagesToSend="10"
+      MaxTimeSpentWithProcessingMs="50"
+      ListeningPort="18944"
       MissingInputGracePeriodSec="5.0"
-      SendValidTransformsOnly="TRUE" 
-      OutputChannelId="SomeValidChannel" > 
-      <DefaultClientInfo> 
-        <MessageTypes> 
+      SendValidTransformsOnly="TRUE"
+      OutputChannelId="SomeValidChannel" >
+      <DefaultClientInfo>
+        <MessageTypes>
           <Message Type="IMAGE" />
           <Message Type="TRANSFORM" />
         </MessageTypes>
         <TransformNames>
-          <Transform Name="StylusTipToReference" /> 
-          <Transform Name="ProbeToReference" /> 
+          <Transform Name="StylusTipToReference" />
+          <Transform Name="ProbeToReference" />
         </TransformNames>
       </DefaultClientInfo>
     </PlusOpenIGTLinkServer>

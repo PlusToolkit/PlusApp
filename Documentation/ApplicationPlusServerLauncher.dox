@@ -1,0 +1,265 @@
+/*!
+\page ApplicationPlusServerLauncher PlusServerLauncher application
+
+The PlusServerLauncher provides graphical and network interfaces for controlling PlusServer instances.
+
+To start a PlusServer instance using PlusServerLauncher, select a configuration file (e.g.,
+"PlusServer: Replay fCal phantom scan ...") and click "Launch server".
+
+\image html ApplicationPlusServerLauncher.png
+
+\subsection ApplicationPlusServerLauncherUsageCommandLine Command-line usage
+
+PlusServerLauncher can be also started from the command-line. The list of available command-line parameters are printed if the --help parameter is specified.
+
+Launch PlusServerLauncher and start a PlusServer instance with the last used device set and connect:
+
+    PlusServerLauncher --connect
+
+Launch PlusServerLauncher and start PlusServer with a specified device set and connect:
+
+    PlusServerLauncher --connect --config-file=PlusDeviceSet_Server_Sim_NwirePhantom.xml
+
+~~~
+
+      --config-file=opt                   Configuration file name
+
+      --connect                           Automatically connect after the
+                                          application is started
+
+      --device-set-configuration-dir=opt  Device set configuration directory path
+
+      --help                              Print this help.
+
+      --port=opt                          OpenIGTLink port number where the
+                                          launcher will listen for remote control
+                                          requests. If set to -1 then no remote
+                                          control server will be launched. Default
+                                          = 18904.
+
+      --verbose=opt                       Verbose level (1=error only, 2=warning,
+                                          3=info, 4=debug)
+~~~
+
+\section PlusServerLauncherRemote PlusServerLauncher remote control
+
+The PlusServerLauncher application can be controlled remotely using OpenIGTLink.
+By default, PlusServerLauncher listens for incoming remote control connections on port 18904.
+
+This can be changed by launching PlusServerLauncher with the port argument:
+
+    PlusServerLauncher --port=12345
+
+Using the remote connection, several commands can be sent to PLus:
+- Start PlusServer instance
+- Stop PlusServer instance
+- Add config file
+- Subscribe/Unsubscribe to log messages
+
+In addition, the PLus will communicate several status messages to subscribed clients:
+- PlusServer instance started
+- PlusServer instance stopped
+- Log messages
+
+______
+
+\subsection PlusServerLauncherRemoteAcceptedCommands Accepted commands
+
+\subsubsection PlusServerLauncherRemoteCommandsGetConfigFiles GetConfigFiles
+
+Returns a list of semi-colon separated config file names.
+
+Command
+~~~
+Content:
+  <Command/>
+Metadata
+  None
+~~~
+Response
+~~~
+Content:
+  <Command/>
+MetaData:
+  ConfigFiles="ConfigFile1.xml;ConfigFile2.xml"
+  Separator=";"
+~~~
+
+\subsubsection PlusServerLauncherRemoteCommandsAddConfigFile AddConfigFile
+
+Adds a new config file or updates an existing one of the same name
+
+Command
+~~~
+Content:
+  <Command/>
+MetaData:
+  ConfigFileName="Name.xml"
+  ConfigFileContent="Contents of config file"
+~~~
+Response
+~~~
+Content:
+  <Command/>
+MetaData:
+  ConfigFileName="ActualName.xml"
+~~~
+
+\subsubsection PlusServerLauncherRemoteCommandsStartServer StartServer
+
+Starts a server with the specified filename.
+
+Command
+~~~
+Content:
+  <Command/>
+MetaData:
+  ConfigFileName="Filename.xml"
+  LogLevel="3"
+~~~
+Response
+~~~
+Content:
+  <Command>
+    <Result ConfigFileName="Filename.xml" Server="OutputChannelId:port;OutputChannelId2:port2"/>
+  </Command>
+MetaData:
+  ConfigFileName="ActualName.xml"
+~~~
+
+\subsubsection PlusServerLauncherRemoteCommandsStopServer StopServer
+
+Stops a running server that is using a config file with the specified filename.
+
+Command
+~~~
+Content:
+  <Command/>
+MetaData:
+  ConfigFileName="Filename.xml"
+~~~
+Response
+~~~
+Content:
+  <Command>
+    <Result ConfigFileName="Filename.xml"/>
+  </Command>
+MetaData:
+  ConfigFileName="Filename.xml"
+~~~
+
+\subsubsection PlusServerLauncherRemoteCommandsLogSubscribe LogSubscribe
+
+Subscribes a client to receive server log messages
+
+Command
+~~~
+Content:
+  <Command/>
+MetaData:
+  None
+~~~
+Response
+~~~
+Content:
+  <Command/>
+MetaData:
+  None
+~~~
+
+\subsubsection PlusServerLauncherRemoteCommandsLogUnsubscribe LogUnsubscribe
+
+Unsubscribes a client from receiving server log messages
+
+Command
+~~~
+Content:
+  <Command/>
+MetaData:
+  None
+~~~
+Response
+~~~
+Content:
+  <Command/>
+MetaData:
+  None
+~~~
+
+______
+
+\subsection PlusServerLauncherRemoteSentCommands Sent commands
+
+\subsubsection PlusServerLauncherRemoteCommandsLogMessage LogMessage
+
+Sent to connected clients whenever a message is logged by Plus.
+
+Command
+~~~
+Content:
+  <Command
+    <LogMessage Message="Log message contents" LogLevel="3" Origin="SERVER" />
+  </Command>
+MetaData:
+  Message="Log message contents"
+  LogLevel="0"
+  Origin="SERVER"
+~~~
+No response expected
+
+\subsubsection PlusServerLauncherRemoteCommandsServerStarted ServerStarted
+
+Sent to connected clients whenever a server is started.
+
+Command
+~~~
+Content:
+  <Command
+    <ServerStarted ConfigFileName="Filename.xml" LogLevel="3" Servers="OutputChannelId:port;OutputChannelId2:port2" />
+  </Command>
+MetaData:
+  ConfigFileName="Filename.xml"
+  LogLevel="3"
+  Servers="OutputChannelId:port;OutputChannelId2:port2"
+~~~
+No response expected
+
+\subsubsection PlusServerLauncherRemoteCommandsServerStopped ServerStopped
+
+Sent to connected clients whenever a server is started.
+
+Command
+~~~
+Content:
+  <Command
+    <ServerStopped ConfigFileName="Filename.xml" />
+  </Command>
+MetaData:
+  ConfigFileName="Filename.xml"
+~~~
+No response expected
+
+______
+
+\subsection PlusServerLauncherRemoteWidget PlusServerLauncher remote control from Slicer
+
+A graphical interface for remotely controlling PlusServerLauncher is included the PlusRemote module from the <a href="https://github.com/openigtlink/SlicerOpenIGTLink">SlicerOpenIGTLink</a> extension.
+To use the PlusRemote module:
+- <a href="https://download.slicer.org/">Download Slicer >=4.9.0</a>
+- Open Slicer
+- Navigate to the extension manager
+- Select "Install Extensions" and find the SlicerOpenIGTLink extension
+- After the download has completed, restart Slicer
+- PlusRemote should now be available in the list of modules
+
+To start a PlusServer instance from Slicer:
+1. Specify the hostname and port in the launcher connection info section and click connect
+2. Load a config file to Slicer by clicking the "..." button
+3. Select the config file from the combobox and click "Launch server"
+4. Clicking on the status icon will show/hide the section containing the log messages received from Plus
+5. The contents of the selected config file can be viewed in the "Config file" section
+
+\image html PlusServerLauncherRemote.png
+
+
+*/
