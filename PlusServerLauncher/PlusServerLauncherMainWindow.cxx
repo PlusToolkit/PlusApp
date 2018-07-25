@@ -255,9 +255,10 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
   newServerProcess->start(cmdLine);
   newServerProcess->waitForFinished(500);
 
-  // During waitForFinished an error signal may be emitted, which may delete m_CurrentServerInstance,
-  // therefore we need to check if m_CurrentServerInstance is still not NULL
-  if (newServerProcess && newServerProcess->state() == QProcess::Running)
+  // During waitForFinished an error signal may be emitted, which may delete newServerProcess,
+  // therefore we need to check if the current server process still exists
+  if (m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())) != m_ServerInstances.end() &&
+      newServerProcess && newServerProcess->state() == QProcess::Running)
   {
     LOG_INFO("Server process started successfully");
     ui.comboBox_LogLevel->setEnabled(false);
