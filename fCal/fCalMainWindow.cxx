@@ -641,7 +641,7 @@ void fCalMainWindow::SaveDeviceSetConfiguration()
   }
 
   // Write the current state into the device set configuration XML
-  GetVisualizationController()->WriteConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
+  this->GetVisualizationController()->WriteConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
 
   QPlusConfigFileSaverDialog* configSaverDialog = new QPlusConfigFileSaverDialog(this);
   configSaverDialog->exec();
@@ -661,10 +661,10 @@ void fCalMainWindow::ShowDevicesToggled()
   if (aOn)
   {
     // Force override, show 3D and ALLLLLL devices
-    m_VisualizationController->SetVisualizationMode(vtkPlusVisualizationController::DISPLAY_MODE_3D);
-    m_VisualizationController->ShowAllObjects(true);
-    m_VisualizationController->ShowInput(m_ShowPoints);
-    m_VisualizationController->ShowResult(m_ShowPoints);
+    this->GetVisualizationController()->SetVisualizationMode(vtkPlusVisualizationController::DISPLAY_MODE_3D);
+    this->GetVisualizationController()->ShowAllObjects(true);
+    this->GetVisualizationController()->ShowInput(m_ShowPoints);
+    this->GetVisualizationController()->ShowResult(m_ShowPoints);
 
     // If the show phantom or wires menu items are unchecked then check them now (as they are shown now)
     if (!m_ShowPhantomModelAction->isChecked())
@@ -696,7 +696,7 @@ void fCalMainWindow::ShowPhantomModelToggled()
 
   if (!m_PhantomModelId.empty())
   {
-    if (m_VisualizationController->ShowObjectById(m_PhantomModelId.c_str(), aOn) != PLUS_SUCCESS)
+    if (this->GetVisualizationController()->ShowObjectById(m_PhantomModelId.c_str(), aOn) != PLUS_SUCCESS)
     {
       LOG_WARNING("Unable to hide/show the phantom model: " << m_PhantomModelId);
     }
@@ -712,7 +712,7 @@ void fCalMainWindow::ShowPhantomWiresModelToggled()
 
   if (!m_PhantomWiresModelId.empty())
   {
-    if (m_VisualizationController->ShowObjectById(m_PhantomWiresModelId.c_str(), aOn) != PLUS_SUCCESS)
+    if (this->GetVisualizationController()->ShowObjectById(m_PhantomWiresModelId.c_str(), aOn) != PLUS_SUCCESS)
     {
       LOG_WARNING("Unable to hide/show the phantom wires object: " << m_PhantomWiresModelId);
     }
