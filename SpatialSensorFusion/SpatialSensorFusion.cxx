@@ -170,8 +170,8 @@ int main(int argc, char** argv)
   {
     PlusTrackedFrame* frame = frameList->GetTrackedFrame(frameIndex);
     Update(ahrsAlgo, frame, trackerReferenceFrame, westAxisIndex, true, filteredTiltSensorToTrackerTransform);
-    frame->SetCustomFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTiltSensorToTrackerTransform);
-    frame->SetCustomFrameTransformStatus(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), FIELD_OK);
+    frame->SetFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTiltSensorToTrackerTransform);
+    frame->SetFrameTransformStatus(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), FIELD_OK);
   }
 
   if (vtkPlusSequenceIO::Write(outputImgFile, frameList, US_IMG_ORIENT_XX) != PLUS_SUCCESS)
@@ -202,10 +202,10 @@ int main(int argc, char** argv)
       PlusTrackedFrame* baselineFrame = baselineFrameList->GetTrackedFrame(frameIndex);
 
       vtkSmartPointer<vtkMatrix4x4> filteredTilt = vtkSmartPointer<vtkMatrix4x4>::New();
-      frame->GetCustomFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTilt);
+      frame->GetFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTilt);
 
       vtkSmartPointer<vtkMatrix4x4> baselineFilteredTilt = vtkSmartPointer<vtkMatrix4x4>::New();
-      baselineFrame->GetCustomFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), baselineFilteredTilt);
+      baselineFrame->GetFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), baselineFilteredTilt);
 
       //check for element by element equality
       bool matricesDifferent = false;
@@ -254,9 +254,9 @@ void Update(AhrsAlgo* ahrsAlgo, PlusTrackedFrame* frame, const std::string& trac
 {
   double timestamp = frame->GetTimestamp();
   vtkSmartPointer<vtkMatrix4x4> gyroscopeMat = vtkSmartPointer<vtkMatrix4x4>::New();
-  frame->GetCustomFrameTransform(PlusTransformName("Gyroscope", trackerReferenceFrame), gyroscopeMat);
+  frame->GetFrameTransform(PlusTransformName("Gyroscope", trackerReferenceFrame), gyroscopeMat);
   vtkSmartPointer<vtkMatrix4x4> accelerometerMat = vtkSmartPointer<vtkMatrix4x4>::New();
-  frame->GetCustomFrameTransform(PlusTransformName("Accelerometer", trackerReferenceFrame), accelerometerMat);
+  frame->GetFrameTransform(PlusTransformName("Accelerometer", trackerReferenceFrame), accelerometerMat);
 
   if (useTimestamps)
   {
