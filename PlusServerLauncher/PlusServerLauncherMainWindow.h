@@ -85,7 +85,16 @@ protected slots:
 
   void OnTimerTimeout();
 
+  void StopRemoteServerButtonClicked();
+
 protected:
+
+  /*! Read the application configuration from the PlusConfig xml */
+  PlusStatus ReadConfiguration();
+
+  /*! Write the application configuration from the PlusConfig xml */
+  PlusStatus WriteConfiguration();
+
   /*! Receive standard output or error and send it to the log */
   void SendServerOutputToLogger(const QByteArray& strData);
 
@@ -119,6 +128,12 @@ protected:
 
   void SendServerStartedCommand(std::string configFilePath);
   void SendServerStoppedCommand(std::string configFilePath);
+
+  /*! Add a row describing a server started with the specified filename to the remote control server table. */
+  void AddServerToTable(std::string filename);
+
+  /*! Remove any rows for servers started with the specified filename from the remote control server table. */
+  void RemoveServerFromTable(std::string filename);
 
 protected:
   /*! Device set selector widget */
