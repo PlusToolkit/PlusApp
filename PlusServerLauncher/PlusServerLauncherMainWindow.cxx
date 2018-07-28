@@ -19,6 +19,7 @@ See License.txt for details.
 // Qt includes
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDomDocument>
 #include <QFileInfo>
 #include <QHostAddress>
 #include <QHostInfo>
@@ -133,6 +134,17 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
     }
   }
 
+  // Initialize server table
+  ui.serverTable->insertColumn(0);
+  ui.serverTable->setHorizontalHeaderItem(0, new QTableWidgetItem("Name"));
+  ui.serverTable->insertColumn(1);
+  ui.serverTable->setHorizontalHeaderItem(1, new QTableWidgetItem("Description"));
+  ui.serverTable->insertColumn(2);
+  ui.serverTable->setHorizontalHeaderItem(2, new QTableWidgetItem(" "));
+  ui.serverTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+  ui.serverTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+  ui.serverTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+
   // Log server host name, domain, and IP addresses
   LOG_INFO("Server host name: " << QHostInfo::localHostName().toStdString());
   if (!QHostInfo::localDomainName().isEmpty())
@@ -185,6 +197,8 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   connect(m_RemoteControlServerConnectorProcessTimer, &QTimer::timeout, this, &PlusServerLauncherMainWindow::OnTimerTimeout);
 
   m_RemoteControlServerConnectorProcessTimer->start(5);
+
+  ReadConfiguration();
 }
 
 //-----------------------------------------------------------------------------
@@ -225,6 +239,47 @@ PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
 
   disconnect(ui.checkBox_writePermission, &QCheckBox::clicked, this, &PlusServerLauncherMainWindow::OnWritePermissionClicked);
   connect(m_RemoteControlServerConnectorProcessTimer, &QTimer::timeout, this, &PlusServerLauncherMainWindow::OnTimerTimeout);
+
+  WriteConfiguration();
+}
+
+//-----------------------------------------------------------------------------
+PlusStatus PlusServerLauncherMainWindow::ReadConfiguration()
+{
+  std::string applicationConfigurationFilePath = vtkPlusConfig::GetInstance()->GetApplicationConfigurationFilePath();
+
+  // Read configuration from file
+  vtkSmartPointer<vtkXMLDataElement> applicationConfigurationRoot;
+  if (vtksys::SystemTools::FileExists(applicationConfigurationFilePath.c_str(), true))
+  {
+    applicationConfigurationRoot.TakeReference(vtkXMLUtilities::ReadElementFromFile(applicationConfigurationFilePath.c_str()));
+  }
+
+  int currentTab = 0;
+  applicationConfigurationRoot->GetScalarAttribute("CurrentTab", currentTab);
+  ui.tabWidget->setCurrentIndex(currentTab);
+
+  return PLUS_SUCCESS;
+}
+
+//-----------------------------------------------------------------------------
+PlusStatus PlusServerLauncherMainWindow::WriteConfiguration()
+{
+  std::string applicationConfigurationFilePath = vtkPlusConfig::GetInstance()->GetApplicationConfigurationFilePath();
+
+  // Read configuration from file
+  vtkSmartPointer<vtkXMLDataElement> applicationConfigurationRoot;
+  if (vtksys::SystemTools::FileExists(applicationConfigurationFilePath.c_str(), true))
+  {
+    applicationConfigurationRoot.TakeReference(vtkXMLUtilities::ReadElementFromFile(applicationConfigurationFilePath.c_str()));
+  }
+
+  applicationConfigurationRoot->SetIntAttribute("CurrentTab", ui.tabWidget->currentIndex());
+
+  // Write configuration to file
+  PlusCommon::XML::PrintXML(applicationConfigurationFilePath.c_str(), applicationConfigurationRoot);
+
+  return PLUS_SUCCESS;
 }
 
 //-----------------------------------------------------------------------------
@@ -274,11 +329,12 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
 //----------------------------------------------------------------------------
 bool PlusServerLauncherMainWindow::LocalStartServer()
 {
-  if (!StartServer(QString::fromStdString(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile))))
+  std::string filename = vtksys::SystemTools::GetFilenameName(m_LocalConfigFile);
+  if (!StartServer(QString::fromStdString(filename)))
   {
     return false;
   }
-  QProcess* newServerProcess = m_ServerInstances[vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)];
+  QProcess* newServerProcess = m_ServerInstances[filename];
   connect(newServerProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
   connect(newServerProcess, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
 
@@ -288,6 +344,76 @@ bool PlusServerLauncherMainWindow::LocalStartServer()
   }
 
   return true;
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::AddServerToTable(std::string filename)
+{
+  std::string filePath = vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename));
+  QFile file(QString::fromStdString(filePath));
+  QFileInfo fileInfo(QString::fromStdString(filePath));
+  QDomDocument doc;
+
+  QString name = QString::fromStdString(filename);
+  QString description;
+
+  if (doc.setContent(&file))
+  {
+    QDomElement docElem = doc.documentElement();
+
+    // Check if the root element is PlusConfiguration and contains a DataCollection child
+    if (!docElem.tagName().compare("PlusConfiguration", Qt::CaseInsensitive))
+    {
+      // Add the name attribute to the first node named DeviceSet to the combo box
+      QDomNodeList list(doc.elementsByTagName("DeviceSet"));
+      if (list.count() > 0)
+      {
+        // If it has a DataCollection children then use the first one
+        QDomElement elem = list.at(0).toElement();
+        name = elem.attribute("Name");
+        description = elem.attribute("Description");
+      }
+    }
+  }
+
+  int row = ui.serverTable->rowCount();
+  ui.serverTable->insertRow(row);
+  QTableWidgetItem* nameItem = new QTableWidgetItem();
+  nameItem->setText(name);
+  nameItem->setData(Qt::UserRole, QString::fromStdString(filename));
+  ui.serverTable->setItem(row, 0, nameItem);
+
+  QTableWidgetItem* descriptionItem = new QTableWidgetItem();
+  descriptionItem->setText(description);
+  ui.serverTable->setItem(row, 1, descriptionItem);
+
+  QPushButton* stopServerButton = new QPushButton("Stop");
+  ui.serverTable->setCellWidget(row, 2, stopServerButton);
+  connect(stopServerButton, SIGNAL(clicked()), this, SLOT(StopRemoteServerButtonClicked()));
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::StopRemoteServerButtonClicked()
+{
+  QPushButton* pressedButton = (QPushButton*)sender();
+  pressedButton->setEnabled(false);
+
+  int row = ui.serverTable->indexAt(pressedButton->pos()).row();
+  QString fileName = ui.serverTable->item(row, 0)->data(Qt::UserRole).toString();
+  StopServer(fileName);
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::RemoveServerFromTable(std::string filePath)
+{
+  std::string filename = vtksys::SystemTools::GetFilenameName(filePath);
+
+  QModelIndexList matches = ui.serverTable->model()->match(ui.serverTable->model()->index(0, 0), Qt::UserRole, QString::fromStdString(filename));
+  for (QModelIndexList::iterator matchIt = matches.begin(); matchIt != matches.end(); matchIt++)
+  {
+    int row = matchIt->row();
+    ui.serverTable->removeRow(row);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -335,6 +461,14 @@ bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
   delete process;
   m_ServerInstances.erase(m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())));
 
+  RemoveServerFromTable(configFilePath.toStdString());
+
+  if (m_RemoteControlServerConnector)
+  {
+    std::string configFileString = vtksys::SystemTools::GetFilenameName(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString()));
+    this->SendServerStoppedCommand(configFileString.c_str());
+  }
+
   m_Suffix.clear();
   return !forcedShutdown;
 }
@@ -355,12 +489,6 @@ bool PlusServerLauncherMainWindow::LocalStopServer()
 
   bool result = StopServer(QString::fromStdString(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)));
   m_LocalConfigFile = "";
-
-  if (m_RemoteControlServerConnector)
-  {
-    std::string configFileString = vtksys::SystemTools::GetFilenameName(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile));
-    this->SendServerStoppedCommand(configFileString.c_str());
-  }
 
   return result;
 }
@@ -610,6 +738,8 @@ void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QPro
       if ((*server).second == finishedProcess)
       {
         configFileName = (*server).first;
+        m_ServerInstances.erase(server);
+        RemoveServerFromTable(configFileName);
         break;
       }
     }
@@ -824,6 +954,8 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandPointer comman
   }
   else
   {
+    AddServerToTable(filename);
+
     std::string servers = this->GetServersFromConfigFile(filename);
     std::stringstream responseSS;
     vtkSmartPointer<vtkXMLDataElement> responseXML = vtkSmartPointer<vtkXMLDataElement>::New();
