@@ -135,8 +135,9 @@ void QConfigurationToolbox::ConnectToDevicesByConfigFile(std::string aConfigFile
   // If not empty, then try to connect; empty parameter string means disconnect
   if (STRCASECMP(aConfigFile.c_str(), "") != 0)
   {
+    vtkSmartPointer<vtkXMLDataElement> configRootElement = vtkPlusConfig::GetInstance()->CreateDeviceSetConfigurationFromFile(aConfigFile);
+
     // Read configuration
-    vtkSmartPointer<vtkXMLDataElement> configRootElement = vtkSmartPointer<vtkXMLDataElement>::Take(vtkXMLUtilities::ReadElementFromFile(aConfigFile.c_str()));
     if (configRootElement == NULL)
     {
       LOG_ERROR("Unable to read configuration from file " << aConfigFile);
@@ -148,15 +149,8 @@ void QConfigurationToolbox::ConnectToDevicesByConfigFile(std::string aConfigFile
       return;
     }
 
-    LOG_INFO("Device set configuration is read from file: " << aConfigFile);
-    std::ostringstream xmlFileContents;
-    PlusCommon::XML::PrintXML(xmlFileContents, vtkIndent(1), configRootElement);
-    LOG_DEBUG("Device set configuration file contents: " << std::endl << xmlFileContents.str());
-
-    vtkPlusConfig::GetInstance()->SetDeviceSetConfigurationData(configRootElement);
-
     // If connection has been successfully created then start data collection
-    if (! m_DeviceSetSelectorWidget->GetConnectionSuccessful())
+    if (!m_DeviceSetSelectorWidget->GetConnectionSuccessful())
     {
       LOG_INFO("Connect to devices");
 
