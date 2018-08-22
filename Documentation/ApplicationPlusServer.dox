@@ -80,7 +80,7 @@ Launch the command-line-only version of PlusServer (no graphical user interface)
       - \xmlElem \b Transform
           - \xmlAtt Name
     - \xmlElem \b StringNames
-      - \xmlElem \b String Name of the custom frame string that is sent as a STRING message. Any frame field (Timestamp, any status message, any custom frame fields) can be specified here.
+      - \xmlElem \b String Name of the frame string that is sent as a STRING message. Any frame field (Timestamp, any status message, any frame fields) can be specified here.
     - \xmlElem \b ImageNames
       - \xmlElem \b Image
           - \xmlAtt Name Name of the image stream. It also defines the "From" frame of the transform embedded in the IGTL image message.

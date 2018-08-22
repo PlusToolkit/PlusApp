@@ -335,7 +335,7 @@ void QCapturingToolbox::TakeSnapshot()
 
   // Check if there are any valid transforms
   std::vector<PlusTransformName> transformNames;
-  trackedFrame.GetCustomFrameTransformNameList(transformNames);
+  trackedFrame.GetFrameTransformNameList(transformNames);
   bool validFrame = false;
 
   if (transformNames.size() == 0)
@@ -347,7 +347,7 @@ void QCapturingToolbox::TakeSnapshot()
     for (std::vector<PlusTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
     {
       TrackedFrameFieldStatus status = FIELD_INVALID;
-      trackedFrame.GetCustomFrameTransformStatus(*it, status);
+      trackedFrame.GetFrameTransformStatus(*it, status);
 
       if (status == FIELD_OK)
       {
