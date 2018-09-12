@@ -149,6 +149,9 @@ void QConfigurationToolbox::ConnectToDevicesByConfigFile(std::string aConfigFile
       return;
     }
 
+    // Config is valid, store it
+    vtkPlusConfig::GetInstance()->SetDeviceSetConfigurationData(configRootElement);
+
     // If connection has been successfully created then start data collection
     if (!m_DeviceSetSelectorWidget->GetConnectionSuccessful())
     {
