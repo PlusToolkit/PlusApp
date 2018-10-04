@@ -85,7 +85,9 @@ Launch the command-line-only version of PlusServer (no graphical user interface)
       - \xmlElem \b Image
           - \xmlAtt Name Name of the image stream. It also defines the "From" frame of the transform embedded in the IGTL image message.
           - \xmlAtt EmbeddedTransformToFrame "To" frame of the transform embedded in the IGTL image message
-          - \xmlAtt EncodingType FourCC value that is used to encode the image as a VideoMessage. If not specified, the image will be sent as a regular ImageMessage. Availiable types: I420: "I420", VP9:"VP90" \OptionalAtt{ }
+          - \xmlAtt EncodingFourCC FourCC value of the codec that is used to encode the image as a VideoMessage. If not specified, the image will be sent as a regular ImageMessage. Available types: I420: "I420", VP9:"VP90" \OptionalAtt{ }
+          - \xmlAtt EncodingLossless If TRUE, encoding will be performed lossless if possible. \OptionalAtt{TRUE}
+          - \xmlAtt EncodingMinKeyframeDistance The minimum required distance between encoded keyframes. \OptionalAtt{50}
 
 This is an example element that needs to be added to the PLUS configuration xml file to use PlusServer:
 
