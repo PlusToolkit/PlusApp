@@ -8,13 +8,13 @@ See License.txt for details.
 #include "PlusServerLauncherMainWindow.h"
 
 // PlusLib includes
-#include <PlusCommon.h>
+#include <igsioCommon.h>
 #include <QPlusDeviceSetSelectorWidget.h>
 #include <QPlusStatusIcon.h>
 #include <vtkPlusDataCollector.h>
 #include <vtkPlusDeviceFactory.h>
 #include <vtkPlusOpenIGTLinkServer.h>
-#include <vtkPlusTransformRepository.h>
+#include <vtkIGSIOTransformRepository.h>
 
 // Qt includes
 #include <QCheckBox>
@@ -88,19 +88,19 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
 
   // Put the status icon in a frame with the log level selector
   ui.statusBarLayout->insertWidget(0, statusIcon);
-  ui.comboBox_LogLevel->addItem("Error", QVariant(vtkPlusLogger::LOG_LEVEL_ERROR));
-  ui.comboBox_LogLevel->addItem("Warning", QVariant(vtkPlusLogger::LOG_LEVEL_WARNING));
-  ui.comboBox_LogLevel->addItem("Info", QVariant(vtkPlusLogger::LOG_LEVEL_INFO));
-  ui.comboBox_LogLevel->addItem("Debug", QVariant(vtkPlusLogger::LOG_LEVEL_DEBUG));
-  ui.comboBox_LogLevel->addItem("Trace", QVariant(vtkPlusLogger::LOG_LEVEL_TRACE));
+  ui.comboBox_LogLevel->addItem("Error", QVariant(vtkIGSIOLogger::LOG_LEVEL_ERROR));
+  ui.comboBox_LogLevel->addItem("Warning", QVariant(vtkIGSIOLogger::LOG_LEVEL_WARNING));
+  ui.comboBox_LogLevel->addItem("Info", QVariant(vtkIGSIOLogger::LOG_LEVEL_INFO));
+  ui.comboBox_LogLevel->addItem("Debug", QVariant(vtkIGSIOLogger::LOG_LEVEL_DEBUG));
+  ui.comboBox_LogLevel->addItem("Trace", QVariant(vtkIGSIOLogger::LOG_LEVEL_TRACE));
   if (autoConnect)
   {
-    ui.comboBox_LogLevel->setCurrentIndex(ui.comboBox_LogLevel->findData(QVariant(vtkPlusLogger::Instance()->GetLogLevel())));
+    ui.comboBox_LogLevel->setCurrentIndex(ui.comboBox_LogLevel->findData(QVariant(vtkIGSIOLogger::Instance()->GetLogLevel())));
   }
   else
   {
-    ui.comboBox_LogLevel->setCurrentIndex(ui.comboBox_LogLevel->findData(QVariant(vtkPlusLogger::LOG_LEVEL_INFO)));
-    vtkPlusLogger::Instance()->SetLogLevel(vtkPlusLogger::LOG_LEVEL_INFO);
+    ui.comboBox_LogLevel->setCurrentIndex(ui.comboBox_LogLevel->findData(QVariant(vtkIGSIOLogger::LOG_LEVEL_INFO)));
+    vtkIGSIOLogger::Instance()->SetLogLevel(vtkIGSIOLogger::LOG_LEVEL_INFO);
   }
   connect(ui.comboBox_LogLevel, SIGNAL(currentIndexChanged(int)), this, SLOT(LogLevelChanged()));
 
@@ -111,7 +111,7 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   // Log basic info (Plus version, supported devices)
   std::string strPlusLibVersion = std::string(" Software version: ") + PlusCommon::GetPlusLibVersionString();
   LOG_INFO(strPlusLibVersion);
-  LOG_INFO("Logging at level " << vtkPlusLogger::Instance()->GetLogLevel() << " to file: " << vtkPlusLogger::Instance()->GetLogFileName());
+  LOG_INFO("Logging at level " << vtkIGSIOLogger::Instance()->GetLogLevel() << " to file: " << vtkIGSIOLogger::Instance()->GetLogFileName());
   vtkSmartPointer<vtkPlusDeviceFactory> deviceFactory = vtkSmartPointer<vtkPlusDeviceFactory>::New();
   std::ostringstream supportedDevices;
   deviceFactory->PrintAvailableDevices(supportedDevices, vtkIndent());
@@ -188,8 +188,8 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
 
     ui.label_networkDetails->setText(ipAddresses + ", port " + QString::number(m_RemoteControlServerPort));
 
-    vtkPlusLogger::Instance()->AddObserver(vtkPlusLogger::MessageLogged, m_RemoteControlLogMessageCallbackCommand);
-    vtkPlusLogger::Instance()->AddObserver(vtkPlusLogger::WideMessageLogged, m_RemoteControlLogMessageCallbackCommand);
+    vtkIGSIOLogger::Instance()->AddObserver(vtkIGSIOLogger::MessageLogged, m_RemoteControlLogMessageCallbackCommand);
+    vtkIGSIOLogger::Instance()->AddObserver(vtkIGSIOLogger::WideMessageLogged, m_RemoteControlLogMessageCallbackCommand);
   }
 
   connect(ui.checkBox_writePermission, &QCheckBox::clicked, this, &PlusServerLauncherMainWindow::OnWritePermissionClicked);
@@ -214,10 +214,10 @@ PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
   if (m_RemoteControlServerConnector)
   {
     m_RemoteControlServerConnector->RemoveObserver(m_RemoteControlServerCallbackCommand);
-    if (vtkPlusLogger::Instance()->HasObserver(vtkPlusLogger::MessageLogged, m_RemoteControlLogMessageCallbackCommand) ||
-        vtkPlusLogger::Instance()->HasObserver(vtkPlusLogger::WideMessageLogged, m_RemoteControlLogMessageCallbackCommand))
+    if (vtkIGSIOLogger::Instance()->HasObserver(vtkIGSIOLogger::MessageLogged, m_RemoteControlLogMessageCallbackCommand) ||
+        vtkIGSIOLogger::Instance()->HasObserver(vtkIGSIOLogger::WideMessageLogged, m_RemoteControlLogMessageCallbackCommand))
     {
-      vtkPlusLogger::Instance()->RemoveObserver(m_RemoteControlLogMessageCallbackCommand);
+      vtkIGSIOLogger::Instance()->RemoveObserver(m_RemoteControlLogMessageCallbackCommand);
     }
   }
 
@@ -277,7 +277,7 @@ PlusStatus PlusServerLauncherMainWindow::WriteConfiguration()
   applicationConfigurationRoot->SetIntAttribute("CurrentTab", ui.tabWidget->currentIndex());
 
   // Write configuration to file
-  PlusCommon::XML::PrintXML(applicationConfigurationFilePath.c_str(), applicationConfigurationRoot);
+  igsioCommon::XML::PrintXML(applicationConfigurationFilePath.c_str(), applicationConfigurationRoot);
 
   return PLUS_SUCCESS;
 }
@@ -296,8 +296,8 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
 
   // PlusServerLauncher wants at least LOG_LEVEL_INFO to parse status information from the PlusServer executable
   // Un-requested log entries that are captured from the PlusServer executable are parsed and dropped from output
-  int logLevelToPlusServer = vtkPlusLogger::LOG_LEVEL_INFO;
-  if (logLevel == vtkPlusLogger::LOG_LEVEL_UNDEFINED)
+  int logLevelToPlusServer = vtkIGSIOLogger::LOG_LEVEL_INFO;
+  if (logLevel == vtkIGSIOLogger::LOG_LEVEL_UNDEFINED)
   {
     logLevelToPlusServer = std::max<int>(ui.comboBox_LogLevel->currentData().toInt(), logLevelToPlusServer);
   }
@@ -607,11 +607,11 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
 
   if (logString.find('|') != std::string::npos)
   {
-    PlusCommon::SplitStringIntoTokens(logString, '|', tokens, false);
+    igsioCommon::SplitStringIntoTokens(logString, '|', tokens, false);
     // Remove empty tokens
     for (StringList::iterator it = tokens.begin(); it != tokens.end(); ++it)
     {
-      if (PlusCommon::Trim(*it).empty())
+      if (igsioCommon::Trim(*it).empty())
       {
         tokens.erase(it);
         it = tokens.begin();
@@ -624,9 +624,9 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
       return;
     }
 
-    if (vtkPlusLogger::GetLogLevelType(tokens[0]) != vtkPlusLogger::LOG_LEVEL_UNDEFINED)
+    if (vtkIGSIOLogger::GetLogLevelType(tokens[0]) != vtkIGSIOLogger::LOG_LEVEL_UNDEFINED)
     {
-      vtkPlusLogger::LogLevelType logLevel = vtkPlusLogger::GetLogLevelType(tokens[index++]);
+      vtkIGSIOLogger::LogLevelType logLevel = vtkIGSIOLogger::GetLogLevelType(tokens[index++]);
       std::string timeStamp("time???");
       if (tokens.size() > 1)
       {
@@ -646,7 +646,7 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
       if (location.find('(') == std::string::npos || location.find(')') == std::string::npos)
       {
         // Malformed server message, print as is
-        vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str());
+        vtkIGSIOLogger::Instance()->LogMessage(logLevel, message.c_str());
       }
       else
       {
@@ -658,16 +658,16 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
         // Only parse for content if the line was successfully parsed for logging
         this->ParseContent(message);
 
-        vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str(), file.c_str(), lineNumber, "SERVER");
+        vtkIGSIOLogger::Instance()->LogMessage(logLevel, message.c_str(), file.c_str(), lineNumber, "SERVER");
       }
     }
   }
   else
   {
-    PlusCommon::SplitStringIntoTokens(logString, '\n', tokens, false);
+    igsioCommon::SplitStringIntoTokens(logString, '\n', tokens, false);
     for (StringList::iterator it = tokens.begin(); it != tokens.end(); ++it)
     {
-      vtkPlusLogger::Instance()->LogMessage(vtkPlusLogger::LOG_LEVEL_INFO, *it, "SERVER");
+      vtkIGSIOLogger::Instance()->LogMessage(vtkIGSIOLogger::LOG_LEVEL_INFO, *it, "SERVER");
       this->ParseContent(*it);
     }
     return;
@@ -758,7 +758,7 @@ void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QPro
 //----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::LogLevelChanged()
 {
-  vtkPlusLogger::Instance()->SetLogLevel(ui.comboBox_LogLevel->currentData().toInt());
+  vtkIGSIOLogger::Instance()->SetLogLevel(ui.comboBox_LogLevel->currentData().toInt());
 }
 
 //---------------------------------------------------------------------------
@@ -772,12 +772,12 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
   {
     case igtlioConnector::ClientConnectedEvent:
     {
-      self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client connected.");
+      self->LocalLog(vtkIGSIOLogger::LOG_LEVEL_INFO, "Client connected.");
       break;
     }
     case igtlioConnector::ClientDisconnectedEvent:
     {
-      self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client disconnected.");
+      self->LocalLog(vtkIGSIOLogger::LOG_LEVEL_INFO, "Client disconnected.");
       self->OnClientDisconnectedEvent();
       break;
     }
@@ -843,34 +843,34 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer c
   int id = command->GetCommandId();
   std::string name = command->GetName();
 
-  this->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
+  this->LocalLog(vtkIGSIOLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
 
-  if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
+  if (igsioCommon::IsEqualInsensitive(name, "GetConfigFiles"))
   {
     this->GetConfigFiles(command);
     return;
   }
-  else if (PlusCommon::IsEqualInsensitive(name, "AddConfigFile"))
+  else if (igsioCommon::IsEqualInsensitive(name, "AddConfigFile"))
   {
     this->AddOrUpdateConfigFile(command);
     return;
   }
-  else if (PlusCommon::IsEqualInsensitive(name, "StartServer"))
+  else if (igsioCommon::IsEqualInsensitive(name, "StartServer"))
   {
     this->RemoteStartServer(command);
     return;
   }
-  else if (PlusCommon::IsEqualInsensitive(name, "StopServer"))
+  else if (igsioCommon::IsEqualInsensitive(name, "StopServer"))
   {
     this->RemoteStopServer(command);
     return;
   }
-  else if (PlusCommon::IsEqualInsensitive(name, "LogSubscribe"))
+  else if (igsioCommon::IsEqualInsensitive(name, "LogSubscribe"))
   {
     m_RemoteControlLogSubscribedClients.insert(command->GetClientId());
     return;
   }
-  else if (PlusCommon::IsEqualInsensitive(name, "LogUnsubscribe"))
+  else if (igsioCommon::IsEqualInsensitive(name, "LogUnsubscribe"))
   {
     m_RemoteControlLogSubscribedClients.erase(command->GetClientId());
     return;
@@ -937,9 +937,9 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandPointer comman
   int logLevel = -1;
   std::string logLevelString = "";
   command->GetCommandMetaDataElement("LogLevel", logLevelString, encodingType);
-  if (PlusCommon::StringToInt<int>(logLevelString.c_str(), logLevel) == PLUS_FAIL)
+  if (igsioCommon::StringToInt<int>(logLevelString.c_str(), logLevel) == PLUS_FAIL)
   {
-    logLevel = vtkPlusLogger::LOG_LEVEL_INFO;
+    logLevel = vtkIGSIOLogger::LOG_LEVEL_INFO;
   }
 
   if (!this->StartServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))), logLevel))
@@ -998,7 +998,7 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandPointer command)
   {
     std::string file = dir->GetFile(i);
     std::string ext = vtksys::SystemTools::GetFilenameLastExtension(file);
-    if (PlusCommon::IsEqualInsensitive(ext, ".xml"))
+    if (igsioCommon::IsEqualInsensitive(ext, ".xml"))
     {
       ss << file << ";";
     }
@@ -1014,7 +1014,7 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandPointer command)
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message)
+void PlusServerLauncherMainWindow::LocalLog(vtkIGSIOLogger::LogLevelType level, const std::string& message)
 {
   this->statusBar()->showMessage(QString::fromStdString(message));
   LOG_DYNAMIC(message, level);
@@ -1066,7 +1066,7 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandPointer co
       int i = 0;
       while (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile)))
       {
-        configFile = oldConfigFile + "[" + PlusCommon::ToString<int>(i) + "]";
+        configFile = oldConfigFile + "[" + igsioCommon::ToString<int>(i) + "]";
         i++;
       }
       LOG_INFO("Config file: " << oldConfigFile << " already exists. Changing to: " << configFile);
@@ -1140,7 +1140,7 @@ void PlusServerLauncherMainWindow::SendServerStartedCommand(std::string configFi
   LOG_TRACE("Sending server started command");
 
   std::string filename = vtksys::SystemTools::GetFilenameName(configFilePath);
-  std::string logLevelString = PlusCommon::ToString(this->ui.comboBox_LogLevel->currentData().Int);
+  std::string logLevelString = igsioCommon::ToString(this->ui.comboBox_LogLevel->currentData().Int);
 
   vtkSmartPointer<vtkXMLDataElement> commandElement = vtkSmartPointer<vtkXMLDataElement>::New();
   commandElement->SetName("Command");
@@ -1219,15 +1219,15 @@ void PlusServerLauncherMainWindow::OnLogEvent(vtkObject* caller, unsigned long e
   }
 
   // We don't want to end up in an infinite loop of logging if something goes wrong, so remove the log observer
-  vtkPlusLogger::Instance()->RemoveObserver(self->m_RemoteControlLogMessageCallbackCommand);
+  vtkIGSIOLogger::Instance()->RemoveObserver(self->m_RemoteControlLogMessageCallbackCommand);
 
   QString logMessage = QString();
-  if (event == vtkPlusLogger::MessageLogged)
+  if (event == vtkIGSIOLogger::MessageLogged)
   {
     const char* logMessageChar = static_cast<char*>(callData);
     logMessage = logMessage.fromLatin1(logMessageChar);
   }
-  else if (event == vtkPlusLogger::WideMessageLogged)
+  else if (event == vtkIGSIOLogger::WideMessageLogged)
   {
     const wchar_t* logMessageWChar = static_cast<wchar_t*>(callData);
     logMessage = logMessage.fromWCharArray(logMessageWChar);
@@ -1285,8 +1285,8 @@ void PlusServerLauncherMainWindow::OnLogEvent(vtkObject* caller, unsigned long e
   }
 
   // Re-apply the log observers
-  vtkPlusLogger::Instance()->AddObserver(vtkPlusLogger::MessageLogged, self->m_RemoteControlLogMessageCallbackCommand);
-  vtkPlusLogger::Instance()->AddObserver(vtkPlusLogger::WideMessageLogged, self->m_RemoteControlLogMessageCallbackCommand);
+  vtkIGSIOLogger::Instance()->AddObserver(vtkIGSIOLogger::MessageLogged, self->m_RemoteControlLogMessageCallbackCommand);
+  vtkIGSIOLogger::Instance()->AddObserver(vtkIGSIOLogger::WideMessageLogged, self->m_RemoteControlLogMessageCallbackCommand);
 }
 
 //---------------------------------------------------------------------------

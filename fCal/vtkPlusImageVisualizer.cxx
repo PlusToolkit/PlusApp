@@ -399,14 +399,14 @@ PlusStatus vtkPlusImageVisualizer::SetScreenRightDownAxesOrientation(US_IMAGE_OR
 
   this->CurrentMarkerOrientation = aOrientation;
 
-  vtkXMLDataElement* renderingParameters = PlusXmlUtils::GetNestedElementWithName(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData(), "Rendering");
+  vtkXMLDataElement* renderingParameters = igsioXmlUtils::GetNestedElementWithName(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData(), "Rendering");
   if (renderingParameters == NULL)
   {
     LOG_ERROR("No Rendering element is found in the XML tree!");
     return PLUS_FAIL;
   }
 
-  std::string orientationValue = PlusVideoFrame::GetStringFromUsImageOrientation(aOrientation);
+  std::string orientationValue = igsioVideoFrame::GetStringFromUsImageOrientation(aOrientation);
   renderingParameters->SetAttribute("DisplayedImageOrientation", orientationValue.c_str());
 
   return UpdateCameraPose();
@@ -663,16 +663,16 @@ PlusStatus vtkPlusImageVisualizer::ReadRoiConfiguration(vtkXMLDataElement* aXMLE
   if (segmentationParameters == NULL)
   {
     LOG_WARNING("No Segmentation element is found in the XML tree! Using default values");
-    segmentationParameters = PlusXmlUtils::GetNestedElementWithName(aXMLElement, "Segmentation");
+    segmentationParameters = igsioXmlUtils::GetNestedElementWithName(aXMLElement, "Segmentation");
     PlusFidSegmentation::SetDefaultSegmentationParameters(segmentationParameters);
   }
   // clipping parameters
-  int clipRectangleOrigin[3] = {PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP};
+  int clipRectangleOrigin[3] = {igsioCommon::NO_CLIP, igsioCommon::NO_CLIP, igsioCommon::NO_CLIP};
   if (!segmentationParameters->GetVectorAttribute("ClipRectangleOrigin", 2, clipRectangleOrigin))
   {
     LOG_WARNING("Cannot find ClipRectangleOrigin attribute in the segmentation parameters section of the configuration, region of interest will not be displayed");
   }
-  int clipRectangleSize[3] = { PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP };
+  int clipRectangleSize[3] = { igsioCommon::NO_CLIP, igsioCommon::NO_CLIP, igsioCommon::NO_CLIP };
   if (!segmentationParameters->GetVectorAttribute("ClipRectangleSize", 2, clipRectangleSize))
   {
     LOG_WARNING("Cannot find ClipRectangleSize attribute in the segmentation parameters section of the configuration, region of interest will not be displayed");
@@ -706,7 +706,7 @@ PlusStatus vtkPlusImageVisualizer::ReadConfiguration(vtkXMLDataElement* aConfig)
 
   // Displayed image orientation
   const char* orientation = xmlElement->GetAttribute("DisplayedImageOrientation");
-  US_IMAGE_ORIENTATION orientationValue = PlusVideoFrame::GetUsImageOrientationFromString(orientation);
+  US_IMAGE_ORIENTATION orientationValue = igsioVideoFrame::GetUsImageOrientationFromString(orientation);
   if (orientationValue == US_IMG_ORIENT_XX)
   {
     LOG_WARNING("Unable to read image orientation from configuration file (Rendering tag, DisplayedImageOrientation attribute). Defauting to MF.");

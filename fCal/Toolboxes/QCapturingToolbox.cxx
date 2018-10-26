@@ -12,10 +12,10 @@ See License.txt for details.
 #include "vtkPlusVisualizationController.h"
 
 // PlusLib includes
-#include <PlusTrackedFrame.h>
+#include <igsioTrackedFrame.h>
 #include <vtkPlusDevice.h>
 #include <vtkPlusSequenceIO.h>
-#include <vtkPlusTrackedFrameList.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 // VTK includes
 #include <vtksys/SystemTools.hxx>
@@ -46,7 +46,7 @@ QCapturingToolbox::QCapturingToolbox(fCalMainWindow* aParentMainWindow, Qt::Wind
   ui.setupUi(this);
 
   // Create tracked frame list
-  m_RecordedFrames = vtkPlusTrackedFrameList::New();
+  m_RecordedFrames = vtkIGSIOTrackedFrameList::New();
   m_RecordedFrames->SetValidationRequirements(REQUIRE_UNIQUE_TIMESTAMP);
 
   // Connect events
@@ -176,7 +176,7 @@ void QCapturingToolbox::SetDisplayAccordingToState()
       if (!m_ParentMainWindow->GetImageCoordinateFrame().empty() && !m_ParentMainWindow->GetProbeCoordinateFrame().empty())
       {
         std::string imageToProbeTransformNameStr;
-        PlusTransformName imageToProbeTransformName(
+        igsioTransformName imageToProbeTransformName(
           m_ParentMainWindow->GetImageCoordinateFrame(), m_ParentMainWindow->GetProbeCoordinateFrame());
         imageToProbeTransformName.GetTransformName(imageToProbeTransformNameStr);
 
@@ -325,7 +325,7 @@ void QCapturingToolbox::TakeSnapshot()
 {
   LOG_TRACE("CapturingToolbox::TakeSnapshot");
 
-  PlusTrackedFrame trackedFrame;
+  igsioTrackedFrame trackedFrame;
 
   if (m_ParentMainWindow->GetSelectedChannel() == NULL || m_ParentMainWindow->GetSelectedChannel()->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
   {
@@ -334,7 +334,7 @@ void QCapturingToolbox::TakeSnapshot()
   }
 
   // Check if there are any valid transforms
-  std::vector<PlusTransformName> transformNames;
+  std::vector<igsioTransformName> transformNames;
   trackedFrame.GetFrameTransformNameList(transformNames);
   bool validFrame = false;
 
@@ -344,7 +344,7 @@ void QCapturingToolbox::TakeSnapshot()
   }
   else
   {
-    for (std::vector<PlusTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
+    for (std::vector<igsioTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
     {
       ToolStatus status = TOOL_INVALID;
       trackedFrame.GetFrameTransformStatus(*it, status);
@@ -364,7 +364,7 @@ void QCapturingToolbox::TakeSnapshot()
   }
 
   // Add tracked frame to the list
-  if (m_RecordedFrames->AddTrackedFrame(&trackedFrame, vtkPlusTrackedFrameList::SKIP_INVALID_FRAME) != PLUS_SUCCESS)
+  if (m_RecordedFrames->AddTrackedFrame(&trackedFrame, vtkIGSIOTrackedFrameList::SKIP_INVALID_FRAME) != PLUS_SUCCESS)
   {
     LOG_WARNING("Frame could not be added because validation failed!");
     return;
@@ -388,7 +388,7 @@ void QCapturingToolbox::Record()
 
   ui.plainTextEdit_saveResult->clear();
 
-  m_RecordingNextFrameToBeRecordedTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  m_RecordingNextFrameToBeRecordedTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
   m_RecordingLastAlreadyRecordedFrameTimestamp = UNDEFINED_TIMESTAMP; // none yet
 
   // Start capturing
@@ -402,7 +402,7 @@ void QCapturingToolbox::Capture()
 {
   //LOG_TRACE("CapturingToolbox::Capture");
 
-  double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double startTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
 
   vtkPlusDataCollector* dataCollector = NULL;
   if ((m_ParentMainWindow == NULL) || (m_ParentMainWindow->GetVisualizationController() == NULL) || ((dataCollector = m_ParentMainWindow->GetVisualizationController()->GetDataCollector()) == NULL))
@@ -439,8 +439,8 @@ void QCapturingToolbox::Capture()
   }
   if (frame1Index > frame2Index)
   {
-    PlusTrackedFrame* frame1 = m_RecordedFrames->GetTrackedFrame(frame1Index);
-    PlusTrackedFrame* frame2 = m_RecordedFrames->GetTrackedFrame(frame2Index);
+    igsioTrackedFrame* frame1 = m_RecordedFrames->GetTrackedFrame(frame1Index);
+    igsioTrackedFrame* frame2 = m_RecordedFrames->GetTrackedFrame(frame2Index);
     if (frame1 != NULL && frame2 != NULL)
     {
       double frameTimeDiff = frame1->GetTimestamp() - frame2->GetTimestamp();
@@ -456,16 +456,16 @@ void QCapturingToolbox::Capture()
   }
 
   // Check whether the recording needed more time than the sampling interval
-  double recordingTimeSec = vtkPlusAccurateTimer::GetSystemTime() - startTimeSec;
+  double recordingTimeSec = vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec;
   if (recordingTimeSec > GetSamplingPeriodSec())
   {
     LOG_WARNING("Recording of frames takes too long time (" << recordingTimeSec << "sec instead of the allocated " << GetSamplingPeriodSec() << "sec). This can cause slow-down of the application and non-uniform sampling. Reduce the acquisition rate or sampling rate to resolve the problem.");
   }
-  double recordingLagSec = vtkPlusAccurateTimer::GetSystemTime() - m_RecordingNextFrameToBeRecordedTimestamp;
+  double recordingLagSec = vtkIGSIOAccurateTimer::GetSystemTime() - m_RecordingNextFrameToBeRecordedTimestamp;
   if (recordingLagSec > MAX_ALLOWED_RECORDING_LAG_SEC)
   {
     LOG_ERROR("Recording cannot keep up with the acquisition. Skip " << recordingLagSec << " seconds of the data stream to catch up.");
-    m_RecordingNextFrameToBeRecordedTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    m_RecordingNextFrameToBeRecordedTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
   }
 }
 
@@ -545,7 +545,7 @@ void QCapturingToolbox::WriteToFile(const QString& aFilename)
   std::string path = vtksys::SystemTools::GetFilenamePath(aFilename.toLatin1().constData());
   std::string filename = vtksys::SystemTools::GetFilenameWithoutExtension(aFilename.toLatin1().constData());
   std::string configFileName = path + "/" + filename + "_config.xml";
-  PlusCommon::XML::PrintXML(configFileName, vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
+  igsioCommon::XML::PrintXML(configFileName, vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
 
   m_RecordedFrames->Clear();
   SetState(ToolboxState_Idle);

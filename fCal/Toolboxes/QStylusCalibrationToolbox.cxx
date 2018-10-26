@@ -7,7 +7,7 @@ See License.txt for details.
 // Local includes
 #include "QStylusCalibrationToolbox.h"
 #include "fCalMainWindow.h"
-#include "PlusMath.h"
+#include "igsioMath.h"
 #include "vtkPlusPivotCalibrationAlgo.h"
 #include "vtkPlusVisualizationController.h"
 
@@ -208,7 +208,7 @@ void QStylusCalibrationToolbox::SetDisplayAccordingToState()
     if (m_PivotCalibration->GetObjectPivotPointCoordinateFrame() && m_PivotCalibration->GetObjectMarkerCoordinateFrame())
     {
       std::string stylusTipToStylusTransformNameStr;
-      PlusTransformName stylusTipToStylusTransformName(
+      igsioTransformName stylusTipToStylusTransformName(
         m_PivotCalibration->GetObjectPivotPointCoordinateFrame(), m_PivotCalibration->GetObjectMarkerCoordinateFrame());
       stylusTipToStylusTransformName.GetTransformName(stylusTipToStylusTransformNameStr);
 
@@ -562,8 +562,8 @@ void QStylusCalibrationToolbox::OnDataAcquired()
   else
   {
     // Compute position and orientation difference of current and previous positions
-    positionDifferenceMm = PlusMath::GetPositionDifference(stylusToReferenceTransformMatrix, m_PreviousStylusToReferenceTransformMatrix);
-    orientationDifferenceDegrees = PlusMath::GetOrientationDifference(stylusToReferenceTransformMatrix, m_PreviousStylusToReferenceTransformMatrix);
+    positionDifferenceMm = igsioMath::GetPositionDifference(stylusToReferenceTransformMatrix, m_PreviousStylusToReferenceTransformMatrix);
+    orientationDifferenceDegrees = igsioMath::GetOrientationDifference(stylusToReferenceTransformMatrix, m_PreviousStylusToReferenceTransformMatrix);
   }
 
   // If current point is close to the previous one, or too far (outlier), we do not insert it

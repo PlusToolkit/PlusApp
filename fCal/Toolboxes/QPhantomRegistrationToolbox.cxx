@@ -14,9 +14,11 @@ See License.txt for details.
 #include <QFileDialog>
 #include <QTimer>
 
+// IGSIO includes
+#include <vtkIGSIOAccurateTimer.h>
+
 // PlusLib includes
-#include <PlusMath.h>
-#include <vtkPlusAccurateTimer.h>
+#include <igsioMath.h>
 #include <vtkPlusFakeTracker.h>
 #include <vtkPlusLandmarkDetectionAlgo.h>
 #include <vtkPlusPhantomLandmarkRegistrationAlgo.h>
@@ -390,7 +392,7 @@ void QPhantomRegistrationToolbox::SetDisplayAccordingToState()
           m_PhantomLandmarkRegistration->GetReferenceCoordinateFrame()) == PLUS_SUCCESS)
       {
         std::string phantomToReferenceTransformNameStr;
-        PlusTransformName phantomToReferenceTransformName(
+        igsioTransformName phantomToReferenceTransformName(
           m_PhantomLandmarkRegistration->GetPhantomCoordinateFrame(), m_PhantomLandmarkRegistration->GetReferenceCoordinateFrame());
         phantomToReferenceTransformName.GetTransformName(phantomToReferenceTransformNameStr);
 
@@ -676,13 +678,13 @@ void QPhantomRegistrationToolbox::OpenStylusCalibration()
   }
 
   // Read stylus calibration transform
-  PlusTransformName stylusTipToStylusTransformName(m_PhantomLandmarkRegistration->GetStylusTipCoordinateFrame(), pivotCalibrationAlgo->GetObjectMarkerCoordinateFrame());
+  igsioTransformName stylusTipToStylusTransformName(m_PhantomLandmarkRegistration->GetStylusTipCoordinateFrame(), pivotCalibrationAlgo->GetObjectMarkerCoordinateFrame());
 
   vtkSmartPointer<vtkMatrix4x4> stylusTipToStylusTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   std::string transformDate;
   double transformError = 0.0;
   ToolStatus status(TOOL_INVALID);
-  vtkPlusTransformRepository* tempTransformRepo = vtkPlusTransformRepository::New();
+  vtkIGSIOTransformRepository* tempTransformRepo = vtkIGSIOTransformRepository::New();
   if (tempTransformRepo->ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS
       || tempTransformRepo->GetTransform(stylusTipToStylusTransformName, stylusTipToStylusTransformMatrix, &status) != PLUS_SUCCESS
       || tempTransformRepo->GetTransformDate(stylusTipToStylusTransformName, transformDate) != PLUS_SUCCESS
@@ -738,7 +740,7 @@ void QPhantomRegistrationToolbox::RecordPoint()
       {
         fakeTracker->SetCounter(m_CurrentLandmarkIndex);
         fakeTracker->SetTransformRepository(m_ParentMainWindow->GetVisualizationController()->GetTransformRepository());
-        vtkPlusAccurateTimer::Delay(2.1 / fakeTracker->GetAcquisitionRate());
+        vtkIGSIOAccurateTimer::Delay(2.1 / fakeTracker->GetAcquisitionRate());
         break;
       }
     }
@@ -1168,8 +1170,8 @@ void QPhantomRegistrationToolbox::AddStylusTipTransformToLandmarkPivotingRegistr
     else
     {
       // Compute position and orientation difference of current and previous positions
-      positionDifferenceMm = PlusMath::GetPositionDifference(stylusTipToReferenceTransformMatrix, m_PreviousStylusTipToReferenceTransformMatrix);
-      orientationDifferenceDegrees = PlusMath::GetOrientationDifference(stylusTipToReferenceTransformMatrix, m_PreviousStylusTipToReferenceTransformMatrix);
+      positionDifferenceMm = igsioMath::GetPositionDifference(stylusTipToReferenceTransformMatrix, m_PreviousStylusTipToReferenceTransformMatrix);
+      orientationDifferenceDegrees = igsioMath::GetOrientationDifference(stylusTipToReferenceTransformMatrix, m_PreviousStylusTipToReferenceTransformMatrix);
     }
 
     if (positionDifferenceMm > positionDifferenceHighThresholdMm || orientationDifferenceDegrees > orientationDifferenceHighThresholdDegrees)
@@ -1209,7 +1211,7 @@ void QPhantomRegistrationToolbox::AddStylusTipTransformToLandmarkPivotingRegistr
       m_CurrentLandmarkIndex++;
 
       int numberOfExpectedLandmarks = m_PhantomLandmarkRegistration->GetDefinedLandmarks_Phantom()->GetNumberOfPoints();
-      vtkPlusLogger::PrintProgressbar((100.0 * m_LandmarkDetection->GetDetectedLandmarkPoints_Reference()->GetNumberOfPoints() - 1) / numberOfExpectedLandmarks);
+      vtkIGSIOLogger::PrintProgressbar((100.0 * m_LandmarkDetection->GetDetectedLandmarkPoints_Reference()->GetNumberOfPoints() - 1) / numberOfExpectedLandmarks);
 
       // Add recorded landmark to registration algorithm
       m_PhantomLandmarkRegistration->GetRecordedLandmarks_Reference()->InsertPoint(m_LandmarkDetection->GetDetectedLandmarkPoints_Reference()->GetNumberOfPoints() - 1, landmarkDetected_Reference);
@@ -1313,8 +1315,8 @@ void QPhantomRegistrationToolbox::AddStylusTipTransformToLinearObjectRegistratio
     else
     {
       // Compute position and orientation difference of current and previous positions
-      positionDifferenceMm = PlusMath::GetPositionDifference(stylusTipToReferenceTransformMatrix, m_PreviousStylusTipToReferenceTransformMatrix);
-      orientationDifferenceDegrees = PlusMath::GetOrientationDifference(stylusTipToReferenceTransformMatrix, m_PreviousStylusTipToReferenceTransformMatrix);
+      positionDifferenceMm = igsioMath::GetPositionDifference(stylusTipToReferenceTransformMatrix, m_PreviousStylusTipToReferenceTransformMatrix);
+      orientationDifferenceDegrees = igsioMath::GetOrientationDifference(stylusTipToReferenceTransformMatrix, m_PreviousStylusTipToReferenceTransformMatrix);
     }
 
     // If current point is close to the previous one, or too far (outlier), we do not insert it

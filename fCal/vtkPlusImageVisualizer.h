@@ -9,7 +9,7 @@ See License.txt for details.
 
 // PlusLib includes
 #include <PlusConfigure.h>
-#include <PlusVideoFrame.h>
+#include <igsioVideoFrame.h>
 #include <vtkPlusChannel.h>
 
 // VTK includes

@@ -14,15 +14,15 @@ See License.txt for details.
 #include "MadgwickAhrsAlgo.h"
 #include "MahonyAhrsAlgo.h"
 #include "PlusConfigure.h"
-#include "PlusMath.h"
-#include "PlusTrackedFrame.h"
+#include "igsioMath.h"
+#include "igsioTrackedFrame.h"
 #include "vtkImageData.h"
 #include "vtkMath.h"
 #include "vtkMatrix3x3.h"
 #include "vtkPointData.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkTransform.h"
 #include "vtksys/CommandLineArguments.hxx"
 #include <iomanip>
@@ -36,7 +36,7 @@ See License.txt for details.
   const double DOUBLE_DIFF = 0.04;
 #endif
 
-void Update(AhrsAlgo* ahrsAlgo, PlusTrackedFrame* frame, const std::string& trackerReferenceFrame, int westAxisIndex, bool useTimestamps, vtkMatrix4x4* filteredTiltSensorToTrackerTransformReturn = NULL);
+void Update(AhrsAlgo* ahrsAlgo, igsioTrackedFrame* frame, const std::string& trackerReferenceFrame, int westAxisIndex, bool useTimestamps, vtkMatrix4x4* filteredTiltSensorToTrackerTransformReturn = NULL);
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
   int westAxisIndex = 0;
   int numberOfRepeatedFramesForInitialization = 0;
   std::vector<double> initialAhrsAlgoGain;
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     exit(EXIT_SUCCESS);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   if (inputImgFile.empty())
   {
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 
   // Read transformations data
   LOG_DEBUG("Reading input meta file...");
-  vtkSmartPointer< vtkPlusTrackedFrameList > frameList = vtkSmartPointer< vtkPlusTrackedFrameList >::New();
+  vtkSmartPointer< vtkIGSIOTrackedFrameList > frameList = vtkSmartPointer< vtkIGSIOTrackedFrameList >::New();
   if (vtkPlusSequenceIO::Read(inputImgFile, frameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Unable to load input sequences file.");
@@ -148,8 +148,8 @@ int main(int argc, char** argv)
 
   // Initialization with the same frame
   ahrsAlgo->SetGain(initialProportionalGain, initialIntegralGain);
-  PlusTrackedFrame* frame0 = frameList->GetTrackedFrame(0);
-  PlusTrackedFrame* frame1 = frameList->GetTrackedFrame(1);
+  igsioTrackedFrame* frame0 = frameList->GetTrackedFrame(0);
+  igsioTrackedFrame* frame1 = frameList->GetTrackedFrame(1);
   double samplingFreqHz = 125;
   double timeDiffSec = fabs(frame1->GetTimestamp() - frame0->GetTimestamp());
   if (timeDiffSec > 1e-4)
@@ -168,10 +168,10 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkMatrix4x4> filteredTiltSensorToTrackerTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   for (int frameIndex = 0; frameIndex < nFrames; frameIndex++)
   {
-    PlusTrackedFrame* frame = frameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* frame = frameList->GetTrackedFrame(frameIndex);
     Update(ahrsAlgo, frame, trackerReferenceFrame, westAxisIndex, true, filteredTiltSensorToTrackerTransform);
-    frame->SetFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTiltSensorToTrackerTransform);
-    frame->SetFrameTransformStatus(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), TOOL_OK);
+    frame->SetFrameTransform(igsioTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTiltSensorToTrackerTransform);
+    frame->SetFrameTransformStatus(igsioTransformName("FilteredTiltSensor", trackerReferenceFrame), TOOL_OK);
   }
 
   if (vtkPlusSequenceIO::Write(outputImgFile, frameList, US_IMG_ORIENT_XX) != PLUS_SUCCESS)
@@ -185,7 +185,7 @@ int main(int argc, char** argv)
   {
     // Read transformations data
     LOG_DEBUG("Reading baseline meta file...");
-    vtkSmartPointer<vtkPlusTrackedFrameList> baselineFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+    vtkSmartPointer<vtkIGSIOTrackedFrameList> baselineFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
     if (vtkPlusSequenceIO::Read(baselineImgFile, baselineFrameList) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to load input sequences file.");
@@ -198,14 +198,14 @@ int main(int argc, char** argv)
     //confirm that the post processed filtered tilt is the same as that in the baseline
     for (int frameIndex = 0; frameIndex < nFrames; frameIndex++)
     {
-      PlusTrackedFrame* frame = frameList->GetTrackedFrame(frameIndex);
-      PlusTrackedFrame* baselineFrame = baselineFrameList->GetTrackedFrame(frameIndex);
+      igsioTrackedFrame* frame = frameList->GetTrackedFrame(frameIndex);
+      igsioTrackedFrame* baselineFrame = baselineFrameList->GetTrackedFrame(frameIndex);
 
       vtkSmartPointer<vtkMatrix4x4> filteredTilt = vtkSmartPointer<vtkMatrix4x4>::New();
-      frame->GetFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTilt);
+      frame->GetFrameTransform(igsioTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTilt);
 
       vtkSmartPointer<vtkMatrix4x4> baselineFilteredTilt = vtkSmartPointer<vtkMatrix4x4>::New();
-      baselineFrame->GetFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), baselineFilteredTilt);
+      baselineFrame->GetFrameTransform(igsioTransformName("FilteredTiltSensor", trackerReferenceFrame), baselineFilteredTilt);
 
       //check for element by element equality
       bool matricesDifferent = false;
@@ -225,9 +225,9 @@ int main(int argc, char** argv)
         LOG_ERROR("Mismatch in filtered tilt sensor matrices in frame " << frameIndex);
         const int precision = 8;
         LOG_INFO("Computed matrix in frame " << frameIndex << ":");
-        PlusMath::LogVtkMatrix(filteredTilt, precision);
+        igsioMath::LogVtkMatrix(filteredTilt, precision);
         LOG_INFO("Baseline matrix in frame " << frameIndex << ":");
-        PlusMath::LogVtkMatrix(baselineFilteredTilt, precision);
+        igsioMath::LogVtkMatrix(baselineFilteredTilt, precision);
         numberOfErrors++;
       }
 
@@ -250,13 +250,13 @@ int main(int argc, char** argv)
 }
 
 
-void Update(AhrsAlgo* ahrsAlgo, PlusTrackedFrame* frame, const std::string& trackerReferenceFrame, int westAxisIndex, bool useTimestamps, vtkMatrix4x4* filteredTiltSensorToTrackerTransformReturn/*=NULL*/)
+void Update(AhrsAlgo* ahrsAlgo, igsioTrackedFrame* frame, const std::string& trackerReferenceFrame, int westAxisIndex, bool useTimestamps, vtkMatrix4x4* filteredTiltSensorToTrackerTransformReturn/*=NULL*/)
 {
   double timestamp = frame->GetTimestamp();
   vtkSmartPointer<vtkMatrix4x4> gyroscopeMat = vtkSmartPointer<vtkMatrix4x4>::New();
-  frame->GetFrameTransform(PlusTransformName("Gyroscope", trackerReferenceFrame), gyroscopeMat);
+  frame->GetFrameTransform(igsioTransformName("Gyroscope", trackerReferenceFrame), gyroscopeMat);
   vtkSmartPointer<vtkMatrix4x4> accelerometerMat = vtkSmartPointer<vtkMatrix4x4>::New();
-  frame->GetFrameTransform(PlusTransformName("Accelerometer", trackerReferenceFrame), accelerometerMat);
+  frame->GetFrameTransform(igsioTransformName("Accelerometer", trackerReferenceFrame), accelerometerMat);
 
   if (useTimestamps)
   {
@@ -281,7 +281,7 @@ void Update(AhrsAlgo* ahrsAlgo, PlusTrackedFrame* frame, const std::string& trac
   vtkMath::Normalize(filteredDownVector_Sensor);
 
   vtkSmartPointer<vtkMatrix4x4> filteredTiltSensorToTrackerTransform = vtkSmartPointer<vtkMatrix4x4>::New();
-  PlusMath::ConstrainRotationToTwoAxes(filteredDownVector_Sensor, westAxisIndex, filteredTiltSensorToTrackerTransform);
+  igsioMath::ConstrainRotationToTwoAxes(filteredDownVector_Sensor, westAxisIndex, filteredTiltSensorToTrackerTransform);
 
   // write back the results to the FilteredTiltSensor_AHRS algorithm
   for (int c = 0; c < 3; c++)

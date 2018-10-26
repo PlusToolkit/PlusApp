@@ -37,7 +37,7 @@ typedef struct
 int main(int argc, char* argv[])
 {
   bool printHelp(false);
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
   int port = 18944;
 
   vtksys::CommandLineArguments args;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
   /*! igtl Factory for message sending */
   vtkSmartPointer<vtkPlusIgtlMessageFactory> IgtlMessageFactory;
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   igtl::ServerSocket::Pointer serverSocket;
   serverSocket = igtl::ServerSocket::New();

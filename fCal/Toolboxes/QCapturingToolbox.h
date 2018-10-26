@@ -23,7 +23,7 @@ class QScrollArea;
 class QSpacerItem;
 class QString;
 class QTimer;
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 //-----------------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ public:
   void SetDisplayAccordingToState();
 
   /*! Get recorded tracked frame list */
-  inline vtkPlusTrackedFrameList* GetRecordedFrames() { return m_RecordedFrames; }
+  inline vtkIGSIOTrackedFrameList* GetRecordedFrames() { return m_RecordedFrames; }
 
 protected:
   /*!
@@ -159,7 +159,7 @@ protected slots:
 
 protected:
   /*! Recorded tracked frame list */
-  vtkPlusTrackedFrameList* m_RecordedFrames;
+  vtkIGSIOTrackedFrameList* m_RecordedFrames;
 
   /*! Timer triggering the */
   QTimer* m_RecordingTimer;
