@@ -15,32 +15,35 @@
   processing.
 */
 
+// Local includes
 #include "PlusConfigure.h"
 #include "PlusTrackedFrame.h"
-#include "vtkActor.h"
-#include "vtkAppendPolyData.h"
-#include "vtkCamera.h"
-#include "vtkCellArray.h"
-#include "vtkGlyph3D.h"
-#include "vtkLineSource.h"
-#include "vtkMatrix4x4.h"
-#include "vtkPLYWriter.h"
-#include "vtkPoints.h"
-#include "vtkPolyData.h"
-#include "vtkPolyDataMapper.h"
-#include "vtkPolyDataNormals.h"
-#include "vtkProperty.h"
-#include "vtkRenderWindow.h"
-#include "vtkRenderWindowInteractor.h"
-#include "vtkRenderer.h"
-#include "vtkSTLWriter.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkSphereSource.h"
 #include "vtkPlusTrackedFrameList.h"
 #include "vtkPlusTransformRepository.h"
-#include "vtkTriangleFilter.h"
-#include "vtkTubeFilter.h"
-#include "vtkXMLUtilities.h"
+
+// VTK includes
+#include <vtkActor.h>
+#include <vtkAppendPolyData.h>
+#include <vtkCamera.h>
+#include <vtkCellArray.h>
+#include <vtkGlyph3D.h>
+#include <vtkLineSource.h>
+#include <vtkMatrix4x4.h>
+#include <vtkPLYWriter.h>
+#include <vtkPoints.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkPolyDataNormals.h>
+#include <vtkProperty.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkRenderer.h>
+#include <vtkSTLWriter.h>
+#include <vtkSphereSource.h>
+#include <vtkTriangleFilter.h>
+#include <vtkTubeFilter.h>
+#include <vtkXMLUtilities.h>
 #include <vtksys/CommandLineArguments.hxx>
 
 int main(int argc, char** argv)
@@ -137,9 +140,9 @@ int main(int argc, char** argv)
     PlusTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(frame);
     transformRepository->SetTransforms(*trackedFrame);
     vtkSmartPointer<vtkMatrix4x4> stylusToReferenceTransform = vtkSmartPointer<vtkMatrix4x4>::New();
-    bool valid = false;
-    transformRepository->GetTransform(stylusToReferenceTransformName, stylusToReferenceTransform, &valid);
-    if (!valid)
+    ToolStatus status(TOOL_INVALID);
+    transformRepository->GetTransform(stylusToReferenceTransformName, stylusToReferenceTransform, &status);
+    if (status != TOOL_OK)
     {
       // There is no available transform for this frame; skip that frame
       continue;

@@ -489,18 +489,18 @@ PlusStatus vtkPlusVisualizationController::EnableVolumeActor(bool aEnable)
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(const char* aTransformFrom, const char* aTransformTo, std::string& aTransformTranslationString, bool* aValid/* = NULL*/)
+PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(const char* aTransformFrom, const char* aTransformTo, std::string& aTransformTranslationString, ToolStatus* aStatus/* = NULL*/)
 {
   PlusTransformName transformName(aTransformFrom, aTransformTo);
 
-  return GetTransformTranslationString(transformName, aTransformTranslationString, aValid);
+  return GetTransformTranslationString(transformName, aTransformTranslationString, aStatus);
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(PlusTransformName aTransform, std::string& aTransformTranslationString, bool* aValid/* = NULL*/)
+PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(PlusTransformName aTransform, std::string& aTransformTranslationString, ToolStatus* aStatus/* = NULL*/)
 {
   vtkSmartPointer<vtkMatrix4x4> transformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  if (GetTransformMatrix(aTransform, transformMatrix, aValid) != PLUS_SUCCESS)
+  if (GetTransformMatrix(aTransform, transformMatrix, aStatus) != PLUS_SUCCESS)
   {
     aTransformTranslationString = "N/A";
     return PLUS_FAIL;
@@ -515,15 +515,15 @@ PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(PlusTra
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusVisualizationController::GetTransformMatrix(const char* aTransformFrom, const char* aTransformTo, vtkMatrix4x4* aOutputMatrix, bool* aValid/* = NULL*/)
+PlusStatus vtkPlusVisualizationController::GetTransformMatrix(const char* aTransformFrom, const char* aTransformTo, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus/* = NULL*/)
 {
   PlusTransformName transformName(aTransformFrom, aTransformTo);
 
-  return GetTransformMatrix(transformName, aOutputMatrix, aValid);
+  return GetTransformMatrix(transformName, aOutputMatrix, aStatus);
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusVisualizationController::GetTransformMatrix(PlusTransformName aTransform, vtkMatrix4x4* aOutputMatrix, bool* aValid/* = NULL*/)
+PlusStatus vtkPlusVisualizationController::GetTransformMatrix(PlusTransformName aTransform, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus/* = NULL*/)
 {
   PlusTrackedFrame trackedFrame;
   if (this->SelectedChannel == NULL || this->SelectedChannel->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
@@ -537,7 +537,7 @@ PlusStatus vtkPlusVisualizationController::GetTransformMatrix(PlusTransformName 
     return PLUS_FAIL;
   }
 
-  if (this->TransformRepository->GetTransform(aTransform, aOutputMatrix, aValid) != PLUS_SUCCESS)
+  if (this->TransformRepository->GetTransform(aTransform, aOutputMatrix, aStatus) != PLUS_SUCCESS)
   {
     std::string transformName;
     aTransform.GetTransformName(transformName);

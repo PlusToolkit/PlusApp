@@ -65,7 +65,7 @@ QSpatialCalibrationToolbox::QSpatialCalibrationToolbox(fCalMainWindow* aParentMa
   connect(ui.pushButton_OpenSegmentationParameters, SIGNAL(clicked()), this, SLOT(OpenSegmentationParameters()));
   connect(ui.pushButton_EditSegmentationParameters, SIGNAL(clicked()), this, SLOT(EditSegmentationParameters()));
   connect(ui.pushButton_StartCancelSpatial, SIGNAL(clicked()), this, SLOT(StartDelayTimer()));
-  connect(m_StartupDelayTimer, SIGNAL(timeout()), this , SLOT(DelayStartup()));
+  connect(m_StartupDelayTimer, SIGNAL(timeout()), this, SLOT(DelayStartup()));
 }
 
 //-----------------------------------------------------------------------------
@@ -460,10 +460,10 @@ void QSpatialCalibrationToolbox::OpenPhantomRegistration()
   vtkSmartPointer<vtkMatrix4x4> phantomToReferenceTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   std::string transformDate;
   double transformError = 0.0;
-  bool valid = false;
+  ToolStatus status(TOOL_INVALID);
   vtkPlusTransformRepository* tempTransformRepo = vtkPlusTransformRepository::New();
   if (tempTransformRepo->ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS
-      || tempTransformRepo->GetTransform(phantomToReferenceTransformName, phantomToReferenceTransformMatrix, &valid) != PLUS_SUCCESS
+      || tempTransformRepo->GetTransform(phantomToReferenceTransformName, phantomToReferenceTransformMatrix, &status) != PLUS_SUCCESS
       || tempTransformRepo->GetTransformDate(phantomToReferenceTransformName, transformDate) != PLUS_SUCCESS
       || tempTransformRepo->GetTransformError(phantomToReferenceTransformName, transformError) != PLUS_SUCCESS)
   {
@@ -474,7 +474,7 @@ void QSpatialCalibrationToolbox::OpenPhantomRegistration()
 
   tempTransformRepo->Delete();
 
-  if (valid)
+  if (status == TOOL_OK)
   {
     if (m_ParentMainWindow->GetVisualizationController()->GetTransformRepository()->SetTransform(phantomToReferenceTransformName, phantomToReferenceTransformMatrix) != PLUS_SUCCESS)
     {
@@ -816,7 +816,7 @@ void QSpatialCalibrationToolbox::DoCalibration()
   LOG_DEBUG("Computation time: " << computationTimeMs);
   LOG_DEBUG("Waiting time: " << waitTimeMs);
 
-  QTimer::singleShot(waitTimeMs , this, SLOT(DoCalibration()));
+  QTimer::singleShot(waitTimeMs, this, SLOT(DoCalibration()));
 }
 
 //-----------------------------------------------------------------------------

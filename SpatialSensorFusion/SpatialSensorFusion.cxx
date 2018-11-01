@@ -31,9 +31,9 @@ See License.txt for details.
 // Define tolerance used for comparing double numbers.
 // There are relatively large differences between results computed by different compiler versions.
 #if defined(_WIN32)
-const double DOUBLE_DIFF = 0.001;
+  const double DOUBLE_DIFF = 0.001;
 #else
-const double DOUBLE_DIFF = 0.04;
+  const double DOUBLE_DIFF = 0.04;
 #endif
 
 void Update(AhrsAlgo* ahrsAlgo, PlusTrackedFrame* frame, const std::string& trackerReferenceFrame, int westAxisIndex, bool useTimestamps, vtkMatrix4x4* filteredTiltSensorToTrackerTransformReturn = NULL);
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
     Update(ahrsAlgo, frame0, trackerReferenceFrame, westAxisIndex, false);
   }
 
-  //set gain to normal running value after convergance time
+  //set gain to normal running value after convergence time
   ahrsAlgo->SetGain(proportionalGain, integralGain);
   int nFrames = frameList->GetNumberOfTrackedFrames();
   vtkSmartPointer<vtkMatrix4x4> filteredTiltSensorToTrackerTransform = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -171,7 +171,7 @@ int main(int argc, char** argv)
     PlusTrackedFrame* frame = frameList->GetTrackedFrame(frameIndex);
     Update(ahrsAlgo, frame, trackerReferenceFrame, westAxisIndex, true, filteredTiltSensorToTrackerTransform);
     frame->SetFrameTransform(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), filteredTiltSensorToTrackerTransform);
-    frame->SetFrameTransformStatus(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), FIELD_OK);
+    frame->SetFrameTransformStatus(PlusTransformName("FilteredTiltSensor", trackerReferenceFrame), TOOL_OK);
   }
 
   if (vtkPlusSequenceIO::Write(outputImgFile, frameList, US_IMG_ORIENT_XX) != PLUS_SUCCESS)
@@ -185,7 +185,7 @@ int main(int argc, char** argv)
   {
     // Read transformations data
     LOG_DEBUG("Reading baseline meta file...");
-    vtkSmartPointer< vtkPlusTrackedFrameList > baselineFrameList = vtkSmartPointer< vtkPlusTrackedFrameList >::New();
+    vtkSmartPointer<vtkPlusTrackedFrameList> baselineFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
     if (vtkPlusSequenceIO::Read(baselineImgFile, baselineFrameList) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to load input sequences file.");

@@ -137,33 +137,36 @@ public:
   * Return acquisition timer (to be able to connect actions to it)
   * \return Acquisition timer object
   */
-  QTimer& GetAcquisitionTimer() { return this->AcquisitionTimer; };
+  QTimer& GetAcquisitionTimer()
+  {
+    return this->AcquisitionTimer;
+  };
 
   /*!
   Acquire transform matrix from tracking and provide string containing the translation part
   /param aTransformTranslationString Out parameter for the position string
   /param aValid True if the transform is valid, false otherwise (optional parameter)
   */
-  PlusStatus GetTransformTranslationString(const char* aTransformFrom, const char* aTransformTo, std::string& aTransformTranslationString, bool* aValid = NULL);
+  PlusStatus GetTransformTranslationString(const char* aTransformFrom, const char* aTransformTo, std::string& aTransformTranslationString, ToolStatus* aStatus = NULL);
   /*!
   Acquire transform matrix from tracking and provide string containing the translation part
   /param aTransformTranslationString Out parameter for the position string
   /param aValid True if the transform is valid, false otherwise (optional parameter)
   */
-  PlusStatus GetTransformTranslationString(PlusTransformName aTransform, std::string& aTransformTranslationString, bool* aValid = NULL);
+  PlusStatus GetTransformTranslationString(PlusTransformName aTransform, std::string& aTransformTranslationString, ToolStatus* aStatus = NULL);
 
   /*!
   Acquire transform matrix from tracking
   /param aOutputMatrix Out parameter for the transform matrix
   /param aValid True if the transform is valid, false otherwise (optional parameter)
   */
-  PlusStatus GetTransformMatrix(const char* aTransformFrom, const char* aTransformTo, vtkMatrix4x4* aOutputMatrix, bool* aValid = NULL);
+  PlusStatus GetTransformMatrix(const char* aTransformFrom, const char* aTransformTo, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus = NULL);
   /*!
   Acquire transform matrix from tracking
   /param aOutputMatrix Out parameter for the transform matrix
   /param aValid True if the transform is valid, false otherwise (optional parameter)
   */
-  PlusStatus GetTransformMatrix(PlusTransformName aTransform, vtkMatrix4x4* aOutputMatrix, bool* aValid = NULL);
+  PlusStatus GetTransformMatrix(PlusTransformName aTransform, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus = NULL);
 
   /*!
   Check if a transform exists in transform repository
@@ -312,7 +315,10 @@ protected:
 
   vtkImageActor* GetImageActor();
 
-  QVTKWidget* GetCanvas() { return Canvas; }
+  QVTKWidget* GetCanvas()
+  {
+    return Canvas;
+  }
 
 protected:
   /*!

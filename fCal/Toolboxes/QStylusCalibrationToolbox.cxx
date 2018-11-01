@@ -166,15 +166,14 @@ void QStylusCalibrationToolbox::RefreshContent()
   {
     // Get stylus tip position and display it
     std::string stylusTipPosition;
-    bool valid = false;
-    if (m_ParentMainWindow->GetVisualizationController()->GetTransformTranslationString(
-          m_PivotCalibration->GetObjectPivotPointCoordinateFrame(), m_PivotCalibration->GetReferenceCoordinateFrame(), stylusTipPosition, &valid) != PLUS_SUCCESS)
+    ToolStatus status(TOOL_INVALID);
+    if (m_ParentMainWindow->GetVisualizationController()->GetTransformTranslationString(m_PivotCalibration->GetObjectPivotPointCoordinateFrame(), m_PivotCalibration->GetReferenceCoordinateFrame(), stylusTipPosition, &status) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to get stylus tip to reference transform!");
       return;
     }
 
-    if (valid)
+    if (status == TOOL_OK)
     {
       ui.label_CurrentPosition->setText(QString(stylusTipPosition.c_str()));
     }
@@ -527,15 +526,14 @@ void QStylusCalibrationToolbox::OnDataAcquired()
 
   // Get stylus position
   vtkSmartPointer<vtkMatrix4x4> stylusToReferenceTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  bool transformValid = false;
-  if (m_ParentMainWindow->GetVisualizationController()->GetTransformMatrix(
-        m_PivotCalibration->GetObjectMarkerCoordinateFrame(), m_PivotCalibration->GetReferenceCoordinateFrame(), stylusToReferenceTransformMatrix, &transformValid) != PLUS_SUCCESS)
+  ToolStatus status(TOOL_INVALID);
+  if (m_ParentMainWindow->GetVisualizationController()->GetTransformMatrix(m_PivotCalibration->GetObjectMarkerCoordinateFrame(), m_PivotCalibration->GetReferenceCoordinateFrame(), stylusToReferenceTransformMatrix, &status) != PLUS_SUCCESS)
   {
     LOG_ERROR("No transform found between stylus and reference!");
     return;
   }
 
-  if (!transformValid)
+  if (status != TOOL_OK)
   {
     return;
   }

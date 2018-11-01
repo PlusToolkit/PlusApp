@@ -346,10 +346,10 @@ void QCapturingToolbox::TakeSnapshot()
   {
     for (std::vector<PlusTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
     {
-      TrackedFrameFieldStatus status = FIELD_INVALID;
+      ToolStatus status = TOOL_INVALID;
       trackedFrame.GetFrameTransformStatus(*it, status);
 
-      if (status == FIELD_OK)
+      if (status == TOOL_OK)
       {
         validFrame = true;
         break;
