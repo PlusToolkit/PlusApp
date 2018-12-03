@@ -93,6 +93,19 @@ void QSpatialCalibrationToolbox::OnActivated()
 {
   LOG_TRACE("SpatialCalibrationToolbox::OnActivated");
 
+  // Read and refresh spatial calibration configuration
+  if (m_Calibration->ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Reading probe calibration algorithm configuration failed");
+    return;
+  }
+
+  if (ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Reading spatial calibration configuration failed");
+    return;
+  }
+
   if (m_State == ToolboxState_Done)
   {
     SetDisplayAccordingToState();
@@ -105,19 +118,6 @@ void QSpatialCalibrationToolbox::OnActivated()
   if ((m_ParentMainWindow->GetVisualizationController()->GetDataCollector() != NULL)
       && (m_ParentMainWindow->GetVisualizationController()->GetDataCollector()->GetConnected()))
   {
-    if (m_Calibration->ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS)
-    {
-      LOG_ERROR("Reading probe calibration algorithm configuration failed");
-      return;
-    }
-
-    // Read spatial calibration configuration
-    if (ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS)
-    {
-      LOG_ERROR("Reading spatial calibration configuration failed");
-      return;
-    }
-
     // Set initialized if it was uninitialized
     if (m_State == ToolboxState_Uninitialized || m_State == ToolboxState_Error)
     {

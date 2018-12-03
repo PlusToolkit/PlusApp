@@ -111,6 +111,13 @@ void QTemporalCalibrationToolbox::OnActivated()
 {
   LOG_TRACE("TemporalCalibrationToolbox::OnActivated");
 
+  // Read and refresh temporal calibration configuration
+  if (this->ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Reading temporal calibration configuration failed!");
+    return;
+  }
+
   if (m_State == ToolboxState_Done)
   {
     SetDisplayAccordingToState();
@@ -120,13 +127,6 @@ void QTemporalCalibrationToolbox::OnActivated()
   if ((m_ParentMainWindow->GetVisualizationController()->GetDataCollector() != NULL)
       && (m_ParentMainWindow->GetVisualizationController()->GetDataCollector()->GetConnected()))
   {
-    // Read temporal calibration configuration
-    if (this->ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS)
-    {
-      LOG_ERROR("Reading temporal calibration configuration failed!");
-      return;
-    }
-
     // Retrieve channels from devices
     DeviceCollection aCollection;
     if (m_ParentMainWindow->GetVisualizationController()->GetDataCollector()->GetDevices(aCollection) != PLUS_SUCCESS)

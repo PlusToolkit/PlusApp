@@ -1257,6 +1257,16 @@ PlusStatus QPlusSegmentationParameterDialog::WriteConfiguration()
     segmentationParameters->SetIntAttribute("NumberOfMaximumFiducialPointCandidates", ui.doubleSpinBox_MaxCandidates->value());
   }
 
+  vtkXMLDataElement* temporalCalibration = vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()->FindNestedElementWithName("vtkPlusTemporalCalibrationAlgo");
+  if (temporalCalibration == nullptr)
+  {
+    temporalCalibration = vtkXMLDataElement::New();
+    temporalCalibration->SetName("vtkPlusTemporalCalibrationAlgo");
+    vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()->AddNestedElement(temporalCalibration);
+  }
+  temporalCalibration->SetAttribute("ClipRectangleOrigin", originSs.str().c_str());
+  temporalCalibration->SetAttribute("ClipRectangleSize", sizeSs.str().c_str());
+
   return PLUS_SUCCESS;
 }
 
