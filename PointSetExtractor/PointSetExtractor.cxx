@@ -17,10 +17,10 @@
 
 // Local includes
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "vtkIGSIOTransformRepository.h"
 
 // VTK includes
 #include <vtkActor.h>
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
   std::string stylusName("Stylus");
   std::string referenceName("Reference");
 
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     std::cout << "Help: " << args.GetHelp() << std::endl;
     exit(EXIT_FAILURE);
   }
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
   if (printHelp)
   {
     std::cout << "Help: " << args.GetHelp() << std::endl;
@@ -106,14 +106,14 @@ int main(int argc, char** argv)
   ///////////////
 
   LOG_INFO("Read input file...");
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (vtkPlusSequenceIO::Read(inputSequenceFileName, trackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to read tracked pose sequence metafile: " << inputSequenceFileName);
     return EXIT_FAILURE;
   }
 
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
 
   // Read config file
   if (!inputConfigFileName.empty())
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
     LOG_DEBUG("Reading config file finished.");
   }
 
-  PlusTransformName stylusToReferenceTransformName(stylusName, referenceName);
+  igsioTransformName stylusToReferenceTransformName(stylusName, referenceName);
   if (!stylusToReferenceTransformName.IsValid())
   {
     LOG_ERROR("The tool names (" << stylusName << ", " << referenceName << ") are invalid");
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
   double stylusTipPositionInReferenceFrame[4] = {0, 0, 0, 1};
   for (unsigned int frame = 0; frame < trackedFrameList->GetNumberOfTrackedFrames(); ++frame)
   {
-    PlusTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(frame);
+    igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(frame);
     transformRepository->SetTransforms(*trackedFrame);
     vtkSmartPointer<vtkMatrix4x4> stylusToReferenceTransform = vtkSmartPointer<vtkMatrix4x4>::New();
     ToolStatus status(TOOL_INVALID);

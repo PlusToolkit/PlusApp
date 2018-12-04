@@ -70,7 +70,7 @@ QConfigurationToolbox::QConfigurationToolbox(fCalMainWindow* aParentMainWindow, 
 
   // Set application configuration
   ui.comboBox_LogLevel->blockSignals(true);
-  ui.comboBox_LogLevel->setCurrentIndex(vtkPlusLogger::Instance()->GetLogLevel() - 1);
+  ui.comboBox_LogLevel->setCurrentIndex(vtkIGSIOLogger::Instance()->GetLogLevel() - 1);
   ui.comboBox_LogLevel->blockSignals(false);
 
   ui.lineEdit_ImageDirectory->setText(QDir::toNativeSeparators(QString(vtkPlusConfig::GetInstance()->GetImageDirectory().c_str())));
@@ -338,7 +338,7 @@ void QConfigurationToolbox::LogLevelChanged(int aLevel)
 {
   LOG_TRACE("ConfigurationToolbox::LogLevelChanged");
 
-  vtkPlusLogger::Instance()->SetLogLevel(aLevel + 1);
+  vtkIGSIOLogger::Instance()->SetLogLevel(aLevel + 1);
 
   LOG_INFO("Log level changed to: " << ui.comboBox_LogLevel->currentText().toLatin1().constData() << " (" << aLevel + 1 << ")");
 

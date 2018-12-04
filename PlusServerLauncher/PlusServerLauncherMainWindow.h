@@ -25,7 +25,7 @@ class QTimer;
 class QWidget;
 class vtkPlusDataCollector;
 class vtkPlusOpenIGTLinkServer;
-class vtkPlusTransformRepository;
+class vtkIGSIOTransformRepository;
 
 //-----------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ protected:
   void SendServerOutputToLogger(const QByteArray& strData);
 
   /*! Start server process, connect outputs to logger. Returns with true on success. */
-  bool StartServer(const QString& configFilePath, int logLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED);
+  bool StartServer(const QString& configFilePath, int logLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED);
   /*! Start server process from GUI */
   bool LocalStartServer();
 
@@ -122,7 +122,7 @@ protected:
   void RemoteStartServer(igtlioCommandPointer clientDevice);
   void RemoteStopServer(igtlioCommandPointer clientDevice);
 
-  void LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message);
+  void LocalLog(vtkIGSIOLogger::LogLevelType level, const std::string& message);
 
   std::string GetServersFromConfigFile(std::string filename);
 

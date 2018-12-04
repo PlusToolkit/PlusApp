@@ -12,7 +12,7 @@
 
 // PlusLib includes
 #include <PlusConfigure.h>
-#include <vtkPlusTransformRepository.h>
+#include <vtkIGSIOTransformRepository.h>
 #include <vtkPlusChannel.h>
 
 // VTK includes
@@ -125,7 +125,7 @@ public:
   // Set/Get for member variables
   vtkRenderer* GetCanvasRenderer() const;
   vtkImageActor* GetImageActor() const;
-  vtkSetObjectMacro(TransformRepository, vtkPlusTransformRepository);
+  vtkSetObjectMacro(TransformRepository, vtkIGSIOTransformRepository);
 
   vtkSetMacro(WorldCoordinateFrame, std::string);
   vtkGetMacro(WorldCoordinateFrame, std::string);
@@ -184,7 +184,7 @@ protected:
   std::string VolumeID;
 
   /*! Reference to Transform repository that stores and handles all transforms */
-  vtkPlusTransformRepository* TransformRepository;
+  vtkIGSIOTransformRepository* TransformRepository;
 
   /*! Channel to visualize */
   vtkPlusChannel* SelectedChannel;

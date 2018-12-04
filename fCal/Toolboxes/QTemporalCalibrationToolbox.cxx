@@ -16,12 +16,12 @@ See License.txt for details.
 #include <QStandardPaths>
 
 // PlusLib includes
-#include <PlusTrackedFrame.h>
+#include <igsioTrackedFrame.h>
 #include <vtkPlusChannel.h>
 #include <vtkPlusDataSource.h>
 #include <vtkPlusLineSegmentationAlgo.h>
 #include <vtkPlusTemporalCalibrationAlgo.h>
-#include <vtkPlusTrackedFrameList.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 // VTK includes
 #include <vtkAbstractArray.h>
@@ -50,8 +50,8 @@ namespace
 QTemporalCalibrationToolbox::QTemporalCalibrationToolbox(fCalMainWindow* aParentMainWindow, Qt::WindowFlags aFlags)
   : QAbstractToolbox(aParentMainWindow)
   , QWidget(aParentMainWindow, aFlags)
-  , TemporalCalibrationFixedData(vtkSmartPointer<vtkPlusTrackedFrameList>::New())
-  , TemporalCalibrationMovingData(vtkSmartPointer<vtkPlusTrackedFrameList>::New())
+  , TemporalCalibrationFixedData(vtkSmartPointer<vtkIGSIOTrackedFrameList>::New())
+  , TemporalCalibrationMovingData(vtkSmartPointer<vtkIGSIOTrackedFrameList>::New())
   , FreeHandStartupDelaySec(5)
   , StartupDelayRemainingTimeSec(0)
   , CancelRequest(false)
@@ -296,7 +296,7 @@ void QTemporalCalibrationToolbox::RefreshContent()
   m_ParentMainWindow->GetVisualizationController()->GetSelectedChannel()->GetVideoSource(selectedChannelVideoSource);
   if (this->FixedChannel != NULL && this->FixedType == vtkPlusTemporalCalibrationAlgo::FRAME_TYPE_VIDEO)
   {
-    PlusTrackedFrame frame;
+    igsioTrackedFrame frame;
     if (this->FixedChannel->GetTrackedFrame(frame) == PLUS_SUCCESS)
     {
       vtkPlusDataSource* fixedVideoSource;
@@ -312,7 +312,7 @@ void QTemporalCalibrationToolbox::RefreshContent()
 
   if (this->MovingChannel != NULL && this->MovingType == vtkPlusTemporalCalibrationAlgo::FRAME_TYPE_VIDEO)
   {
-    PlusTrackedFrame frame;
+    igsioTrackedFrame frame;
     if (this->MovingChannel->GetTrackedFrame(frame) == PLUS_SUCCESS)
     {
       vtkPlusDataSource* movingVideoSource;
@@ -328,7 +328,7 @@ void QTemporalCalibrationToolbox::RefreshContent()
 }
 
 //----------------------------------------------------------------------------
-void QTemporalCalibrationToolbox::SegmentAndDisplayLine(PlusTrackedFrame& frame)
+void QTemporalCalibrationToolbox::SegmentAndDisplayLine(igsioTrackedFrame& frame)
 {
   // Try segmenting the line from the image
   this->LineSegmenter->SetTrackedFrame(frame);
@@ -643,11 +643,11 @@ void QTemporalCalibrationToolbox::StartCalibration()
   TemporalCalibrationFixedData->Clear();
   TemporalCalibrationMovingData->Clear();
 
-  double currentTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double currentTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
   LastRecordedFixedItemTimestamp = UNDEFINED_TIMESTAMP; // means start from latest
   LastRecordedMovingItemTimestamp = UNDEFINED_TIMESTAMP; // means start from latest
 
-  StartTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  StartTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
   CancelRequest = false;
 
   SetState(ToolboxState_InProgress);
@@ -811,7 +811,7 @@ void QTemporalCalibrationToolbox::DoCalibration()
   LOG_TRACE("TemporalCalibrationToolbox::DoCalibration");
 
   // Get current time
-  double currentTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double currentTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
 
   if (currentTimeSec - StartTimeSec >= this->TemporalCalibrationDurationSec)
   {
@@ -839,12 +839,12 @@ void QTemporalCalibrationToolbox::DoCalibration()
   m_ParentMainWindow->GetVisualizationController()->GetSelectedChannel()->GetVideoSource(selectedChannelVideoSource);
   if (this->FixedChannel != NULL)
   {
-    vtkSmartPointer<vtkPlusTrackedFrameList> frameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+    vtkSmartPointer<vtkIGSIOTrackedFrameList> frameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
     if (this->FixedChannel->GetTrackedFrameList(this->LastRecordedFixedItemTimestamp, frameList, 50) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to add data to fixed frame list.");
     }
-    this->TemporalCalibrationFixedData->AddTrackedFrameList(frameList, vtkPlusTrackedFrameList::ADD_INVALID_FRAME);
+    this->TemporalCalibrationFixedData->AddTrackedFrameList(frameList, vtkIGSIOTrackedFrameList::ADD_INVALID_FRAME);
   }
   else
   {
@@ -854,12 +854,12 @@ void QTemporalCalibrationToolbox::DoCalibration()
   }
   if (this->MovingChannel != NULL)
   {
-    vtkSmartPointer<vtkPlusTrackedFrameList> frameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+    vtkSmartPointer<vtkIGSIOTrackedFrameList> frameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
     if (this->MovingChannel->GetTrackedFrameList(this->LastRecordedMovingItemTimestamp, frameList, 50) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to add data to moving frame list.");
     }
-    this->TemporalCalibrationMovingData->AddTrackedFrameList(frameList, vtkPlusTrackedFrameList::ADD_INVALID_FRAME);
+    this->TemporalCalibrationMovingData->AddTrackedFrameList(frameList, vtkIGSIOTrackedFrameList::ADD_INVALID_FRAME);
   }
   else
   {
@@ -1074,20 +1074,20 @@ void QTemporalCalibrationToolbox::FixedSignalChanged(int newIndex)
       QVariant strVar = QVariant::fromValue(QString("Video"));
       ui.comboBox_FixedSourceValue->addItem(QString::fromStdString(aSource->GetId()), strVar);
     }
-    PlusTrackedFrame frame;
+    igsioTrackedFrame frame;
     if (this->FixedChannel->GetTrackedFrame(frame) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to retrieve tracked frame from channel: " << this->FixedChannel->GetChannelId());
       return;
     }
-    vtkPlusTransformRepository* repo = vtkPlusTransformRepository::New();
+    vtkIGSIOTransformRepository* repo = vtkIGSIOTransformRepository::New();
     repo->SetTransforms(frame);
 
-    std::vector<PlusTransformName> nameList;
+    std::vector<igsioTransformName> nameList;
     frame.GetFrameTransformNameList(nameList);
     std::vector<std::string> fromList;
     std::vector<std::string> toList;
-    for (std::vector<PlusTransformName>::iterator it = nameList.begin(); it != nameList.end(); ++it)
+    for (std::vector<igsioTransformName>::iterator it = nameList.begin(); it != nameList.end(); ++it)
     {
       if (std::find(fromList.begin(), fromList.end(), it->From()) == fromList.end())
       {
@@ -1111,7 +1111,7 @@ void QTemporalCalibrationToolbox::FixedSignalChanged(int newIndex)
           continue;
         }
 
-        PlusTransformName trans;
+        igsioTransformName trans;
         std::stringstream ss;
         ss << (*fromIt) << "To" << (*toIt);
         trans.SetTransformName(ss.str().c_str());
@@ -1151,20 +1151,20 @@ void QTemporalCalibrationToolbox::MovingSignalChanged(int newIndex)
       QVariant strVar = QVariant::fromValue(QString("Video"));
       ui.comboBox_MovingSourceValue->addItem(QString::fromStdString(aSource->GetId()), strVar);
     }
-    PlusTrackedFrame frame;
+    igsioTrackedFrame frame;
     if (this->MovingChannel->GetTrackedFrame(frame) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to retrieve tracked frame from channel: " << this->MovingChannel->GetChannelId());
       return;
     }
-    vtkPlusTransformRepository* repo = vtkPlusTransformRepository::New();
+    vtkIGSIOTransformRepository* repo = vtkIGSIOTransformRepository::New();
     repo->SetTransforms(frame);
 
-    std::vector<PlusTransformName> nameList;
+    std::vector<igsioTransformName> nameList;
     frame.GetFrameTransformNameList(nameList);
     std::vector<std::string> fromList;
     std::vector<std::string> toList;
-    for (std::vector<PlusTransformName>::iterator it = nameList.begin(); it != nameList.end(); ++it)
+    for (std::vector<igsioTransformName>::iterator it = nameList.begin(); it != nameList.end(); ++it)
     {
       if (std::find(fromList.begin(), fromList.end(), it->From()) == fromList.end())
       {
@@ -1188,7 +1188,7 @@ void QTemporalCalibrationToolbox::MovingSignalChanged(int newIndex)
           continue;
         }
 
-        PlusTransformName trans;
+        igsioTransformName trans;
         std::stringstream ss;
         ss << (*fromIt) << "To" << (*toIt);
         trans.SetTransformName(ss.str().c_str());

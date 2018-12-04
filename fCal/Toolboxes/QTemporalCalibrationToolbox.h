@@ -20,10 +20,13 @@ See License.txt for details.
 #include <QTimer>
 #include <QWidget>
 
+// IGSIO includes
+#include <igsioCommon.h>
+
 class vtkContextView;
 class vtkPlusChannel;
 class vtkTable;
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 //-----------------------------------------------------------------------------
 
@@ -79,7 +82,7 @@ protected:
   static std::string GetTimeAsString(double timeSec);
 
   void SetFreeHandStartupDelaySec(int freeHandStartupDelaySec) {FreeHandStartupDelaySec = freeHandStartupDelaySec;};
-  void SegmentAndDisplayLine(PlusTrackedFrame& frame);
+  void SegmentAndDisplayLine(igsioTrackedFrame& frame);
 
 protected slots:
   /*! Start the delay startup timer*/
@@ -116,9 +119,9 @@ protected slots:
 
 protected:
   /*! Tracked frame for tracking data for temporal calibration */
-  vtkSmartPointer<vtkPlusTrackedFrameList>        TemporalCalibrationFixedData;
+  vtkSmartPointer<vtkIGSIOTrackedFrameList>        TemporalCalibrationFixedData;
   /*! Tracked frame for video data for temporal calibration */
-  vtkSmartPointer<vtkPlusTrackedFrameList>        TemporalCalibrationMovingData;
+  vtkSmartPointer<vtkIGSIOTrackedFrameList>        TemporalCalibrationMovingData;
   /*! Delay time before start acquisition [s] */
   int                                             FreeHandStartupDelaySec;
   /*! Current time delayed before the acquisition [s] */
@@ -159,8 +162,8 @@ protected:
   vtkPlusChannel*                                 MovingChannel;
   vtkPlusTemporalCalibrationAlgo::FRAME_TYPE      MovingType;
 
-  PlusTransformName                               FixedValidationTransformName;
-  PlusTransformName                               MovingValidationTransformName;
+  igsioTransformName                               FixedValidationTransformName;
+  igsioTransformName                               MovingValidationTransformName;
 
   vtkSmartPointer<vtkPlusTemporalCalibrationAlgo> TemporalCalibrationAlgo;
 

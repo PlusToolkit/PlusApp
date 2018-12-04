@@ -18,7 +18,7 @@ See License.txt for details.
 
 class vtkPlusProbeCalibrationAlgo;
 class PlusFidPatternRecognition;
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 //-----------------------------------------------------------------------------
 
@@ -116,10 +116,10 @@ protected:
   PlusFidPatternRecognition*                    m_PatternRecognition;
 
   /*! Tracked frame data for spatial calibration */
-  vtkSmartPointer<vtkPlusTrackedFrameList>      m_SpatialCalibrationData;
+  vtkSmartPointer<vtkIGSIOTrackedFrameList>      m_SpatialCalibrationData;
 
   /*! Tracked frame data for validation of spatial calibration */
-  vtkSmartPointer<vtkPlusTrackedFrameList>      m_SpatialValidationData;
+  vtkSmartPointer<vtkIGSIOTrackedFrameList>      m_SpatialValidationData;
 
   /*! Delay time before start acquisition [s] */
   int                           m_FreeHandStartupDelaySec;

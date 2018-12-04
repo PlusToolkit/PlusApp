@@ -10,9 +10,9 @@ See License.txt for details.
 // PlusLib includes
 #include <PlusConfigure.h>
 #include <PlusCommon.h>
-#include <PlusVideoFrame.h>
+#include <igsioVideoFrame.h>
 #include <vtkPlusDataCollector.h>
-#include <vtkPlusTransformRepository.h>
+#include <vtkIGSIOTransformRepository.h>
 
 // Qt includes
 #include <QObject>
@@ -153,7 +153,7 @@ public:
   /param aTransformTranslationString Out parameter for the position string
   /param aValid True if the transform is valid, false otherwise (optional parameter)
   */
-  PlusStatus GetTransformTranslationString(PlusTransformName aTransform, std::string& aTransformTranslationString, ToolStatus* aStatus = NULL);
+  PlusStatus GetTransformTranslationString(igsioTransformName aTransform, std::string& aTransformTranslationString, ToolStatus* aStatus = NULL);
 
   /*!
   Acquire transform matrix from tracking
@@ -166,7 +166,7 @@ public:
   /param aOutputMatrix Out parameter for the transform matrix
   /param aValid True if the transform is valid, false otherwise (optional parameter)
   */
-  PlusStatus GetTransformMatrix(PlusTransformName aTransform, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus = NULL);
+  PlusStatus GetTransformMatrix(igsioTransformName aTransform, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus = NULL);
 
   /*!
   Check if a transform exists in transform repository
@@ -299,7 +299,7 @@ public:
   PlusStatus SetAcquisitionFrameRate(int aFrameRate);
   vtkGetMacro(AcquisitionFrameRate, int);
 
-  vtkGetObjectMacro(TransformRepository, vtkPlusTransformRepository);
+  vtkGetObjectMacro(TransformRepository, vtkIGSIOTransformRepository);
   vtkGetObjectMacro(DataCollector, vtkPlusDataCollector);
 
   vtkRenderer* GetCanvasRenderer();
@@ -310,7 +310,7 @@ public:
   void SetInputData(vtkImageData* input);
 
 protected:
-  vtkSetObjectMacro(TransformRepository, vtkPlusTransformRepository);
+  vtkSetObjectMacro(TransformRepository, vtkIGSIOTransformRepository);
   vtkSetObjectMacro(DataCollector, vtkPlusDataCollector);
 
   vtkImageActor* GetImageActor();
@@ -352,7 +352,7 @@ protected:
   int                                         AcquisitionFrameRate;
   /// Cached variables from other systems
   QVTKWidget*                                 Canvas;
-  vtkPlusTransformRepository*                 TransformRepository;
+  vtkIGSIOTransformRepository*                 TransformRepository;
   vtkPlusChannel*                             SelectedChannel;
   vtkPlusDataCollector*                       DataCollector;
 };

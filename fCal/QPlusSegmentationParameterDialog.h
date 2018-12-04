@@ -12,7 +12,7 @@
 
 // PlusLib includes
 #include <PlusConfigure.h>
-#include <PlusTrackedFrame.h>
+#include <igsioTrackedFrame.h>
 
 // Qt includes
 #include <QDialog>
@@ -340,7 +340,7 @@ protected:
   bool                                    m_ImageFrozen;
 
   /*! Tracked frame to hold the desired image to process*/
-  PlusTrackedFrame                        m_Frame;
+  igsioTrackedFrame                        m_Frame;
 
 protected:
   Ui::SegmentationParameterDialog ui;

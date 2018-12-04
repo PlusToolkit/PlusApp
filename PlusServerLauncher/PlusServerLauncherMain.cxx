@@ -182,7 +182,7 @@ int appMain(int argc, char* argv[])
 
     if (verboseLevel > -1)
     {
-      vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+      vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
     }
   }
 

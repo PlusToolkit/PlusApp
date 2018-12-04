@@ -11,14 +11,14 @@ See License.txt for details.
 // PlusLib includes
 #include <PlusFidPatternRecognition.h>
 #include <PlusFidPatternRecognitionCommon.h>
-#include <PlusTrackedFrame.h>
-#include <PlusVideoFrame.h>
+#include <igsioTrackedFrame.h>
+#include <igsioVideoFrame.h>
 #include <QPlusConfigFileSaverDialog.h>
 #include <vtkPlusChannel.h>
 #include <vtkPlusDataCollector.h>
 #include <vtkPlusDevice.h>
 #include <vtkPlusSequenceIO.h>
-#include <vtkPlusTrackedFrameList.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 // VTK includes
 #include <vtkActor.h>
@@ -979,7 +979,7 @@ PlusStatus QPlusSegmentationParameterDialog::ReadConfiguration()
   if (segmentationParameters == NULL)
   {
     LOG_WARNING("No Segmentation element is found in the XML tree! Using default values");
-    segmentationParameters = PlusXmlUtils::GetNestedElementWithName(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData(), "Segmentation");
+    segmentationParameters = igsioXmlUtils::GetNestedElementWithName(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData(), "Segmentation");
     PlusFidSegmentation::SetDefaultSegmentationParameters(segmentationParameters);
   }
 
@@ -1451,7 +1451,7 @@ void QPlusSegmentationParameterDialog::ExportImage()
 {
   LOG_TRACE("QPlusSegmentationParameterDialog::ExportImage()");
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   trackedFrameList->AddTrackedFrame(&m_Frame);
 
   std::string fileName = vtkPlusConfig::GetInstance()->GetImagePath(
@@ -1470,7 +1470,7 @@ void QPlusSegmentationParameterDialog::ExportImage()
     {
       // Save config file next to the tracked frame list
       std::string configFileName = vtkPlusConfig::GetInstance()->GetImagePath(fileName + "_Config.xml");
-      PlusCommon::XML::PrintXML(configFileName, vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
+      igsioCommon::XML::PrintXML(configFileName, vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
     }
   }
   else

@@ -11,7 +11,7 @@ See License.txt for details.
 
 // PlusLib includes
 #include <vtkPlusSequenceIO.h>
-#include <vtkPlusTrackedFrameList.h>
+#include <vtkIGSIOTrackedFrameList.h>
 #include <vtkPlusVolumeReconstructor.h>
 
 // VTK includes
@@ -135,7 +135,7 @@ void QVolumeReconstructionToolbox::SetDisplayAccordingToState()
   if (!m_ParentMainWindow->GetImageCoordinateFrame().empty() && !m_ParentMainWindow->GetProbeCoordinateFrame().empty())
   {
     std::string imageToProbeTransformNameStr;
-    PlusTransformName imageToProbeTransformName(
+    igsioTransformName imageToProbeTransformName(
       m_ParentMainWindow->GetImageCoordinateFrame(), m_ParentMainWindow->GetProbeCoordinateFrame());
     imageToProbeTransformName.GetTransformName(imageToProbeTransformNameStr);
 
@@ -369,7 +369,7 @@ PlusStatus QVolumeReconstructionToolbox::ReconstructVolumeFromInputImage()
   m_ParentMainWindow->SetStatusBarProgress(0);
   RefreshContent();
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = NULL;
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = NULL;
 
   if (ui.comboBox_InputImage->currentText().left(1) == "<" && ui.comboBox_InputImage->currentText().right(1) == ">")       // If unsaved image is selected
   {
@@ -391,7 +391,7 @@ PlusStatus QVolumeReconstructionToolbox::ReconstructVolumeFromInputImage()
     {
       imageFileNameIndex = ui.comboBox_InputImage->currentIndex();
     }
-    trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+    trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
     if (vtkPlusSequenceIO::Read(m_ImageFileNames.at(imageFileNameIndex).toLatin1().constData(), trackedFrameList) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to load input image file!");
@@ -421,7 +421,7 @@ PlusStatus QVolumeReconstructionToolbox::ReconstructVolumeFromInputImage()
     m_ParentMainWindow->SetStatusBarProgress((int)((100.0 * frameIndex) / numberOfFrames + 0.49));
     RefreshContent();
 
-    PlusTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
 
     if (m_ParentMainWindow->GetVisualizationController()->GetTransformRepository()->SetTransforms(*frame) != PLUS_SUCCESS)
     {
@@ -527,7 +527,7 @@ void QVolumeReconstructionToolbox::PopulateImageComboBox()
   }
 
   // Get recorded tracked frame list from Capturing toolbox
-  vtkPlusTrackedFrameList* recordedFrames = NULL;
+  vtkIGSIOTrackedFrameList* recordedFrames = NULL;
   QCapturingToolbox* capturingToolbox = dynamic_cast<QCapturingToolbox*>(m_ParentMainWindow->GetToolbox(ToolboxType_Capturing));
   if ((capturingToolbox == NULL) || ((recordedFrames = capturingToolbox->GetRecordedFrames()) == NULL))
   {

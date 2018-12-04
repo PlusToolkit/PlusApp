@@ -10,7 +10,7 @@ See License.txt for details.
 
 // PlusLib includes
 #include <PlusConfigure.h>
-#include <PlusTrackedFrame.h>
+#include <igsioTrackedFrame.h>
 #include <vtkPlusChannel.h>
 #include <vtkPlusDevice.h>
 
@@ -106,7 +106,7 @@ PlusStatus vtkPlus3DObjectVisualizer::Update()
   }
 
   // Get tracked frame and set the transforms
-  PlusTrackedFrame trackedFrame;
+  igsioTrackedFrame trackedFrame;
   if (this->SelectedChannel->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to get tracked frame!");
@@ -129,7 +129,7 @@ PlusStatus vtkPlus3DObjectVisualizer::Update()
   for (std::vector<vtkPlusDisplayableObject*>::iterator it = this->DisplayableObjects.begin(); it != this->DisplayableObjects.end(); ++it)
   {
     vtkPlusDisplayableObject* displayableObject = *it;
-    PlusTransformName objectCoordinateFrameToWorldTransformName(displayableObject->GetObjectCoordinateFrame(), this->WorldCoordinateFrame);
+    igsioTransformName objectCoordinateFrameToWorldTransformName(displayableObject->GetObjectCoordinateFrame(), this->WorldCoordinateFrame);
     vtkSmartPointer<vtkMatrix4x4> objectCoordinateFrameToWorldTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // If not displayable or valid transform does not exist then hide

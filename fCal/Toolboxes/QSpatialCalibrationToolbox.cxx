@@ -14,10 +14,10 @@ See License.txt for details.
 // PlusLib includes
 #include <PlusConfigure.h>
 #include <PlusFidPatternRecognition.h>
-#include <PlusTrackedFrame.h>
+#include <igsioTrackedFrame.h>
 #include <vtkPlusDevice.h>
 #include <vtkPlusProbeCalibrationAlgo.h>
-#include <vtkPlusTrackedFrameList.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 // VTK includes
 #include <vtkPoints.h>
@@ -34,8 +34,8 @@ QSpatialCalibrationToolbox::QSpatialCalibrationToolbox(fCalMainWindow* aParentMa
   , QWidget(aParentMainWindow, aFlags)
   , m_Calibration(vtkSmartPointer<vtkPlusProbeCalibrationAlgo>::New())
   , m_PatternRecognition(new PlusFidPatternRecognition())
-  , m_SpatialCalibrationData(vtkSmartPointer<vtkPlusTrackedFrameList>::New())
-  , m_SpatialValidationData(vtkSmartPointer<vtkPlusTrackedFrameList>::New())
+  , m_SpatialCalibrationData(vtkSmartPointer<vtkIGSIOTrackedFrameList>::New())
+  , m_SpatialValidationData(vtkSmartPointer<vtkIGSIOTrackedFrameList>::New())
   , m_CancelRequest(false)
   , m_LastRecordedFrameTimestamp(UNDEFINED_TIMESTAMP)
   , m_FreeHandStartupDelaySec(5)
@@ -240,7 +240,7 @@ void QSpatialCalibrationToolbox::SetDisplayAccordingToState()
       if (m_ParentMainWindow->GetVisualizationController()->IsExistingTransform(m_Calibration->GetProbeCoordinateFrame(), m_Calibration->GetReferenceCoordinateFrame()) == PLUS_SUCCESS)
       {
         std::string imageToProbeTransformNameStr;
-        PlusTransformName imageToProbeTransformName(
+        igsioTransformName imageToProbeTransformName(
           m_Calibration->GetImageCoordinateFrame(), m_Calibration->GetProbeCoordinateFrame());
         imageToProbeTransformName.GetTransformName(imageToProbeTransformNameStr);
 
@@ -456,12 +456,12 @@ void QSpatialCalibrationToolbox::OpenPhantomRegistration()
   }
 
   // Read phantom registration transform
-  PlusTransformName phantomToReferenceTransformName(m_Calibration->GetPhantomCoordinateFrame(), m_Calibration->GetReferenceCoordinateFrame());
+  igsioTransformName phantomToReferenceTransformName(m_Calibration->GetPhantomCoordinateFrame(), m_Calibration->GetReferenceCoordinateFrame());
   vtkSmartPointer<vtkMatrix4x4> phantomToReferenceTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   std::string transformDate;
   double transformError = 0.0;
   ToolStatus status(TOOL_INVALID);
-  vtkPlusTransformRepository* tempTransformRepo = vtkPlusTransformRepository::New();
+  vtkIGSIOTransformRepository* tempTransformRepo = vtkIGSIOTransformRepository::New();
   if (tempTransformRepo->ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS
       || tempTransformRepo->GetTransform(phantomToReferenceTransformName, phantomToReferenceTransformMatrix, &status) != PLUS_SUCCESS
       || tempTransformRepo->GetTransformDate(phantomToReferenceTransformName, transformDate) != PLUS_SUCCESS
@@ -619,7 +619,7 @@ void QSpatialCalibrationToolbox::StartCalibration()
 
   // Set validation transform names for tracked frame lists
   std::string toolReferenceFrame = m_Calibration->GetReferenceCoordinateFrame();
-  PlusTransformName transformNameForValidation(m_ParentMainWindow->GetProbeCoordinateFrame(), toolReferenceFrame.c_str());
+  igsioTransformName transformNameForValidation(m_ParentMainWindow->GetProbeCoordinateFrame(), toolReferenceFrame.c_str());
   m_SpatialCalibrationData->SetFrameTransformNameForValidation(transformNameForValidation);
   m_SpatialValidationData->SetFrameTransformNameForValidation(transformNameForValidation);
 
@@ -655,7 +655,7 @@ void QSpatialCalibrationToolbox::DoCalibration()
   m_ParentMainWindow->GetVisualizationController()->EnableWireLabels(true);
 
   // Get current time
-  double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double startTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
 
   // Calibrate if acquisition is ready
   if (m_NumberOfSegmentedCalibrationImages >= m_NumberOfCalibrationImagesToAcquire
@@ -703,7 +703,7 @@ void QSpatialCalibrationToolbox::DoCalibration()
   }
 
   // Determine which data container to use
-  vtkPlusTrackedFrameList* trackedFrameListToUse = NULL;
+  vtkIGSIOTrackedFrameList* trackedFrameListToUse = NULL;
   if (m_NumberOfSegmentedValidationImages < m_NumberOfValidationImagesToAcquire)
   {
     trackedFrameListToUse = m_SpatialValidationData;
@@ -732,12 +732,12 @@ void QSpatialCalibrationToolbox::DoCalibration()
   }
 
   // Remove tracked frames without valid transforms
-  PlusTransformName probeToPhantomTransformName = PlusTransformName(m_Calibration->GetProbeCoordinateFrame(), m_Calibration->GetPhantomCoordinateFrame());
-  vtkPlusTransformRepository* transformRepository = m_ParentMainWindow->GetVisualizationController()->GetTransformRepository();
+  igsioTransformName probeToPhantomTransformName = igsioTransformName(m_Calibration->GetProbeCoordinateFrame(), m_Calibration->GetPhantomCoordinateFrame());
+  vtkIGSIOTransformRepository* transformRepository = m_ParentMainWindow->GetVisualizationController()->GetTransformRepository();
   bool probeToPhantomTransformValid = false;
   for (unsigned int frameIndex = numberOfFramesBeforeRecording; frameIndex < trackedFrameListToUse->GetNumberOfTrackedFrames(); frameIndex++)
   {
-    PlusTrackedFrame* trackedFrame = trackedFrameListToUse->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* trackedFrame = trackedFrameListToUse->GetTrackedFrame(frameIndex);
     transformRepository->SetTransforms(*trackedFrame);
     transformRepository->GetTransformValid(probeToPhantomTransformName, probeToPhantomTransformValid);
     if (!probeToPhantomTransformValid)
@@ -796,7 +796,7 @@ void QSpatialCalibrationToolbox::DoCalibration()
   DisplaySegmentedPoints(probeToPhantomTransformValid);
 
   // Compute time spent with processing one frame in this round
-  double computationTimeMs = (vtkPlusAccurateTimer::GetSystemTime() - startTimeSec) * 1000.0;
+  double computationTimeMs = (vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec) * 1000.0;
   // Update last processing time if new tracked frames have been acquired
   if (trackedFrameListToUse->GetNumberOfTrackedFrames() > numberOfFramesBeforeRecording)
   {
@@ -834,10 +834,10 @@ PlusStatus QSpatialCalibrationToolbox::SetAndSaveResults()
   transducerOriginPixelToTransducerOriginTransform->Identity();
   transducerOriginPixelToTransducerOriginTransform->Scale(imageToProbeScale);
 
-  PlusTransformName transducerOriginPixelToTransducerOriginTransformName(m_ParentMainWindow->GetTransducerOriginPixelCoordinateFrame(), m_ParentMainWindow->GetTransducerOriginCoordinateFrame());
+  igsioTransformName transducerOriginPixelToTransducerOriginTransformName(m_ParentMainWindow->GetTransducerOriginPixelCoordinateFrame(), m_ParentMainWindow->GetTransducerOriginCoordinateFrame());
   m_ParentMainWindow->GetVisualizationController()->GetTransformRepository()->SetTransform(transducerOriginPixelToTransducerOriginTransformName, transducerOriginPixelToTransducerOriginTransform->GetMatrix());
   m_ParentMainWindow->GetVisualizationController()->GetTransformRepository()->SetTransformPersistent(transducerOriginPixelToTransducerOriginTransformName, true);
-  m_ParentMainWindow->GetVisualizationController()->GetTransformRepository()->SetTransformDate(transducerOriginPixelToTransducerOriginTransformName, vtkPlusAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
+  m_ParentMainWindow->GetVisualizationController()->GetTransformRepository()->SetTransformDate(transducerOriginPixelToTransducerOriginTransformName, vtkIGSIOAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
 
   // Set result for visualization
   vtkPlusDisplayableObject* object = m_ParentMainWindow->GetVisualizationController()->GetObjectById(m_ParentMainWindow->GetTransducerModelId());
@@ -932,7 +932,7 @@ void QSpatialCalibrationToolbox::DisplaySegmentedPoints(bool enable)
   LOG_TRACE("SpatialCalibrationToolbox::DisplaySegmentedPoints");
 
   // Determine which data container to use
-  vtkPlusTrackedFrameList* trackedFrameListToUse = NULL;
+  vtkIGSIOTrackedFrameList* trackedFrameListToUse = NULL;
   if (m_NumberOfSegmentedValidationImages < m_NumberOfValidationImagesToAcquire)
   {
     trackedFrameListToUse = m_SpatialValidationData;
@@ -946,7 +946,7 @@ void QSpatialCalibrationToolbox::DisplaySegmentedPoints(bool enable)
   vtkPoints* segmentedPoints = NULL;
   if (trackedFrameListToUse->GetNumberOfTrackedFrames() > 0 && enable)
   {
-    PlusTrackedFrame* frame = trackedFrameListToUse->GetTrackedFrame(trackedFrameListToUse->GetNumberOfTrackedFrames() - 1);   // most recently acquired frame
+    igsioTrackedFrame* frame = trackedFrameListToUse->GetTrackedFrame(trackedFrameListToUse->GetNumberOfTrackedFrames() - 1);   // most recently acquired frame
     segmentedPoints = frame->GetFiducialPointsCoordinatePx();
   }
   if (segmentedPoints && segmentedPoints->GetNumberOfPoints() > 0)
@@ -977,10 +977,10 @@ void QSpatialCalibrationToolbox::Reset()
   m_PatternRecognition = new PlusFidPatternRecognition();
 
   // Create tracked frame lists
-  m_SpatialCalibrationData = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  m_SpatialCalibrationData = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   m_SpatialCalibrationData->SetValidationRequirements(REQUIRE_UNIQUE_TIMESTAMP | REQUIRE_TRACKING_OK);
 
-  m_SpatialValidationData = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  m_SpatialValidationData = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   m_SpatialValidationData->SetValidationRequirements(REQUIRE_UNIQUE_TIMESTAMP | REQUIRE_TRACKING_OK);
 
   // Restore calibration and pattern recognition algorithm details

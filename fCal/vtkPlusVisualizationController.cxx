@@ -10,9 +10,9 @@ See License.txt for details.
 #include "vtkPlusImageVisualizer.h"
 
 // PlusLib includes
-#include <PlusTrackedFrame.h>
+#include <igsioTrackedFrame.h>
 #include <vtkPlusDevice.h>
-#include <vtkPlusTrackedFrameList.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 // VTK includes
 #include <QVTKWidget.h>
@@ -491,13 +491,13 @@ PlusStatus vtkPlusVisualizationController::EnableVolumeActor(bool aEnable)
 //-----------------------------------------------------------------------------
 PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(const char* aTransformFrom, const char* aTransformTo, std::string& aTransformTranslationString, ToolStatus* aStatus/* = NULL*/)
 {
-  PlusTransformName transformName(aTransformFrom, aTransformTo);
+  igsioTransformName transformName(aTransformFrom, aTransformTo);
 
   return GetTransformTranslationString(transformName, aTransformTranslationString, aStatus);
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(PlusTransformName aTransform, std::string& aTransformTranslationString, ToolStatus* aStatus/* = NULL*/)
+PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(igsioTransformName aTransform, std::string& aTransformTranslationString, ToolStatus* aStatus/* = NULL*/)
 {
   vtkSmartPointer<vtkMatrix4x4> transformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   if (GetTransformMatrix(aTransform, transformMatrix, aStatus) != PLUS_SUCCESS)
@@ -517,15 +517,15 @@ PlusStatus vtkPlusVisualizationController::GetTransformTranslationString(PlusTra
 //-----------------------------------------------------------------------------
 PlusStatus vtkPlusVisualizationController::GetTransformMatrix(const char* aTransformFrom, const char* aTransformTo, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus/* = NULL*/)
 {
-  PlusTransformName transformName(aTransformFrom, aTransformTo);
+  igsioTransformName transformName(aTransformFrom, aTransformTo);
 
   return GetTransformMatrix(transformName, aOutputMatrix, aStatus);
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusVisualizationController::GetTransformMatrix(PlusTransformName aTransform, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus/* = NULL*/)
+PlusStatus vtkPlusVisualizationController::GetTransformMatrix(igsioTransformName aTransform, vtkMatrix4x4* aOutputMatrix, ToolStatus* aStatus/* = NULL*/)
 {
-  PlusTrackedFrame trackedFrame;
+  igsioTrackedFrame trackedFrame;
   if (this->SelectedChannel == NULL || this->SelectedChannel->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
   {
     LOG_ERROR("Unable to get tracked frame from selected channel!");
@@ -582,7 +582,7 @@ PlusStatus vtkPlusVisualizationController::SetInputColor(double r, double g, dou
 //-----------------------------------------------------------------------------
 PlusStatus vtkPlusVisualizationController::IsExistingTransform(const char* aTransformFrom, const char* aTransformTo, bool aUseLatestTrackedFrame/* = true */)
 {
-  PlusTransformName transformName(aTransformFrom, aTransformTo);
+  igsioTransformName transformName(aTransformFrom, aTransformTo);
 
   if (aUseLatestTrackedFrame)
   {
@@ -592,7 +592,7 @@ PlusStatus vtkPlusVisualizationController::IsExistingTransform(const char* aTran
       return PLUS_FAIL;
     }
 
-    PlusTrackedFrame trackedFrame;
+    igsioTrackedFrame trackedFrame;
     if (this->SelectedChannel->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to get tracked frame from data collector!");
@@ -612,7 +612,7 @@ PlusStatus vtkPlusVisualizationController::IsExistingTransform(const char* aTran
     this->TransformRepository->PrintSelf(std::cout, vtkIndent());
   }
 
-  return this->TransformRepository->IsExistingTransform(transformName);
+  return this->TransformRepository->IsExistingTransform(transformName)  == IGSIO_SUCCESS ? PLUS_SUCCESS : PLUS_FAIL;
 }
 
 //-----------------------------------------------------------------------------
@@ -798,7 +798,7 @@ PlusStatus vtkPlusVisualizationController::StopAndDisconnectDataCollector()
 //-----------------------------------------------------------------------------
 PlusStatus vtkPlusVisualizationController::ClearTransformRepository()
 {
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   this->SetTransformRepository(transformRepository);
 
   return PLUS_SUCCESS;

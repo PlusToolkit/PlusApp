@@ -266,7 +266,7 @@ int main( int argc, char** argv )
   bool keepReceivedDicomFiles = false;
   bool responseExpected = false;
   bool enableCompression = false;
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
   bool keepConnected=false;
   std::string serverConfigFileName;
   bool runTests=false;
