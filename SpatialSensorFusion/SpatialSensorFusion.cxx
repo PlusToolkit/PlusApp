@@ -52,7 +52,7 @@ int main(int argc, char** argv)
   int westAxisIndex = 0;
   int numberOfRepeatedFramesForInitialization = 0;
   std::vector<double> initialAhrsAlgoGain;
-  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     exit(EXIT_SUCCESS);
   }
 
-  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
 
   if (inputImgFile.empty())
   {

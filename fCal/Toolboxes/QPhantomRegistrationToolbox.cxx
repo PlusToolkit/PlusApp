@@ -1211,7 +1211,7 @@ void QPhantomRegistrationToolbox::AddStylusTipTransformToLandmarkPivotingRegistr
       m_CurrentLandmarkIndex++;
 
       int numberOfExpectedLandmarks = m_PhantomLandmarkRegistration->GetDefinedLandmarks_Phantom()->GetNumberOfPoints();
-      vtkIGSIOLogger::PrintProgressbar((100.0 * m_LandmarkDetection->GetDetectedLandmarkPoints_Reference()->GetNumberOfPoints() - 1) / numberOfExpectedLandmarks);
+      vtkPlusLogger::PrintProgressbar((100.0 * m_LandmarkDetection->GetDetectedLandmarkPoints_Reference()->GetNumberOfPoints() - 1) / numberOfExpectedLandmarks);
 
       // Add recorded landmark to registration algorithm
       m_PhantomLandmarkRegistration->GetRecordedLandmarks_Reference()->InsertPoint(m_LandmarkDetection->GetDetectedLandmarkPoints_Reference()->GetNumberOfPoints() - 1, landmarkDetected_Reference);

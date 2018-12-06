@@ -65,7 +65,7 @@ int main(int argc, char** argv)
   std::string stylusName("Stylus");
   std::string referenceName("Reference");
 
-  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     std::cout << "Help: " << args.GetHelp() << std::endl;
     exit(EXIT_FAILURE);
   }
-  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
   if (printHelp)
   {
     std::cout << "Help: " << args.GetHelp() << std::endl;
