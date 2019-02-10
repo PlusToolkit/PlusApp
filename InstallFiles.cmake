@@ -59,6 +59,13 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       )
   ENDIF()
 
+  IF(PLUS_USE_SPINNAKER_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SpinnakerVideoMinimal.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SpinnakerVideoManualControl.xml
+      )
+  ENDIF()
+  
   IF(PLUS_USE_BKPROFOCUS_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_BkProFocus_OpenIGTLinkTracker.xml
