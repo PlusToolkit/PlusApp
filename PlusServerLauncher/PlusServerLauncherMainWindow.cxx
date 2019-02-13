@@ -603,74 +603,110 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
 
   // De-windows-ifiy
   ReplaceStringInPlace(logString, "\r\n", "\n");
-  StringList tokens;
 
-  if (logString.find('|') != std::string::npos)
+  // If there is still an incomplete line, prepend it to the incoming string
+  if (!m_LogIncompleteLine.empty())
   {
-    PlusCommon::SplitStringIntoTokens(logString, '|', tokens, false);
-    // Remove empty tokens
-    for (StringList::iterator it = tokens.begin(); it != tokens.end(); ++it)
-    {
-      if (PlusCommon::Trim(*it).empty())
-      {
-        tokens.erase(it);
-        it = tokens.begin();
-      }
-    }
-    unsigned int index = 0;
-    if (tokens.size() == 0)
-    {
-      LOG_ERROR("Incorrectly formatted message received from server. Cannot parse.");
-      return;
-    }
+    logString = m_LogIncompleteLine + logString;
+    m_LogIncompleteLine = "";
+  }
 
-    if (vtkPlusLogger::GetLogLevelType(tokens[0]) != vtkPlusLogger::LOG_LEVEL_UNDEFINED)
+  // If the last character in the incoming string is not a newline, then the string is incomplete
+  bool logLineIncomplete = (logString.back() != '\n');
+
+  StringList lines;
+  if (logString.find('\n') != std::string::npos)
+  {
+    PlusCommon::SplitStringIntoTokens(logString, '\n', lines, false);
+    for (StringList::iterator lineIt = lines.begin(); lineIt != lines.end(); ++lineIt)
     {
-      vtkPlusLogger::LogLevelType logLevel = vtkPlusLogger::GetLogLevelType(tokens[index++]);
-      std::string timeStamp("time???");
-      if (tokens.size() > 1)
+      if (PlusCommon::Trim(*lineIt).empty())
       {
-        timeStamp = tokens[1];
-      }
-      std::string message("message???");
-      if (tokens.size() > 2)
-      {
-        message = tokens[2];
-      }
-      std::string location("location???");
-      if (tokens.size() > 3)
-      {
-        location = tokens[3];
+        lines.erase(lineIt);
+        lineIt = lines.begin();
       }
 
-      if (location.find('(') == std::string::npos || location.find(')') == std::string::npos)
+      // The last line in the string is incomplete
+      // Store the characters so that they can be combined with the full line when it is received
+      if (logLineIncomplete && lineIt == lines.end() - 1)
       {
-        // Malformed server message, print as is
-        vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str());
+        m_LogIncompleteLine = *lineIt;
+        continue;
+      }
+
+      std::string line = *lineIt;
+      StringList tokens;
+
+      if (line.find('|') != std::string::npos)
+      {
+        PlusCommon::SplitStringIntoTokens(line, '|', tokens, false);
+        // Remove empty tokens
+        for (StringList::iterator it = tokens.begin(); it != tokens.end(); ++it)
+        {
+          if (PlusCommon::Trim(*it).empty())
+          {
+            tokens.erase(it);
+            it = tokens.begin();
+          }
+        }
+        unsigned int index = 0;
+        if (tokens.size() == 0)
+        {
+          LOG_ERROR("Incorrectly formatted message received from server. Cannot parse.");
+          return;
+        }
+
+        if (vtkPlusLogger::GetLogLevelType(tokens[0]) != vtkPlusLogger::LOG_LEVEL_UNDEFINED)
+        {
+          vtkPlusLogger::LogLevelType logLevel = vtkPlusLogger::GetLogLevelType(tokens[index++]);
+          std::string timeStamp("time???");
+          if (tokens.size() > 1)
+          {
+            timeStamp = tokens[1];
+          }
+
+          std::string message("message???");
+          if (tokens.size() > 2)
+          {
+            message = tokens[2];
+          }
+
+          std::string location("location???");
+          if (tokens.size() > 3)
+          {
+            location = tokens[3];
+          }
+
+          if (location.find('(') == std::string::npos || location.find(')') == std::string::npos)
+          {
+            // Malformed server message, print as is
+            vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str());
+          }
+          else
+          {
+            std::string file = location.substr(4, location.find_last_of('(') - 4);
+            int lineNumber(0);
+            std::stringstream lineNumberStr(location.substr(location.find_last_of('(') + 1, location.find_last_of(')') - location.find_last_of('(') - 1));
+            lineNumberStr >> lineNumber;
+
+            // Only parse for content if the line was successfully parsed for logging
+            this->ParseContent(message);
+
+            vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str(), file.c_str(), lineNumber, "SERVER");
+          }
+        }
       }
       else
       {
-        std::string file = location.substr(4, location.find_last_of('(') - 4);
-        int lineNumber(0);
-        std::stringstream lineNumberStr(location.substr(location.find_last_of('(') + 1, location.find_last_of(')') - location.find_last_of('(') - 1));
-        lineNumberStr >> lineNumber;
-
-        // Only parse for content if the line was successfully parsed for logging
-        this->ParseContent(message);
-
-        vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str(), file.c_str(), lineNumber, "SERVER");
+        vtkPlusLogger::Instance()->LogMessage(vtkPlusLogger::LOG_LEVEL_INFO, line.c_str(), "SERVER");
+        this->ParseContent(line.c_str());
       }
     }
   }
   else
   {
-    PlusCommon::SplitStringIntoTokens(logString, '\n', tokens, false);
-    for (StringList::iterator it = tokens.begin(); it != tokens.end(); ++it)
-    {
-      vtkPlusLogger::Instance()->LogMessage(vtkPlusLogger::LOG_LEVEL_INFO, *it, "SERVER");
-      this->ParseContent(*it);
-    }
-    return;
+    // No newline. String is incomplete
+    m_LogIncompleteLine = logString;
   }
 }
 

@@ -159,6 +159,9 @@ protected:
 
   std::set<int>                         m_RemoteControlLogSubscribedClients;
 
+  /*! Incomplete string received from PlusServer */
+  std::string                           m_LogIncompleteLine;
+
 private:
   Ui::PlusServerLauncherMainWindow ui;
 };
