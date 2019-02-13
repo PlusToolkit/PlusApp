@@ -148,12 +148,10 @@ IF(PLUS_USE_aruco)
   ENDIF()
 ENDIF()
 
-IF(PLUS_USE_IGSIO)
-  IF(EXISTS "${IGSIO_DIR}/CMakeCache.txt")
-    LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};vtkVideoIO;RuntimeLibraries;/")
-  ELSE()
-    MESSAGE(WARNING "Unable to set IGSIO_DIR for package generation!")
-  ENDIF()
+IF(EXISTS "${IGSIO_DIR}/CMakeCache.txt")
+  LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};IGSIO;RuntimeLibraries;/")
+ELSE()
+  MESSAGE(WARNING "Unable to set IGSIO_DIR for package generation!")
 ENDIF()
 
 #-----------------------------------------------------------------------------
