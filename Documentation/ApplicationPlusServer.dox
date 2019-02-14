@@ -76,6 +76,7 @@ Launch the command-line-only version of PlusServer (no graphical user interface)
           - \c TRACKEDFRAME: Plus tracked ultrasound frame, stores all frame fields (tool transforms, statuses, etc). Optionally, sent transforms can be customized using the \c TransformNames list.
           - \c USMESSAGE: <a href="https://musiic.lcsr.jhu.edu/Main_Page">MUSiiC</a> tracked ultrasound frame, stores additional imaging information, such as transmit and sampling frequency, line density, steering angle
           - \c STRING: standard OpenIGTLink message type, stores a simple character string
+          - \c VIDEO: standard OpenIGTLink message type, stores a compressed video frame
     - \xmlElem \b TransformNames
       - \xmlElem \b Transform
           - \xmlAtt Name
@@ -83,6 +84,10 @@ Launch the command-line-only version of PlusServer (no graphical user interface)
       - \xmlElem \b String Name of the frame string that is sent as a STRING message. Any frame field (Timestamp, any status message, any frame fields) can be specified here.
     - \xmlElem \b ImageNames
       - \xmlElem \b Image
+          - \xmlAtt Name Name of the image stream. It also defines the "From" frame of the transform embedded in the IGTL image message.
+          - \xmlAtt EmbeddedTransformToFrame "To" frame of the transform embedded in the IGTL image message
+    - \xmlElem \b VideoNames
+      - \xmlElem \b Video
           - \xmlAtt Name Name of the image stream. It also defines the "From" frame of the transform embedded in the IGTL image message.
           - \xmlAtt EmbeddedTransformToFrame "To" frame of the transform embedded in the IGTL image message
           - \xmlElem \b Encoding
