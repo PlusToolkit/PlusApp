@@ -381,10 +381,12 @@ void PlusServerLauncherMainWindow::AddServerToTable(std::string filename)
   QTableWidgetItem* nameItem = new QTableWidgetItem();
   nameItem->setText(name);
   nameItem->setData(Qt::UserRole, QString::fromStdString(filename));
+  nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
   ui.serverTable->setItem(row, 0, nameItem);
 
   QTableWidgetItem* descriptionItem = new QTableWidgetItem();
   descriptionItem->setText(description);
+  descriptionItem->setFlags(descriptionItem->flags() & ~Qt::ItemIsEditable);
   ui.serverTable->setItem(row, 1, descriptionItem);
 
   QPushButton* stopServerButton = new QPushButton("Stop");
