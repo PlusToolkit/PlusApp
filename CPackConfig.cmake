@@ -148,6 +148,12 @@ IF(PLUS_USE_aruco)
   ENDIF()
 ENDIF()
 
+IF(EXISTS "${vtkAddon_DIR}/CMakeCache.txt")
+  LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${vtkAddon_DIR};vtkAddon;RuntimeLibraries;/")
+ELSE()
+  MESSAGE(WARNING "Unable to set vtkAddon_DIR for package generation!")
+ENDIF()
+
 IF(EXISTS "${IGSIO_DIR}/CMakeCache.txt")
   LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};IGSIO;RuntimeLibraries;/")
 ELSE()
