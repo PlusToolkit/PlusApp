@@ -202,7 +202,17 @@ INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/CPackConfig.cmake)
   # to always look for includes there:
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-SET(PLUSAPP_QT_COMPONENTS ${PLUSLIB_QT_COMPONENTS} Network CACHE INTERNAL "" FORCE)
+SET(PLUSAPP_QT_COMPONENTS ${PLUSLIB_QT_COMPONENTS}
+  Core
+  Gui
+  Network
+  Sql
+  XmlPatterns
+  OpenGL
+  Test
+  Widgets
+  Xml
+  CACHE INTERNAL "" FORCE)
 FIND_PACKAGE(Qt5 REQUIRED COMPONENTS ${PLUSAPP_QT_COMPONENTS})
 
 # These variables are populated as part of our install script
