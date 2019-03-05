@@ -58,7 +58,7 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/stylus.ini
       )
   ENDIF()
-  
+
   IF(PLUS_USE_BKPROFOCUS_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_BkProFocus_OpenIGTLinkTracker.xml
@@ -114,6 +114,14 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MmfVideoCapture.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_MmfColorVideoCapture.xml
       )
+
+    IF (PLUS_ENABLE_VIDEOSTREAMING)
+      IF (PLUS_USE_VP9)
+        LIST(APPEND PLUSLIB_CONFIG_FILES
+          ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_CompressedVideo.xml
+          )
+      ENDIF()
+    ENDIF()
   ENDIF()
 
   IF(PLUS_USE_OPTICAL_MARKER_TRACKER)
@@ -166,8 +174,8 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
         ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/Stylus.tra
         )
       LIST(APPEND PLUSLIB_CONFIG_FILES
-        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_AddMarkersUsingTRA.xml 
-        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_Profile.xml 
+        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_AddMarkersUsingTRA.xml
+        ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OptiTrack_Profile.xml
         ${OPTITRACK_ADDITIONAL_FILES}
         )
     ENDIF()
