@@ -48,12 +48,14 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceNDICertus
 - \subpage DeviceStealthLink
 
-
 \subsection DevicesImu Inertial measurement units
 - \subpage DevicePhidgetSpatial
 - \subpage DeviceChRobotics
 - \subpage DeviceMicrochip
 - \subpage DeviceWitMotionTracker
+
+\subsection HandTrackers Hand and finger trackers
+- \subpage DeviceLeapMotion
 
 \subsection DevicesMiscTracking Other tracking devices
 - \subpage DeviceOpenIGTLinkTracker
