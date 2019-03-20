@@ -913,6 +913,11 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer c
     m_RemoteControlLogSubscribedClients.erase(command->GetClientId());
     return;
   }
+  else if (PlusCommon::IsEqualInsensitive(name, "GetRunningServers"))
+  {
+    this->GetRunningServers(command);
+    return;
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -1049,6 +1054,34 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandPointer command)
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::GetRunningServers(igtlioCommandPointer command)
+{
+  std::string commandContentString = command->GetCommandContent();
+  vtkSmartPointer<vtkXMLDataElement> commandContent = vtkSmartPointer<vtkXMLDataElement>::Take(
+    vtkXMLUtilities::ReadElementFromString(commandContentString.c_str()));
+
+  vtkSmartPointer<vtkXMLDataElement> commandElement = vtkSmartPointer<vtkXMLDataElement>::New();
+  commandElement->SetName("Command");
+
+  std::stringstream ss;
+  std::map<std::string, QProcess*> runningServers = m_ServerInstances;
+  for (std::map<std::string, QProcess*>::iterator serverIt = runningServers.begin(); serverIt != runningServers.end(); ++serverIt)
+  {
+    ss << serverIt->first << ";";
+  }
+
+  // Forced stop or not, the server is down
+  command->SetSuccessful(true);
+  command->SetResponseMetaDataElement("RunningServers", ss.str());
+  command->SetResponseMetaDataElement("Separator", ";");
+  if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Command received but response could not be sent.");
+  }
+  return;
 }
 
 //----------------------------------------------------------------------------

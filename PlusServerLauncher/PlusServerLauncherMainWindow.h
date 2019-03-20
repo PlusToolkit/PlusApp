@@ -121,6 +121,7 @@ protected:
   void GetConfigFiles(igtlioCommandPointer clientDevice);
   void RemoteStartServer(igtlioCommandPointer clientDevice);
   void RemoteStopServer(igtlioCommandPointer clientDevice);
+  void GetRunningServers(igtlioCommandPointer clientDevice);
 
   void LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message);
 
