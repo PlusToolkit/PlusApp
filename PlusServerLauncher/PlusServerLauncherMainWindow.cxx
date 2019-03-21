@@ -881,7 +881,7 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer c
   int id = command->GetCommandId();
   std::string name = command->GetName();
 
-  this->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, std::string("Command \"") + name + "\" received.");
+  this->LocalLog(vtkPlusLogger::LOG_LEVEL_DEBUG, std::string("Command \"") + name + "\" received.");
 
   if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
   {
@@ -1073,7 +1073,6 @@ void PlusServerLauncherMainWindow::GetRunningServers(igtlioCommandPointer comman
     ss << serverIt->first << ";";
   }
 
-  // Forced stop or not, the server is down
   command->SetSuccessful(true);
   command->SetResponseMetaDataElement("RunningServers", ss.str());
   command->SetResponseMetaDataElement("Separator", ";");
