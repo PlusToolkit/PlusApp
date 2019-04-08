@@ -48,7 +48,6 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceNDICertus
 - \subpage DeviceStealthLink
 
-
 \subsection DevicesImu Inertial measurement units
 - \subpage DevicePhidgetSpatial
 - \subpage DeviceChRobotics
@@ -60,6 +59,7 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceBrachy
 - \subpage Device3dConnexion
 - \subpage DeviceAgilent
+- \subpage DeviceLeapMotion
 
 \subsection DevicesSimulator Simulators
 - \subpage DeviceSavedDataSource
