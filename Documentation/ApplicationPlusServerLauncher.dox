@@ -8,7 +8,7 @@ To start a PlusServer instance using PlusServerLauncher, select a configuration 
 
 \image html ApplicationPlusServerLauncher.png
 
-\subsection ApplicationPlusServerLauncherUsageCommandLine Command-line usage
+\section ApplicationPlusServerLauncherUsageCommandLine Command-line usage
 
 PlusServerLauncher can be also started from the command-line. The list of available command-line parameters are printed if the --help parameter is specified.
 

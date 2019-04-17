@@ -6,7 +6,6 @@ The following command-line tools can be executed by starting the Plus command pr
 
 Tool                                         | Description
 ---------------------------------------------|--------------
-\subpage ApplicationAccurateTimerTest        | Compute the accuracy of time measurements
 \subpage ApplicationCreateSliceModels        | Create 3D surface model showing 2D slice positions (for volume reconstruction troubleshooting)
 \subpage ApplicationDiagDataCollection       | Diagnose data collection from devices
 \subpage ApplicationDrawClipRegion           | Show clip rectangle and fan over ultrasound images
