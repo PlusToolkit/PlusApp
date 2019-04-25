@@ -1059,13 +1059,6 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandPointer command)
 //----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::GetRunningServers(igtlioCommandPointer command)
 {
-  std::string commandContentString = command->GetCommandContent();
-  vtkSmartPointer<vtkXMLDataElement> commandContent = vtkSmartPointer<vtkXMLDataElement>::Take(
-    vtkXMLUtilities::ReadElementFromString(commandContentString.c_str()));
-
-  vtkSmartPointer<vtkXMLDataElement> commandElement = vtkSmartPointer<vtkXMLDataElement>::New();
-  commandElement->SetName("Command");
-
   std::stringstream ss;
   std::map<std::string, QProcess*> runningServers = m_ServerInstances;
   for (std::map<std::string, QProcess*>::iterator serverIt = runningServers.begin(); serverIt != runningServers.end(); ++serverIt)
