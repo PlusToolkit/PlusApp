@@ -130,18 +130,27 @@ protected:
   void SendServerStartedCommand(std::string configFilePath);
   void SendServerStoppedCommand(std::string configFilePath);
 
-  /*! Add a row describing a server started with the specified filename to the remote control server table. */
-  void AddServerToTable(std::string filename);
+  /*! Get the process for the specified config file */
+  QProcess* GetServerProcess(std::string filename);
 
-  /*! Remove any rows for servers started with the specified filename from the remote control server table. */
-  void RemoveServerFromTable(std::string filename);
+  /*! Remove the process from the list of running servers */
+  PlusStatus RemoveServerProcess(QProcess* process);
+
+  /*! Update the contents of the remote control table to reflect the current status */
+  void UpdateRemoteServerTable();
 
 protected:
   /*! Device set selector widget */
   QPlusDeviceSetSelectorWidget*         m_DeviceSetSelectorWidget;
 
-  /*! PlusServer instance that is responsible for all data collection and network transfer */
-  std::map<std::string, QProcess*>      m_ServerInstances;
+  struct ServerInfo
+  {
+    std::string Filename;
+    QProcess*   Process;
+  };
+
+  /*! PlusServer instances that are responsible for all data collection and network transfer */
+  std::deque<ServerInfo>                m_ServerInstances;
 
   /*! List of active ports for PlusServers */
   std::string                           m_Suffix;

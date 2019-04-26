@@ -215,17 +215,17 @@ PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
   {
     m_RemoteControlServerConnector->RemoveObserver(m_RemoteControlServerCallbackCommand);
     if (vtkPlusLogger::Instance()->HasObserver(vtkPlusLogger::MessageLogged, m_RemoteControlLogMessageCallbackCommand) ||
-        vtkPlusLogger::Instance()->HasObserver(vtkPlusLogger::WideMessageLogged, m_RemoteControlLogMessageCallbackCommand))
+      vtkPlusLogger::Instance()->HasObserver(vtkPlusLogger::WideMessageLogged, m_RemoteControlLogMessageCallbackCommand))
     {
       vtkPlusLogger::Instance()->RemoveObserver(m_RemoteControlLogMessageCallbackCommand);
     }
   }
 
   // Close all currently running servers
-  std::map<std::string, QProcess*> runningServers = m_ServerInstances;
-  for (std::map<std::string, QProcess*>::iterator serverIt = runningServers.begin(); serverIt != runningServers.end(); ++serverIt)
+  std::deque<ServerInfo> runningServers = m_ServerInstances;
+  for (std::deque<ServerInfo>::iterator serverIt = runningServers.begin(); serverIt != runningServers.end(); ++serverIt)
   {
-    StopServer(QString::fromStdString(serverIt->first));
+    StopServer(QString::fromStdString(serverIt->Filename));
   }
 
   if (m_DeviceSetSelectorWidget != NULL)
@@ -286,7 +286,11 @@ PlusStatus PlusServerLauncherMainWindow::WriteConfiguration()
 bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, int logLevel)
 {
   QProcess* newServerProcess = new QProcess();
-  m_ServerInstances[vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())] = newServerProcess;
+  ServerInfo newServerInfo;
+  newServerInfo.Filename = vtksys::SystemTools::GetFilenameName(configFilePath.toStdString());
+  newServerInfo.Process = newServerProcess;
+  m_ServerInstances.push_back(newServerInfo);
+
   std::string plusServerExecutable = vtkPlusConfig::GetInstance()->GetPlusExecutablePath("PlusServer");
   std::string plusServerLocation = vtksys::SystemTools::GetFilenamePath(plusServerExecutable);
   newServerProcess->setWorkingDirectory(QString(plusServerLocation.c_str()));
@@ -312,8 +316,8 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
 
   // During waitForFinished an error signal may be emitted, which may delete newServerProcess,
   // therefore we need to check if the current server process still exists
-  if (m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())) != m_ServerInstances.end() &&
-      newServerProcess && newServerProcess->state() == QProcess::Running)
+  if (GetServerProcess(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())) &&
+    newServerProcess && newServerProcess->state() == QProcess::Running)
   {
     LOG_INFO("Server process started successfully");
     ui.comboBox_LogLevel->setEnabled(false);
@@ -327,6 +331,33 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
 }
 
 //----------------------------------------------------------------------------
+QProcess* PlusServerLauncherMainWindow::GetServerProcess(std::string filename)
+{
+  for (std::deque<ServerInfo>::iterator serverIt = m_ServerInstances.begin(); serverIt != m_ServerInstances.end(); ++serverIt)
+  {
+    if (PlusCommon::IsEqualInsensitive(serverIt->Filename, filename))
+    {
+      return serverIt->Process;
+    }
+  }
+  return nullptr;
+}
+
+//----------------------------------------------------------------------------
+PlusStatus PlusServerLauncherMainWindow::RemoveServerProcess(QProcess* process)
+{
+  for (std::deque<ServerInfo>::iterator serverIt = m_ServerInstances.begin(); serverIt != m_ServerInstances.end(); ++serverIt)
+  {
+    if (serverIt->Process == process)
+    {
+      m_ServerInstances.erase(serverIt);
+      return PLUS_SUCCESS;
+    }
+  }
+  return PLUS_FAIL;
+}
+
+//----------------------------------------------------------------------------
 bool PlusServerLauncherMainWindow::LocalStartServer()
 {
   std::string filename = vtksys::SystemTools::GetFilenameName(m_LocalConfigFile);
@@ -334,64 +365,73 @@ bool PlusServerLauncherMainWindow::LocalStartServer()
   {
     return false;
   }
-  QProcess* newServerProcess = m_ServerInstances[filename];
+
+  QProcess* newServerProcess = GetServerProcess(filename);
   connect(newServerProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
   connect(newServerProcess, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
 
   if (m_RemoteControlServerConnector)
   {
-    this->SendServerStartedCommand(m_LocalConfigFile.c_str());
+    SendServerStartedCommand(m_LocalConfigFile.c_str());
   }
 
   return true;
 }
 
 //----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::AddServerToTable(std::string filename)
+void PlusServerLauncherMainWindow::UpdateRemoteServerTable()
 {
-  std::string filePath = vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename));
-  QFile file(QString::fromStdString(filePath));
-  QFileInfo fileInfo(QString::fromStdString(filePath));
-  QDomDocument doc;
+  ui.serverTable->clearContents();
+  ui.serverTable->setRowCount(0);
 
-  QString name = QString::fromStdString(filename);
-  QString description;
-
-  if (doc.setContent(&file))
+  for (std::deque<ServerInfo>::iterator server = m_ServerInstances.begin(); server != m_ServerInstances.end(); ++server)
   {
-    QDomElement docElem = doc.documentElement();
+    std::string filename = server->Filename;
+    std::string filePath = vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename));
 
-    // Check if the root element is PlusConfiguration and contains a DataCollection child
-    if (!docElem.tagName().compare("PlusConfiguration", Qt::CaseInsensitive))
+    QFile file(QString::fromStdString(filePath));
+    QFileInfo fileInfo(QString::fromStdString(filePath));
+    QDomDocument doc;
+
+    QString name = QString::fromStdString(filename);
+    QString description;
+
+    if (doc.setContent(&file))
     {
-      // Add the name attribute to the first node named DeviceSet to the combo box
-      QDomNodeList list(doc.elementsByTagName("DeviceSet"));
-      if (list.count() > 0)
+      QDomElement docElem = doc.documentElement();
+
+      // Check if the root element is PlusConfiguration and contains a DataCollection child
+      if (!docElem.tagName().compare("PlusConfiguration", Qt::CaseInsensitive))
       {
-        // If it has a DataCollection children then use the first one
-        QDomElement elem = list.at(0).toElement();
-        name = elem.attribute("Name");
-        description = elem.attribute("Description");
+        // Add the name attribute to the first node named DeviceSet to the combo box
+        QDomNodeList list(doc.elementsByTagName("DeviceSet"));
+        if (list.count() > 0)
+        {
+          // If it has a DataCollection children then use the first one
+          QDomElement elem = list.at(0).toElement();
+          name = elem.attribute("Name");
+          description = elem.attribute("Description");
+        }
       }
     }
+
+    int row = ui.serverTable->rowCount();
+    ui.serverTable->insertRow(row);
+    QTableWidgetItem* nameItem = new QTableWidgetItem();
+    nameItem->setText(name);
+    nameItem->setData(Qt::UserRole, QString::fromStdString(filename));
+    nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+    ui.serverTable->setItem(row, 0, nameItem);
+
+    QTableWidgetItem* descriptionItem = new QTableWidgetItem();
+    descriptionItem->setText(description);
+    descriptionItem->setFlags(descriptionItem->flags() & ~Qt::ItemIsEditable);
+    ui.serverTable->setItem(row, 1, descriptionItem);
+
+    QPushButton* stopServerButton = new QPushButton("Stop");
+    ui.serverTable->setCellWidget(row, 2, stopServerButton);
+    connect(stopServerButton, SIGNAL(clicked()), this, SLOT(StopRemoteServerButtonClicked()));
   }
-
-  int row = ui.serverTable->rowCount();
-  ui.serverTable->insertRow(row);
-  QTableWidgetItem* nameItem = new QTableWidgetItem();
-  nameItem->setText(name);
-  nameItem->setData(Qt::UserRole, QString::fromStdString(filename));
-  nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
-  ui.serverTable->setItem(row, 0, nameItem);
-
-  QTableWidgetItem* descriptionItem = new QTableWidgetItem();
-  descriptionItem->setText(description);
-  descriptionItem->setFlags(descriptionItem->flags() & ~Qt::ItemIsEditable);
-  ui.serverTable->setItem(row, 1, descriptionItem);
-
-  QPushButton* stopServerButton = new QPushButton("Stop");
-  ui.serverTable->setCellWidget(row, 2, stopServerButton);
-  connect(stopServerButton, SIGNAL(clicked()), this, SLOT(StopRemoteServerButtonClicked()));
 }
 
 //----------------------------------------------------------------------------
@@ -405,29 +445,16 @@ void PlusServerLauncherMainWindow::StopRemoteServerButtonClicked()
   StopServer(fileName);
 }
 
-//----------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::RemoveServerFromTable(std::string filePath)
-{
-  std::string filename = vtksys::SystemTools::GetFilenameName(filePath);
-
-  QModelIndexList matches = ui.serverTable->model()->match(ui.serverTable->model()->index(0, 0), Qt::UserRole, QString::fromStdString(filename));
-  for (QModelIndexList::iterator matchIt = matches.begin(); matchIt != matches.end(); matchIt++)
-  {
-    int row = matchIt->row();
-    ui.serverTable->removeRow(row);
-  }
-}
-
 //-----------------------------------------------------------------------------
 bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
 {
-  if (m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())) == m_ServerInstances.end())
+  QProcess* process = GetServerProcess(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString()));
+  if (!process)
   {
     // Server at config file isn't running
     return true;
   }
 
-  QProcess* process = m_ServerInstances[vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())];
   disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
   disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
 
@@ -461,14 +488,14 @@ bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
   }
 
   delete process;
-  m_ServerInstances.erase(m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString())));
+  RemoveServerProcess(process);
 
-  RemoveServerFromTable(configFilePath.toStdString());
+  UpdateRemoteServerTable();
 
   if (m_RemoteControlServerConnector)
   {
     std::string configFileString = vtksys::SystemTools::GetFilenameName(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString()));
-    this->SendServerStoppedCommand(configFileString.c_str());
+    SendServerStoppedCommand(configFileString.c_str());
   }
 
   m_Suffix.clear();
@@ -478,13 +505,12 @@ bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
 //----------------------------------------------------------------------------
 bool PlusServerLauncherMainWindow::LocalStopServer()
 {
-  if (m_ServerInstances.find(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)) == m_ServerInstances.end())
+  QProcess* process = GetServerProcess(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile));
+  if (!process)
   {
     // Server at config file isn't running
     return true;
   }
-
-  QProcess* process = m_ServerInstances[vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)];
 
   disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
   disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
@@ -514,7 +540,7 @@ void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
   else if (message.find("Server status: ") != std::string::npos)
   {
     // pull off server status and display it
-    this->m_DeviceSetSelectorWidget->SetDescriptionSuffix(QString(message.c_str()));
+    m_DeviceSetSelectorWidget->SetDescriptionSuffix(QString(message.c_str()));
   }
 }
 
@@ -692,7 +718,7 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
             lineNumberStr >> lineNumber;
 
             // Only parse for content if the line was successfully parsed for logging
-            this->ParseContent(message);
+            ParseContent(message);
 
             vtkPlusLogger::Instance()->LogMessage(logLevel, message.c_str(), file.c_str(), lineNumber, "SERVER");
           }
@@ -701,7 +727,7 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
       else
       {
         vtkPlusLogger::Instance()->LogMessage(vtkPlusLogger::LOG_LEVEL_INFO, line.c_str(), "SERVER");
-        this->ParseContent(line.c_str());
+        ParseContent(line.c_str());
       }
     }
   }
@@ -715,14 +741,14 @@ void PlusServerLauncherMainWindow::SendServerOutputToLogger(const QByteArray& st
 //-----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::StdOutMsgReceived()
 {
-  QByteArray strData = m_ServerInstances[vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)]->readAllStandardOutput();
+  QByteArray strData = GetServerProcess(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile))->readAllStandardOutput();
   SendServerOutputToLogger(strData);
 }
 
 //-----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::StdErrMsgReceived()
 {
-  QByteArray strData = m_ServerInstances[vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)]->readAllStandardError();
+  QByteArray strData = GetServerProcess(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile))->readAllStandardError();
   SendServerOutputToLogger(strData);
 }
 
@@ -732,24 +758,24 @@ void PlusServerLauncherMainWindow::ErrorReceived(QProcess::ProcessError errorCod
   const char* errorString = "unknown";
   switch ((QProcess::ProcessError)errorCode)
   {
-    case QProcess::FailedToStart:
-      errorString = "FailedToStart";
-      break;
-    case QProcess::Crashed:
-      errorString = "Crashed";
-      break;
-    case QProcess::Timedout:
-      errorString = "Timedout";
-      break;
-    case QProcess::WriteError:
-      errorString = "WriteError";
-      break;
-    case QProcess::ReadError:
-      errorString = "ReadError";
-      break;
-    case QProcess::UnknownError:
-    default:
-      errorString = "UnknownError";
+  case QProcess::FailedToStart:
+    errorString = "FailedToStart";
+    break;
+  case QProcess::Crashed:
+    errorString = "Crashed";
+    break;
+  case QProcess::Timedout:
+    errorString = "Timedout";
+    break;
+  case QProcess::WriteError:
+    errorString = "WriteError";
+    break;
+  case QProcess::ReadError:
+    errorString = "ReadError";
+    break;
+  case QProcess::UnknownError:
+  default:
+    errorString = "UnknownError";
   }
   LOG_ERROR("Server process error: " << errorString);
   m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
@@ -771,26 +797,18 @@ void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QPro
   std::string configFileName = "";
   if (finishedProcess)
   {
-    for (std::map<std::string, QProcess*>::iterator server = m_ServerInstances.begin(); server != m_ServerInstances.end(); ++server)
-    {
-      if ((*server).second == finishedProcess)
-      {
-        configFileName = (*server).first;
-        m_ServerInstances.erase(server);
-        RemoveServerFromTable(configFileName);
-        break;
-      }
-    }
+    RemoveServerProcess(finishedProcess);
   }
 
   if (strcmp(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile).c_str(), configFileName.c_str()) == 0)
   {
-    this->ConnectToDevicesByConfigFile("");
+    ConnectToDevicesByConfigFile("");
     ui.comboBox_LogLevel->setEnabled(true);
     m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
   }
 
-  this->SendServerStoppedCommand(configFileName);
+  SendServerStoppedCommand(configFileName);
+  UpdateRemoteServerTable();
 }
 
 //----------------------------------------------------------------------------
@@ -808,36 +826,36 @@ void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject*
 
   switch (eventId)
   {
-    case igtlioConnector::ClientConnectedEvent:
+  case igtlioConnector::ClientConnectedEvent:
+  {
+    self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client connected.");
+    break;
+  }
+  case igtlioConnector::ClientDisconnectedEvent:
+  {
+    self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client disconnected.");
+    self->OnClientDisconnectedEvent();
+    break;
+  }
+  case igtlioCommand::CommandReceivedEvent:
+  {
+    if (logic == nullptr)
     {
-      self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client connected.");
-      break;
+      return;
     }
-    case igtlioConnector::ClientDisconnectedEvent:
+    igtlioCommandPointer command = reinterpret_cast<igtlioCommand*>(callData);
+    self->OnCommandReceivedEvent(command);
+    break;
+  }
+  case igtlioCommand::CommandResponseEvent:
+  {
+    if (logic == nullptr)
     {
-      self->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "Client disconnected.");
-      self->OnClientDisconnectedEvent();
-      break;
+      return;
     }
-    case igtlioCommand::CommandReceivedEvent:
-    {
-      if (logic == nullptr)
-      {
-        return;
-      }
-      igtlioCommandPointer command = reinterpret_cast<igtlioCommand*>(callData);
-      self->OnCommandReceivedEvent(command);
-      break;
-    }
-    case igtlioCommand::CommandResponseEvent:
-    {
-      if (logic == nullptr)
-      {
-        return;
-      }
 
-      break;
-    }
+    break;
+  }
   }
 }
 
@@ -854,7 +872,7 @@ void PlusServerLauncherMainWindow::OnClientDisconnectedEvent()
       connectedClientIds.begin(),
       connectedClientIds.end(),
       [this, clientId](const int& entry)
-    { return entry == clientId; }));
+      {return entry == clientId; }));
 
     // Subscribed client is not connected. Remove from list of clients subscribed to log messages
     if (connectedClientIt == connectedClientIds.end())
@@ -881,26 +899,26 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer c
   int id = command->GetCommandId();
   std::string name = command->GetName();
 
-  this->LocalLog(vtkPlusLogger::LOG_LEVEL_DEBUG, std::string("Command \"") + name + "\" received.");
+  LocalLog(vtkPlusLogger::LOG_LEVEL_DEBUG, std::string("Command \"") + name + "\" received.");
 
   if (PlusCommon::IsEqualInsensitive(name, "GetConfigFiles"))
   {
-    this->GetConfigFiles(command);
+    GetConfigFiles(command);
     return;
   }
   else if (PlusCommon::IsEqualInsensitive(name, "AddConfigFile"))
   {
-    this->AddOrUpdateConfigFile(command);
+    AddOrUpdateConfigFile(command);
     return;
   }
   else if (PlusCommon::IsEqualInsensitive(name, "StartServer"))
   {
-    this->RemoteStartServer(command);
+    RemoteStartServer(command);
     return;
   }
   else if (PlusCommon::IsEqualInsensitive(name, "StopServer"))
   {
-    this->RemoteStopServer(command);
+    RemoteStopServer(command);
     return;
   }
   else if (PlusCommon::IsEqualInsensitive(name, "LogSubscribe"))
@@ -915,7 +933,7 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer c
   }
   else if (PlusCommon::IsEqualInsensitive(name, "GetRunningServers"))
   {
-    this->GetRunningServers(command);
+    GetRunningServers(command);
     return;
   }
 }
@@ -929,14 +947,14 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandPointer command
   {
     command->SetSuccessful(false);
     command->SetErrorMessage("Config file not specified.");
-    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+    if (SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
     return;
   }
 
-  this->StopServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))));
+  StopServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))));
 
   vtkSmartPointer<vtkXMLDataElement> commandElement = vtkSmartPointer<vtkXMLDataElement>::New();
   commandElement->SetName("Command");
@@ -951,7 +969,7 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandPointer command
   // Forced stop or not, the server is down
   command->SetSuccessful(true);
   command->SetResponseMetaDataElement("ConfigFileName", filename);
-  if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+  if (SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
@@ -968,7 +986,7 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandPointer comman
     igtl::MessageBase::MetaDataMap map;
     command->SetSuccessful(false);
     command->SetErrorMessage("Config file not specified.");
-    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+    if (SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -985,11 +1003,11 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandPointer comman
     logLevel = vtkPlusLogger::LOG_LEVEL_INFO;
   }
 
-  if (!this->StartServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))), logLevel))
+  if (!StartServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))), logLevel))
   {
     command->SetSuccessful(false);
     command->SetErrorMessage("Failed to start server process.");
-    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+    if (SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -997,9 +1015,7 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandPointer comman
   }
   else
   {
-    AddServerToTable(filename);
-
-    std::string servers = this->GetServersFromConfigFile(filename);
+    std::string servers = GetServersFromConfigFile(filename);
     std::stringstream responseSS;
     vtkSmartPointer<vtkXMLDataElement> responseXML = vtkSmartPointer<vtkXMLDataElement>::New();
     responseXML->SetName("Command");
@@ -1013,10 +1029,11 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandPointer comman
     command->SetSuccessful(true);
     command->SetResponseMetaDataElement("ConfigFileName", filename);
     command->SetResponseMetaDataElement("Servers", servers);
-    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+    if (SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
+    UpdateRemoteServerTable();
     return;
   }
 }
@@ -1029,7 +1046,7 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandPointer command)
   {
     command->SetSuccessful(false);
     command->SetErrorMessage("Unable to open device set directory.");
-    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+    if (SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -1050,7 +1067,7 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandPointer command)
   command->SetSuccessful(true);
   command->SetResponseMetaDataElement("ConfigFiles", ss.str());
   command->SetResponseMetaDataElement("Separator", ";");
-  if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+  if (SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
@@ -1060,16 +1077,16 @@ void PlusServerLauncherMainWindow::GetConfigFiles(igtlioCommandPointer command)
 void PlusServerLauncherMainWindow::GetRunningServers(igtlioCommandPointer command)
 {
   std::stringstream ss;
-  std::map<std::string, QProcess*> runningServers = m_ServerInstances;
-  for (std::map<std::string, QProcess*>::iterator serverIt = runningServers.begin(); serverIt != runningServers.end(); ++serverIt)
+  std::deque<ServerInfo> runningServers = m_ServerInstances;
+  for (std::deque<ServerInfo>::iterator serverIt = runningServers.begin(); serverIt != runningServers.end(); ++serverIt)
   {
-    ss << serverIt->first << ";";
+    ss << serverIt->Filename << ";";
   }
 
   command->SetSuccessful(true);
   command->SetResponseMetaDataElement("RunningServers", ss.str());
   command->SetResponseMetaDataElement("Separator", ";");
-  if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+  if (SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
@@ -1079,7 +1096,7 @@ void PlusServerLauncherMainWindow::GetRunningServers(igtlioCommandPointer comman
 //----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message)
 {
-  this->statusBar()->showMessage(QString::fromStdString(message));
+  statusBar()->showMessage(QString::fromStdString(message));
   LOG_DYNAMIC(message, level);
 }
 
@@ -1099,7 +1116,7 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandPointer co
 
     command->SetSuccessful(false);
     command->SetErrorMessage("Write permission denied.");
-    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+    if (SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -1111,7 +1128,7 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandPointer co
   {
     command->SetSuccessful(false);
     command->SetErrorMessage("Required metadata \'ConfigFileName\' and/or \'ConfigFileContent\' missing.");
-    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+    if (SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
     }
@@ -1138,7 +1155,7 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandPointer co
     {
       // Overwrite, backup in case writing of new file fails
       vtksys::SystemTools::CopyAFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile),
-                                     vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
+        vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak");
       vtksys::SystemTools::RemoveFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
     }
   }
@@ -1150,12 +1167,12 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandPointer co
     {
       // Restore backup
       vtksys::SystemTools::CopyAFile(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak",
-                                     vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
+        vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile));
     }
 
     command->SetSuccessful(false);
     command->SetErrorMessage("Unable to write to device set configuration directory.");
-    if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+    if (SendCommandResponse(command) != PLUS_SUCCESS)
     {
       LOG_ERROR("Command received but response could not be sent.");
       if (vtksys::SystemTools::FileExists(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(configFile) + ".bak"))
@@ -1171,7 +1188,7 @@ void PlusServerLauncherMainWindow::AddOrUpdateConfigFile(igtlioCommandPointer co
 
   command->SetSuccessful(true);
   command->SetResponseMetaDataElement("ConfigFileName", configFile);
-  if (this->SendCommandResponse(command) != PLUS_SUCCESS)
+  if (SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
   }
@@ -1203,7 +1220,7 @@ void PlusServerLauncherMainWindow::SendServerStartedCommand(std::string configFi
   LOG_TRACE("Sending server started command");
 
   std::string filename = vtksys::SystemTools::GetFilenameName(configFilePath);
-  std::string logLevelString = PlusCommon::ToString(this->ui.comboBox_LogLevel->currentData().Int);
+  std::string logLevelString = PlusCommon::ToString(ui.comboBox_LogLevel->currentData().Int);
 
   vtkSmartPointer<vtkXMLDataElement> commandElement = vtkSmartPointer<vtkXMLDataElement>::New();
   commandElement->SetName("Command");
@@ -1216,7 +1233,7 @@ void PlusServerLauncherMainWindow::SendServerStartedCommand(std::string configFi
   configFileElement = vtkSmartPointer<vtkXMLDataElement>::Take(vtkXMLUtilities::ReadElementFromFile(configFilePath.c_str()));
   if (configFileElement)
   {
-    std::string ports = this->GetServersFromConfigFile(filename);
+    std::string ports = GetServersFromConfigFile(filename);
     startServerElement->SetAttribute("Servers", ports.c_str());
     startServerElement->AddNestedElement(configFileElement);
   }
@@ -1236,7 +1253,7 @@ void PlusServerLauncherMainWindow::SendServerStartedCommand(std::string configFi
     serverStartedCommand->SetCommandMetaDataElement("Servers", startServerElement->GetAttribute("Servers"));
   }
 
-  this->SendCommand(serverStartedCommand);
+  SendCommand(serverStartedCommand);
 
 }
 
@@ -1261,7 +1278,7 @@ void PlusServerLauncherMainWindow::SendServerStoppedCommand(std::string configFi
   serverStoppedCommand->SetCommandContent(commandStream.str());
   serverStoppedCommand->SetCommandMetaDataElement("ConfigFileName", configFilePath);
 
-  this->SendCommand(serverStoppedCommand);
+  SendCommand(serverStoppedCommand);
 }
 
 //---------------------------------------------------------------------------
