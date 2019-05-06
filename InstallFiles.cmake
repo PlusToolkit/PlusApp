@@ -65,7 +65,7 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SpinnakerVideoManualControl.xml
       )
   ENDIF()
-  
+
   IF(PLUS_USE_BKPROFOCUS_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_BkProFocus_OpenIGTLinkTracker.xml
@@ -238,6 +238,14 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
 
   IF(PLUS_USE_VFW_VIDEO)
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_VfwVideoCapture.xml)
+  ENDIF()
+
+  IF(PLUS_USE_OpenCV_VIDEO)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_OpenCVWebcam.xml)
+  ENDIF()
+
+  IF(PLUS_USE_CLARIUS)
+    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ClariusVideoCapture.xml)
   ENDIF()
 
   SET(PLUSLIB_DATA_FILES
