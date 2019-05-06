@@ -89,6 +89,27 @@ protected slots:
 
 protected:
 
+  struct ServerInfo
+  {
+    ServerInfo()
+    {
+      this->ID = "";
+      this->Filename = "";
+      this->Process = nullptr;
+    }
+    ServerInfo(std::string filename, QProcess* process)
+    {
+      this->ID = vtksys::SystemTools::GetFilenameWithoutExtension(filename);
+      this->Filename = filename;
+      this->Process = process;
+    }
+    std::string ID;
+    std::string Filename;
+    QProcess*   Process;
+  };
+
+protected:
+
   /*! Read the application configuration from the PlusConfig xml */
   PlusStatus ReadConfiguration();
 
@@ -128,11 +149,13 @@ protected:
 
   std::string GetServersFromConfigFile(std::string filename);
 
-  void SendServerStartedCommand(std::string configFilePath);
-  void SendServerStoppedCommand(std::string configFilePath);
+  void SendServerStartedCommand(ServerInfo info);
+  void SendServerStoppedCommand(ServerInfo info);
 
   /*! Get the process for the specified config file */
-  QProcess* GetServerProcess(std::string filename);
+  ServerInfo GetServerInfoFromID(std::string id);
+  ServerInfo GetServerInfoFromFilename(std::string filename);
+  ServerInfo GetServerInfoFromProcess(QProcess* process);
 
   /*! Remove the process from the list of running servers */
   PlusStatus RemoveServerProcess(QProcess* process);
@@ -143,12 +166,6 @@ protected:
 protected:
   /*! Device set selector widget */
   QPlusDeviceSetSelectorWidget*         m_DeviceSetSelectorWidget;
-
-  struct ServerInfo
-  {
-    std::string Filename;
-    QProcess*   Process;
-  };
 
   /*! PlusServer instances that are responsible for all data collection and network transfer */
   std::deque<ServerInfo>                m_ServerInstances;
