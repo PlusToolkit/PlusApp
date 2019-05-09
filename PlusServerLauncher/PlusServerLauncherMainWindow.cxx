@@ -1022,7 +1022,7 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandPointer command
   std::string filename;
   std::string id;
   if (!command->GetCommandMetaDataElement("ConfigFileName", filename, encodingType) &&
-    !command->GetCommandMetaDataElement("ID", id, encodingType))
+    !command->GetCommandMetaDataElement("ServerID", id, encodingType))
   {
     command->SetSuccessful(false);
     command->SetErrorMessage("Config file not specified.");
@@ -1051,7 +1051,7 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandPointer command
   vtkSmartPointer<vtkXMLDataElement> responseElement = vtkSmartPointer<vtkXMLDataElement>::New();
   responseElement->SetName("Response");
   responseElement->SetAttribute("ConfigFileName", filename.c_str());
-  responseElement->SetAttribute("ID", id.c_str());
+  responseElement->SetAttribute("ServerID", id.c_str());
   commandElement->AddNestedElement(responseElement);
 
   std::stringstream commandSS;
@@ -1060,7 +1060,7 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandPointer command
   // Forced stop or not, the server is down
   command->SetSuccessful(true);
   command->SetResponseMetaDataElement("ConfigFileName", filename);
-  command->SetResponseMetaDataElement("ID", id);
+  command->SetResponseMetaDataElement("ServerID", id);
   if (SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
@@ -1187,7 +1187,7 @@ void PlusServerLauncherMainWindow::GetConfigFileContents(igtlioCommandPointer co
 {
   IANA_ENCODING_TYPE encodingType = IANA_TYPE_US_ASCII;
   std::string serverIdsString;
-  command->GetCommandMetaDataElement("IDs", serverIdsString, encodingType);
+  command->GetCommandMetaDataElement("ServerIDs", serverIdsString, encodingType);
   std::string separator;
   command->GetCommandMetaDataElement("Separator", separator, encodingType);
 
