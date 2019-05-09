@@ -117,11 +117,12 @@ protected:
   PlusStatus SendCommandResponse(igtlioCommandPointer command);
 
   /*! Incoming command handling functions */
-  void AddOrUpdateConfigFile(igtlioCommandPointer clientDevice);
-  void GetConfigFiles(igtlioCommandPointer clientDevice);
-  void RemoteStartServer(igtlioCommandPointer clientDevice);
-  void RemoteStopServer(igtlioCommandPointer clientDevice);
-  void GetRunningServers(igtlioCommandPointer clientDevice);
+  void AddOrUpdateConfigFile(igtlioCommandPointer command);
+  void GetConfigFiles(igtlioCommandPointer command);
+  void RemoteStartServer(igtlioCommandPointer command);
+  void RemoteStopServer(igtlioCommandPointer command);
+  void GetRunningServers(igtlioCommandPointer command);
+  void GetConfigFileContents(igtlioCommandPointer command);
 
   void LocalLog(vtkPlusLogger::LogLevelType level, const std::string& message);
 

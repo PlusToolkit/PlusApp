@@ -400,14 +400,14 @@ void PlusServerLauncherMainWindow::UpdateRemoteServerTable()
     {
       QDomElement docElem = doc.documentElement();
 
-      // Check if the root element is PlusConfiguration and contains a DataCollection child
+      // Check if the root element is PlusConfiguration and contains a DeviceSet child
       if (!docElem.tagName().compare("PlusConfiguration", Qt::CaseInsensitive))
       {
         // Add the name attribute to the first node named DeviceSet to the combo box
         QDomNodeList list(doc.elementsByTagName("DeviceSet"));
         if (list.count() > 0)
         {
-          // If it has a DataCollection children then use the first one
+          // If it has a DeviceSet children then use the first one
           QDomElement elem = list.at(0).toElement();
           name = elem.attribute("Name");
           description = elem.attribute("Description");
@@ -936,6 +936,11 @@ void PlusServerLauncherMainWindow::OnCommandReceivedEvent(igtlioCommandPointer c
     GetRunningServers(command);
     return;
   }
+  else if (PlusCommon::IsEqualInsensitive(name, "GetConfigFileContents"))
+  {
+    GetConfigFileContents(command);
+    return;
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -1086,6 +1091,47 @@ void PlusServerLauncherMainWindow::GetRunningServers(igtlioCommandPointer comman
   command->SetSuccessful(true);
   command->SetResponseMetaDataElement("RunningServers", ss.str());
   command->SetResponseMetaDataElement("Separator", ";");
+  if (SendCommandResponse(command) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Command received but response could not be sent.");
+  }
+  return;
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::GetConfigFileContents(igtlioCommandPointer command)
+{
+  IANA_ENCODING_TYPE encodingType = IANA_TYPE_US_ASCII;
+  std::string configFileNamesString;
+  command->GetCommandMetaDataElement("Names", configFileNamesString, encodingType);
+  std::string separator;
+  command->GetCommandMetaDataElement("Separator", separator, encodingType);
+
+  std::vector<std::string> configFileNames;
+  if (!separator.empty() && !configFileNamesString.empty())
+  {
+    configFileNames = PlusCommon::SplitStringIntoTokens(configFileNamesString, separator.c_str()[0], false);
+  }
+
+  vtkSmartPointer<vtkXMLDataElement> rootElement = vtkSmartPointer<vtkXMLDataElement>::New();
+  rootElement->SetName("Command");
+
+  for (std::string configFileName : configFileNames)
+  {
+    vtkSmartPointer<vtkXMLDataElement> configFileElement = vtkSmartPointer<vtkXMLDataElement>::New();
+    configFileElement->SetName(configFileName.c_str());
+
+    std::string filePath = vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(configFileName));
+    vtkSmartPointer<vtkXMLDataElement> contentElement = vtkXMLUtilities::ReadElementFromFile(filePath.c_str());
+
+    configFileElement->AddNestedElement(contentElement);
+    rootElement->AddNestedElement(configFileElement);
+  }
+
+  std::stringstream ss;
+  vtkXMLUtilities::FlattenElement(rootElement, ss);
+  command->SetResponseContent(ss.str());
+  command->SetSuccessful(true);
   if (SendCommandResponse(command) != PLUS_SUCCESS)
   {
     LOG_ERROR("Command received but response could not be sent.");
