@@ -327,6 +327,8 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
     newServerProcess && newServerProcess->state() == QProcess::Running)
   {
     LOG_INFO("Server process started successfully");
+    connect(newServerInfo.Process, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
+    connect(newServerInfo.Process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
     ui.comboBox_LogLevel->setEnabled(false);
     UpdateRemoteServerTable();
     return true;
@@ -402,9 +404,6 @@ bool PlusServerLauncherMainWindow::LocalStartServer()
   }
 
   ServerInfo newServerInfo = GetServerInfoFromFilename(filename);
-  connect(newServerInfo.Process, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
-  connect(newServerInfo.Process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
-
   if (m_RemoteControlServerConnector)
   {
     SendServerStartedCommand(newServerInfo);
@@ -483,7 +482,7 @@ void PlusServerLauncherMainWindow::StopRemoteServerButtonClicked()
   pressedButton->setEnabled(false);
 
   int row = ui.serverTable->indexAt(pressedButton->pos()).row();
-  ServerInfo info = this->GetServerInfoFromID(ui.serverTable->item(row, 0)->data(Qt::UserRole).toString().toStdString());
+  ServerInfo info = GetServerInfoFromID(ui.serverTable->item(row, 0)->data(Qt::UserRole).toString().toStdString());
   QString fileName = info.Filename.c_str();
   StopServer(fileName);
 }
@@ -499,6 +498,8 @@ bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
     return true;
   }
 
+  disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
+  disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
   disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
   disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
 
@@ -555,9 +556,6 @@ bool PlusServerLauncherMainWindow::LocalStopServer()
     return true;
   }
 
-  disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
-  disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
-
   bool result = StopServer(QString::fromStdString(vtksys::SystemTools::GetFilenameName(m_LocalConfigFile)));
   m_LocalConfigFile = "";
 
@@ -567,6 +565,15 @@ bool PlusServerLauncherMainWindow::LocalStopServer()
 //----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
 {
+  QProcess* process = qobject_cast<QProcess*>(QObject::sender());
+  if (process)
+  {
+    ServerInfo info = GetServerInfoFromProcess(process);
+    if (info.Filename != m_LocalConfigFile)
+    {
+      return;
+    }
+  }
   // Input is the format: message
   // Plus OpenIGTLink server listening on IPs: 169.254.100.247, 169.254.181.13, 129.100.44.163, 192.168.199.1, 192.168.233.1, 127.0.0.1 -- port 18944
   if (message.find("Plus OpenIGTLink server listening on IPs:") != std::string::npos)
@@ -831,7 +838,18 @@ void PlusServerLauncherMainWindow::ErrorReceived(QProcess::ProcessError errorCod
     errorString = "UnknownError";
   }
   LOG_ERROR("Server process error: " << errorString);
-  m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
+
+  QProcess* process = qobject_cast<QProcess*>(QObject::sender());
+  if (process)
+  {
+    ServerInfo info = GetServerInfoFromProcess(process);
+    if (info.Filename == m_LocalConfigFile)
+    {
+      m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
+    }
+  }
+
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1018,12 +1036,12 @@ void PlusServerLauncherMainWindow::RemoteStopServer(igtlioCommandPointer command
   ServerInfo info;
   if (!id.empty())
   {
-    info = this->GetServerInfoFromID(id);
+    info = GetServerInfoFromID(id);
     filename = info.Filename;
   }
   else if (!filename.empty())
   {
-    info = this->GetServerInfoFromFilename(filename);
+    info = GetServerInfoFromFilename(filename);
   }
 
   StopServer(QString::fromStdString(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationPath(vtksys::SystemTools::GetFilenameName(filename))));
@@ -1087,27 +1105,26 @@ void PlusServerLauncherMainWindow::RemoteStartServer(igtlioCommandPointer comman
     }
     return;
   }
-  else
-  {
-    std::string servers = GetServersFromConfigFile(filename);
-    std::stringstream responseSS;
-    vtkSmartPointer<vtkXMLDataElement> responseXML = vtkSmartPointer<vtkXMLDataElement>::New();
-    responseXML->SetName("Command");
-    vtkSmartPointer<vtkXMLDataElement> resultXML = vtkSmartPointer<vtkXMLDataElement>::New();
-    resultXML->SetName("Result");
-    resultXML->SetAttribute("ConfigFileName", filename.c_str());
-    resultXML->SetAttribute("Servers", servers.c_str());
-    responseXML->AddNestedElement(resultXML);
-    vtkXMLUtilities::FlattenElement(responseXML, responseSS);
 
-    command->SetSuccessful(true);
-    command->SetResponseMetaDataElement("ConfigFileName", filename);
-    command->SetResponseMetaDataElement("Servers", servers);
-    if (SendCommandResponse(command) != PLUS_SUCCESS)
-    {
-      LOG_ERROR("Command received but response could not be sent.");
-    }
+  std::string servers = GetServersFromConfigFile(filename);
+  std::stringstream responseSS;
+  vtkSmartPointer<vtkXMLDataElement> responseXML = vtkSmartPointer<vtkXMLDataElement>::New();
+  responseXML->SetName("Command");
+  vtkSmartPointer<vtkXMLDataElement> resultXML = vtkSmartPointer<vtkXMLDataElement>::New();
+  resultXML->SetName("Result");
+  resultXML->SetAttribute("ConfigFileName", filename.c_str());
+  resultXML->SetAttribute("Servers", servers.c_str());
+  responseXML->AddNestedElement(resultXML);
+  vtkXMLUtilities::FlattenElement(responseXML, responseSS);
+
+  command->SetSuccessful(true);
+  command->SetResponseMetaDataElement("ConfigFileName", filename);
+  command->SetResponseMetaDataElement("Servers", servers);
+  if (SendCommandResponse(command) != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Command received but response could not be sent.");
   }
+
 }
 
 //----------------------------------------------------------------------------
@@ -1185,7 +1202,7 @@ void PlusServerLauncherMainWindow::GetConfigFileContents(igtlioCommandPointer co
 
   for (std::string serverId : serverIds)
   {
-    ServerInfo info = this->GetServerInfoFromID(serverId);
+    ServerInfo info = GetServerInfoFromID(serverId);
     if (!info.Process)
     {
       continue;
