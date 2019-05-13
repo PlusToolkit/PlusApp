@@ -569,7 +569,7 @@ void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
   if (process)
   {
     ServerInfo info = GetServerInfoFromProcess(process);
-    if (info.Filename != m_LocalConfigFile)
+    if (info.Filename != vtksys::SystemTools::GetFilenameName(m_LocalConfigFile))
     {
       return;
     }
