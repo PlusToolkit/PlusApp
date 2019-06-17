@@ -1200,8 +1200,9 @@ void PlusServerLauncherMainWindow::GetConfigFileContents(igtlioCommandPointer co
   vtkSmartPointer<vtkXMLDataElement> rootElement = vtkSmartPointer<vtkXMLDataElement>::New();
   rootElement->SetName("Command");
 
-  for (std::string serverId : serverIds)
+  for (std::vector<std::string>::iterator serverIdIt = serverIds.begin(); serverIdIt != serverIds.end(); ++serverIdIt)
   {
+    std::string serverId = *serverIdIt;
     ServerInfo info = GetServerInfoFromID(serverId);
     if (!info.Process)
     {
