@@ -91,13 +91,13 @@ Launch the command-line-only version of PlusServer (no graphical user interface)
           - \xmlAtt Name Name of the image stream. It also defines the "From" frame of the transform embedded in the IGTL image message.
           - \xmlAtt EmbeddedTransformToFrame "To" frame of the transform embedded in the IGTL image message
           - \xmlElem \b Encoding
-            - \xmlAtt FourCC FourCC value of the codec that is used to encode the image as a VideoMessage. If not specified, the image will be sent as a regular ImageMessage. Available types: I420: "I420", VP9:"VP90" \OptionalAtt{ }
-            - \xmlAtt Lossless If TRUE, encoding will be performed losslessly if possible. \OptionalAtt{TRUE}
-            - \xmlAtt MinKeyframeDistance The minimum required distance between encoded keyframes. \OptionalAtt{50}
-            - \xmlAtt MaxKeyframeDistance The maximum required distance between encoded keyframes. \OptionalAtt{50}
-            - \xmlAtt Speed The encoding speed for the encoder. \OptionalAtt{0}
-            - \xmlAtt DeadlineMode The deadline mode for the encoder. Possible values: "REALTIME", "GOOD", "BEST". \OptionalAtt{ }
-            - \xmlAtt RateControl The rate control mode for the encoder. Possible values: "CBR" (Constant bit rate), "VBR" (Variable bit rate), "CQ" (Constrained quality), "Q" (Constant Quality). \OptionalAtt{ }
+            - \xmlAtt FourCC FourCC value of the codec that is used to encode the image as a VideoMessage. If not specified, the image will be sent as a regular ImageMessage. Available types: I420: "I420", VP9:"VP90" \OptionalAtt{VP90}
+            - \xmlAtt Lossless If TRUE, encoding will be performed losslessly if possible. \OptionalAtt{FALSE}
+            - \xmlAtt MinKeyframeDistance The minimum required distance between encoded keyframes. \OptionalAtt{-1}
+            - \xmlAtt MaxKeyframeDistance The maximum required distance between encoded keyframes. \OptionalAtt{-1}
+            - \xmlAtt Speed The encoding speed for the encoder. \OptionalAtt{8}
+            - \xmlAtt DeadlineMode The deadline mode for the encoder. Possible values: "REALTIME", "GOOD", "BEST". \OptionalAtt{REALTIME}
+            - \xmlAtt RateControl The rate control mode for the encoder. Possible values: "CBR" (Constant bit rate), "VBR" (Variable bit rate), "CQ" (Constrained quality), "Q" (Constant Quality). \OptionalAtt{Q}
             - \xmlAtt TargetBitrate The target bitrate for the encoder. \OptionalAtt{-1}
 
 This is an example element that needs to be added to the PLUS configuration xml file to use PlusServer:
