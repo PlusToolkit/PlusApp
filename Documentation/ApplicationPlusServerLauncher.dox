@@ -246,24 +246,24 @@ ______
 A graphical interface for remotely controlling PlusServerLauncher is included the PlusRemote module from the <a href="https://github.com/openigtlink/SlicerOpenIGTLink">SlicerOpenIGTLink</a> extension.
 To use the PlusRemote module:
 1. <a href="https://download.slicer.org/">Download Slicer >=4.10.2</a>
-1. Open Slicer
-1. Navigate to the extension manager
-1. Select "Install Extensions" and find the SlicerOpenIGTLink extension
-1. After the download has completed, restart Slicer
-1. PlusRemote should now be available in the list of modules
+2. Open Slicer
+3. Navigate to the extension manager
+4. Select "Install Extensions" and find the SlicerOpenIGTLink extension
+5. After the download has completed, restart Slicer
+6. PlusRemote should now be available in the list of modules
 
 To start a PlusServer instance from Slicer:
 Or:
 - Drag and
 
 1. Navigate to the PlusRemote module
-1. Switch to the "Plus Launcher Control tab"
-1. Create a new launcher node using the "Launcher node" selelctor
-1. Specify the hostname and port of the PlusServerLauncher application
-1. Load a config file to Slicer by dragging and any text file with the description "Text file"
-1. Click the "Add server" button
-1. Under the "Advanced" section, change the config file to the config file
-1. Click the connect button under the "State" column in the table
+2. Switch to the "Plus Launcher Control tab"
+3. Create a new launcher node using the "Launcher node" selelctor
+4. Specify the hostname and port of the PlusServerLauncher application
+5. Load a config file to Slicer by dragging and any text file with the description "Text file"
+6. Click the "Add server" button
+7. Under the "Advanced" section, change the config file to the config file
+8. Click the connect button under the "State" column in the table
 
 
 
