@@ -35,6 +35,7 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceInfraredSeekCam
 - \subpage DeviceInfraredTEQ1Cam
 - \subpage DeviceSpinnaker
+- \subpage DeviceBlackMagicDeckLink
 
 \subsection DevicesNetworkImaging Network imaging devices
 - \subpage DeviceOpenCVVideo
