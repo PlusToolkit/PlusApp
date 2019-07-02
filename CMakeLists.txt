@@ -250,6 +250,11 @@ ENDIF()
 # --------------------------------------------------------------------------
 # Build the fCal application (Qt)
 # --------------------------------------------------------------------------
+IF(NOT PLUS_RENDERING_ENABLED)
+  SET(PLUSAPP_BUILD_fCal OFF CACHE BOOL "Build the fCal application (Qt)" FORCE)
+  MESSAGE(WARNING "Rendering backend is None. fCal will be disabled")
+ENDIF()
+
 IF(PLUSAPP_BUILD_fCal)
   ADD_SUBDIRECTORY(fCal)
   ADD_DEPENDENCIES(fCal ${PLUSLIB_DEPENDENCIES})
