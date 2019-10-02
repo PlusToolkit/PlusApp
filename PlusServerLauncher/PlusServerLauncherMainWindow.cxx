@@ -94,6 +94,7 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   // Show only the last few thousand messages
   // (it should be enough, as all the messages are available in log files anyway)
   statusIcon->SetMaxMessageCount(3000);
+  statusIcon->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
   // Put the status icon in a frame with the log level selector
   ui.statusBarLayout->insertWidget(0, statusIcon);
