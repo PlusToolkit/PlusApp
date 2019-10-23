@@ -406,7 +406,7 @@ PlusStatus vtkPlusImageVisualizer::SetScreenRightDownAxesOrientation(US_IMAGE_OR
     return PLUS_FAIL;
   }
 
-  std::string orientationValue = igsioVideoFrame::GetStringFromUsImageOrientation(aOrientation);
+  std::string orientationValue = igsioCommon::GetStringFromUsImageOrientation(aOrientation);
   renderingParameters->SetAttribute("DisplayedImageOrientation", orientationValue.c_str());
 
   return UpdateCameraPose();
@@ -706,7 +706,7 @@ PlusStatus vtkPlusImageVisualizer::ReadConfiguration(vtkXMLDataElement* aConfig)
 
   // Displayed image orientation
   const char* orientation = xmlElement->GetAttribute("DisplayedImageOrientation");
-  US_IMAGE_ORIENTATION orientationValue = igsioVideoFrame::GetUsImageOrientationFromString(orientation);
+  US_IMAGE_ORIENTATION orientationValue = igsioCommon::GetUsImageOrientationFromString(orientation);
   if (orientationValue == US_IMG_ORIENT_XX)
   {
     LOG_WARNING("Unable to read image orientation from configuration file (Rendering tag, DisplayedImageOrientation attribute). Defauting to MF.");
