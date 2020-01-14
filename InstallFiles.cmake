@@ -254,6 +254,19 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ClariusVideoCapture.xml)
   ENDIF()
 
+  IF(PLUS_USE_STEAMVR)
+    LIST(APPEND PLUSLIB_CONFIG_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SteamVR_All.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SteamVR_Controller.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SteamVR_Controller_GenericTracker.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SteamVR_GenericTracker.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SteamVR_HMD.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SteamVR_HMD_Controller.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SteamVR_HMD_Controller_GenericTracker.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_SteamVR_HMD_GenericTracker.xml
+      )
+  ENDIF()
+
   SET(PLUSLIB_DATA_FILES
     ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires.igs.mha
     ${PLUSLIB_DATA_DIR}/TestImages/fCal_Test_Calibration_3NWires_fCal2.0.igs.mha
