@@ -141,7 +141,7 @@ int appMain(int argc, char* argv[])
     cmdargs.AddArgument("--device-set-configuration-dir", vtksys::CommandLineArguments::EQUAL_ARGUMENT, &deviceSetConfigurationDirectoryPath, "Device set configuration directory path");
     cmdargs.AddArgument("--config-file", vtksys::CommandLineArguments::EQUAL_ARGUMENT, &inputConfigFileName, "Configuration file name");
     cmdargs.AddBooleanArgument("--connect", &autoConnect, "Automatically connect after the application is started");
-    cmdargs.AddArgument("--port", vtksys::CommandLineArguments::EQUAL_ARGUMENT, &inputConfigFileName, "OpenIGTLink port number where the launcher will listen for remote control requests. If set to -1 then no remote control server will be launched. Default = 18904.");
+    cmdargs.AddArgument("--port", vtksys::CommandLineArguments::EQUAL_ARGUMENT, &remoteControlServerPort, "OpenIGTLink port number where the launcher will listen for remote control requests. If set to -1 then no remote control server will be launched. Default = 18904.");
     cmdargs.AddArgument("--verbose", vtksys::CommandLineArguments::EQUAL_ARGUMENT, &verboseLevel, "Verbose level (1=error only, 2=warning, 3=info, 4=debug)");
 
     if (!cmdargs.Parse())
