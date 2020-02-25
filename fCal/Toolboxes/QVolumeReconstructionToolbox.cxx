@@ -431,7 +431,7 @@ PlusStatus QVolumeReconstructionToolbox::ReconstructVolumeFromInputImage()
 
     // Add this tracked frame to the reconstructor
     bool insertedIntoVolume = false;
-    if (m_VolumeReconstructor->AddTrackedFrame(frame, m_ParentMainWindow->GetVisualizationController()->GetTransformRepository(), &insertedIntoVolume) != PLUS_SUCCESS)
+    if (m_VolumeReconstructor->AddTrackedFrame(frame, m_ParentMainWindow->GetVisualizationController()->GetTransformRepository(), frameIndex == 0, frameIndex == numberOfFrames-1, &insertedIntoVolume) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to add tracked frame to volume with frame #" << frameIndex);
       continue;
