@@ -21,6 +21,7 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_SpatialCalibration_2.0.xml
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_TemporalCalibration.xml
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Sim_VolumeReconstruction.xml
+    ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_MmfUS_NDIAurora_ECG.xml
 
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ChRobotics.xml
     ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Microchip.xml
@@ -36,6 +37,7 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_2.0.stl
     ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_3.1.stl
     ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_L1.4.stl
+    ${PLUSLIB_DATA_DIR}/CADModels/fCalPhantom/fCal_Echo1.0.stl
     ${PLUSLIB_DATA_DIR}/CADModels/LinearProbe/Probe_L14-5_38.stl
     ${PLUSLIB_DATA_DIR}/CADModels/EndocavityProbe/Probe_EC9-5_10.stl
     ${PLUSLIB_DATA_DIR}/CADModels/CurvilinearProbe/Probe_C5-2_60.stl
@@ -74,7 +76,7 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
 
   IF(PLUS_USE_BLACKMAGIC_DECKLINK)
     LIST(APPEND PLUSLIB_CONFIG_FILES
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_BlackMagicDeckLink.xml 
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_BlackMagicDeckLink.xml
     )
   ENDIF()
 
