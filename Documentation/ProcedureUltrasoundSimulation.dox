@@ -12,7 +12,7 @@ See detailed description of the algorithm parameters at the \ref DeviceUsSimulat
   - SimulatedUltrasound_NeedleModel_NeedleTip.stl
   - SimulatedUltrasound_VesselModel_Reference.stl
   - SimulatedUltrasound_Scene.mrb
-- <a href="http://download.slicer.org/">Download</a> and install the latest nightly build of 3D Slicer and the SlicerIGT extension
+- <a href="http://download.slicer.org/">Download</a> and install the latest nightly build of 3D Slicer and the SlicerOpenIGTLink and SlicerIGT extensions
 - Load the <em>SimulatedUltrasound_Scene.mrb</em> file into 3D Slicer
 - Open a Plus applications command prompt and run
 
