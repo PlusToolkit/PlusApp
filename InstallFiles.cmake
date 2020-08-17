@@ -284,35 +284,7 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     )
 ENDIF()
 
-list(REMOVE_DUPLICATES PLUSAPP_QT_COMPONENTS)
-FOREACH(_qt_component ${PLUSAPP_QT_COMPONENTS})
-  IF(TARGET Qt5::${_qt_component})
-    GET_TARGET_PROPERTY(_configs Qt5::${_qt_component} IMPORTED_CONFIGURATIONS)
-    FOREACH(_config IN LISTS _configs)
-    GET_TARGET_PROPERTY(_location Qt5::${_qt_component} IMPORTED_LOCATION_${_config})
-      IF(${_config} STREQUAL RELEASE OR ${_config} STREQUAL NOCONFIG)
-        LIST(APPEND _entries ${_config})
-        LIST(APPEND PlusApp_QT_INSTALL_FILES ${_location})
-        BREAK()
-      ENDIF()
-    ENDFOREACH()
-  ENDIF()
-
-  LIST(LENGTH _entries _size)
-  IF(_size EQUAL 0)
-    MESSAGE(FATAL_ERROR "Unable to locate Qt5::${_qt_component} library file for install.")
-  ENDIF()
-ENDFOREACH()
-
-INSTALL(FILES ${PlusApp_QT_INSTALL_FILES}
-  DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}
-  COMPONENT RuntimeLibraries
-  )
 IF(WIN32)
-  INSTALL(FILES ${QT_ROOT_DIR}/plugins/platforms/qwindows${CMAKE_SHARED_LIBRARY_SUFFIX}
-    DESTINATION ${PLUSAPP_INSTALL_BIN_DIR}/platforms
-    COMPONENT RuntimeLibraries
-    )
   # Install Plus command prompt starting script
   INSTALL(FILES
       ${PLUSLIB_SOURCE_DIR}/src/scripts/StartPlusCommandPrompt.bat
