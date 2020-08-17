@@ -101,7 +101,7 @@ IF(WIN32)
   SET(APP_MODE WIN32)
 ENDIF()
 
-ADD_EXECUTABLE(fCal ${APP_MODE} 
+AddPlusQt5Executable(fCal ${APP_MODE} 
   ${fCal_SRCS} 
   ${fCal_Toolbox_SRCS}
   ${fCal_UI_HDRS} 

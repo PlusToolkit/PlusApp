@@ -2,6 +2,8 @@ PROJECT(PlusApp)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.3.0)
 
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/PlusAppMacros.cmake)
+
 # ------------------------------------------------------------------------
 # PlusLib
 # --------------------------------------------------------------------------
@@ -215,6 +217,27 @@ SET(PLUSAPP_QT_COMPONENTS ${PLUSLIB_QT_COMPONENTS}
   CACHE INTERNAL "" FORCE)
 LIST(REMOVE_DUPLICATES PLUSAPP_QT_COMPONENTS)
 FIND_PACKAGE(Qt5 REQUIRED COMPONENTS ${PLUSAPP_QT_COMPONENTS})
+
+IF(Qt5_FOUND AND WIN32 AND TARGET Qt5::qmake AND NOT TARGET Qt5::windeployqt)
+  GET_TARGET_PROPERTY(_qt5_qmake_location Qt5::qmake IMPORTED_LOCATION)
+
+  EXECUTE_PROCESS(
+      COMMAND "${_qt5_qmake_location}" -query QT_INSTALL_PREFIX
+      RESULT_VARIABLE return_code
+      OUTPUT_VARIABLE qt5_install_prefix
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  SET(imported_location "${qt5_install_prefix}/bin/windeployqt.exe")
+
+  IF(EXISTS ${imported_location})
+      ADD_EXECUTABLE(Qt5::windeployqt IMPORTED)
+
+      SET_TARGET_PROPERTIES(Qt5::windeployqt PROPERTIES
+          IMPORTED_LOCATION ${imported_location}
+      )
+  ENDIF()
+ENDIF()
 
 # These variables are populated as part of our install script
 SET(QT_VERSION_MAJOR ${Qt5Core_VERSION_MAJOR}) 
