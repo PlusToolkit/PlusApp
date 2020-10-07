@@ -76,19 +76,18 @@ SET(fCal_LIBS
   PlusWidgets
   vtkPlusCommon
   itkvnl 
-  itkvnl_algo 
+  itkvnl_algo
   vtkPlusCalibration 
   vtkPlusDataCollection 
   vtkPlusVolumeReconstruction
-  vtkGUISupportQt
   )
-IF(TARGET vtkRenderingGL2PS${VTK_RENDERING_BACKEND})
+IF(TARGET ${PLUSAPP_VTK_PREFIX}RenderingGL2PS${VTK_RENDERING_BACKEND})
   LIST(APPEND fCal_LIBS
-    vtkRenderingGL2PS${VTK_RENDERING_BACKEND}
+    ${PLUSAPP_VTK_PREFIX}RenderingGL2PS${VTK_RENDERING_BACKEND}
     )
 ELSEIF(TARGET vtkRenderingGL2PS)
   LIST(APPEND fCal_LIBS
-    vtkRenderingGL2PS
+    ${PLUSAPP_VTK_PREFIX}RenderingGL2PS
     )
 ENDIF()
 

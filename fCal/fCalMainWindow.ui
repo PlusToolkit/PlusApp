@@ -217,7 +217,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>419</height>
+            <height>28</height>
            </rect>
           </property>
           <property name="minimumSize">
@@ -236,7 +236,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>419</height>
+            <height>28</height>
            </rect>
           </property>
           <property name="minimumSize">
@@ -255,7 +255,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>419</height>
+            <height>28</height>
            </rect>
           </property>
           <property name="minimumSize">
@@ -274,7 +274,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>419</height>
+            <height>28</height>
            </rect>
           </property>
           <property name="minimumSize">
@@ -293,7 +293,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>419</height>
+            <height>28</height>
            </rect>
           </property>
           <property name="minimumSize">
@@ -312,7 +312,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>419</height>
+            <height>28</height>
            </rect>
           </property>
           <property name="minimumSize">
@@ -355,7 +355,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QVTKWidget" name="canvas" native="true">
+        <widget class="QVTKOpenGLNativeWidget" name="canvas" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -450,9 +450,10 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>QVTKWidget</class>
+   <class>QVTKOpenGLNativeWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QVTKWidget.h</header>
+   <header location="global">QVTKOpenGLNativeWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

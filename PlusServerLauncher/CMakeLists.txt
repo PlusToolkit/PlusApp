@@ -33,7 +33,6 @@ SET (PlusServerLauncher_LIBS
   Qt5::Widgets
   Qt5::Network
   vtkPlusCommon
-  vtkGUISupportQt
   PlusWidgets
   vtkPlusServer
   )

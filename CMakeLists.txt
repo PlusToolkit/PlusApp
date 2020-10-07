@@ -10,6 +10,13 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/PlusAppMacros.cmake)
 FIND_PACKAGE(PlusLib REQUIRED NO_MODULE)
 INCLUDE(${PlusLib_USE_FILE})
 
+IF(VTK_VERSION VERSION_LESS 8.9.0)
+  SET(PLUSAPP_VTK_PREFIX vtk)
+ELSE()
+  SET(PLUSAPP_VTK_PREFIX VTK::)
+  SET(VTK_RENDERING_BACKEND OpenGL2)
+ENDIF()
+
 # ------------------------------------------------------------------------
 # Set project version number: PlusApp version should identical to Plus version
 # --------------------------------------------------------------------------

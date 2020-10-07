@@ -15,7 +15,7 @@ See License.txt for details.
 #include <vtkIGSIOTrackedFrameList.h>
 
 // VTK includes
-#include <QVTKWidget.h>
+#include <QVTKOpenGLNativeWidget.h>
 #include <vtkDirectory.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkMath.h>
@@ -94,7 +94,7 @@ vtkPlusVisualizationController::~vtkPlusVisualizationController()
 }
 
 //-----------------------------------------------------------------------------
-void vtkPlusVisualizationController::SetCanvas(QVTKWidget* aCanvas)
+void vtkPlusVisualizationController::SetCanvas(QVTKOpenGLNativeWidget* aCanvas)
 {
   this->Canvas = aCanvas;
   this->Canvas->setFocusPolicy(Qt::ClickFocus);
@@ -255,53 +255,53 @@ PlusStatus vtkPlusVisualizationController::SetVisualizationMode(DISPLAY_MODE aMo
       return PLUS_FAIL;
     }
 
-    if (this->BlankRenderer != NULL && Canvas->GetRenderWindow()->HasRenderer(this->BlankRenderer))
+    if (this->BlankRenderer != NULL && Canvas->renderWindow()->HasRenderer(this->BlankRenderer))
     {
-      Canvas->GetRenderWindow()->RemoveRenderer(this->BlankRenderer);
+      Canvas->renderWindow()->RemoveRenderer(this->BlankRenderer);
     }
-    if (this->ImageVisualizer != NULL && Canvas->GetRenderWindow()->HasRenderer(this->ImageVisualizer->GetCanvasRenderer()))
+    if (this->ImageVisualizer != NULL && Canvas->renderWindow()->HasRenderer(this->ImageVisualizer->GetCanvasRenderer()))
     {
-      Canvas->GetRenderWindow()->RemoveRenderer(this->ImageVisualizer->GetCanvasRenderer());
+      Canvas->renderWindow()->RemoveRenderer(this->ImageVisualizer->GetCanvasRenderer());
     }
-    if (this->PerspectiveVisualizer != NULL && Canvas->GetRenderWindow()->HasRenderer(this->PerspectiveVisualizer->GetCanvasRenderer()))
+    if (this->PerspectiveVisualizer != NULL && Canvas->renderWindow()->HasRenderer(this->PerspectiveVisualizer->GetCanvasRenderer()))
     {
       // If there's already been a renderer added, remove it
-      Canvas->GetRenderWindow()->RemoveRenderer(this->PerspectiveVisualizer->GetCanvasRenderer());
+      Canvas->renderWindow()->RemoveRenderer(this->PerspectiveVisualizer->GetCanvasRenderer());
     }
     // Add the 2D renderer
-    if (!Canvas->GetRenderWindow()->HasRenderer(this->ImageVisualizer->GetCanvasRenderer()))
+    if (!Canvas->renderWindow()->HasRenderer(this->ImageVisualizer->GetCanvasRenderer()))
     {
-      Canvas->GetRenderWindow()->AddRenderer(this->ImageVisualizer->GetCanvasRenderer());
+      Canvas->renderWindow()->AddRenderer(this->ImageVisualizer->GetCanvasRenderer());
       this->ImageVisualizer->GetImageActor()->VisibilityOn();
       this->ImageVisualizer->UpdateCameraPose();
     }
 
     // Disable camera movements
-    Canvas->GetRenderWindow()->GetInteractor()->RemoveAllObservers();
+    Canvas->renderWindow()->GetInteractor()->RemoveAllObservers();
   }
   else if (aMode == DISPLAY_MODE_3D)
   {
-    if (this->BlankRenderer != NULL && Canvas->GetRenderWindow()->HasRenderer(this->BlankRenderer))
+    if (this->BlankRenderer != NULL && Canvas->renderWindow()->HasRenderer(this->BlankRenderer))
     {
-      Canvas->GetRenderWindow()->RemoveRenderer(this->BlankRenderer);
+      Canvas->renderWindow()->RemoveRenderer(this->BlankRenderer);
     }
-    if (this->ImageVisualizer != NULL && Canvas->GetRenderWindow()->HasRenderer(this->ImageVisualizer->GetCanvasRenderer()))
+    if (this->ImageVisualizer != NULL && Canvas->renderWindow()->HasRenderer(this->ImageVisualizer->GetCanvasRenderer()))
     {
-      Canvas->GetRenderWindow()->RemoveRenderer(this->ImageVisualizer->GetCanvasRenderer());
+      Canvas->renderWindow()->RemoveRenderer(this->ImageVisualizer->GetCanvasRenderer());
     }
-    if (this->PerspectiveVisualizer != NULL && Canvas->GetRenderWindow()->HasRenderer(this->PerspectiveVisualizer->GetCanvasRenderer()))
+    if (this->PerspectiveVisualizer != NULL && Canvas->renderWindow()->HasRenderer(this->PerspectiveVisualizer->GetCanvasRenderer()))
     {
-      Canvas->GetRenderWindow()->RemoveRenderer(this->PerspectiveVisualizer->GetCanvasRenderer());
+      Canvas->renderWindow()->RemoveRenderer(this->PerspectiveVisualizer->GetCanvasRenderer());
     }
 
     // Add the 3D renderer
-    if (!Canvas->GetRenderWindow()->HasRenderer(this->PerspectiveVisualizer->GetCanvasRenderer()))
+    if (!Canvas->renderWindow()->HasRenderer(this->PerspectiveVisualizer->GetCanvasRenderer()))
     {
-      Canvas->GetRenderWindow()->AddRenderer(this->PerspectiveVisualizer->GetCanvasRenderer());
+      Canvas->renderWindow()->AddRenderer(this->PerspectiveVisualizer->GetCanvasRenderer());
     }
 
     // Enable camera movements
-    Canvas->GetRenderWindow()->GetInteractor()->SetInteractorStyle(vtkInteractorStyleTrackballCamera::New());
+    Canvas->renderWindow()->GetInteractor()->SetInteractorStyle(vtkInteractorStyleTrackballCamera::New());
   }
   else
   {
@@ -676,18 +676,18 @@ PlusStatus vtkPlusVisualizationController::HideRenderer()
     return PLUS_FAIL;
   }
 
-  if (this->PerspectiveVisualizer != NULL && Canvas->GetRenderWindow()->HasRenderer(PerspectiveVisualizer->GetCanvasRenderer()))
+  if (this->PerspectiveVisualizer != NULL && Canvas->renderWindow()->HasRenderer(PerspectiveVisualizer->GetCanvasRenderer()))
   {
     // If there's already been a renderer added, remove it
-    Canvas->GetRenderWindow()->RemoveRenderer(PerspectiveVisualizer->GetCanvasRenderer());
+    Canvas->renderWindow()->RemoveRenderer(PerspectiveVisualizer->GetCanvasRenderer());
   }
-  if (this->ImageVisualizer != NULL && Canvas->GetRenderWindow()->HasRenderer(ImageVisualizer->GetCanvasRenderer()))
+  if (this->ImageVisualizer != NULL && Canvas->renderWindow()->HasRenderer(ImageVisualizer->GetCanvasRenderer()))
   {
     // If there's already been a renderer added, remove it
-    Canvas->GetRenderWindow()->RemoveRenderer(ImageVisualizer->GetCanvasRenderer());
+    Canvas->renderWindow()->RemoveRenderer(ImageVisualizer->GetCanvasRenderer());
   }
 
-  Canvas->GetRenderWindow()->AddRenderer(this->BlankRenderer);
+  Canvas->renderWindow()->AddRenderer(this->BlankRenderer);
 
   this->CurrentMode = DISPLAY_MODE_NONE;
 

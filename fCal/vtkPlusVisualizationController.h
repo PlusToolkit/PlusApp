@@ -18,13 +18,13 @@ See License.txt for details.
 #include <QObject>
 #include <QTimer>
 
-// VTK includes
-#include <QVTKWidget.h>
-
+// Local includes
 class vtkPlusImageVisualizer;
 class vtkPlus3DObjectVisualizer;
 class vtkPlusDisplayableObject;
 
+// VTK includes
+class QVTKOpenGLNativeWidget;
 class vtkImageActor;
 class vtkMatrix4x4;
 class vtkPolyData;
@@ -276,7 +276,7 @@ public:
   /*! toggle visibility of the line actor for the line segmentation result */
   void SetLineSegmentationVisible(bool _arg);
 
-  void SetCanvas(QVTKWidget* canvas);
+  void SetCanvas(QVTKOpenGLNativeWidget* canvas);
 
   void ClearResultPolyData();
   void ClearInputPolyData();
@@ -315,7 +315,7 @@ protected:
 
   vtkImageActor* GetImageActor();
 
-  QVTKWidget* GetCanvas()
+  QVTKOpenGLNativeWidget* GetCanvas()
   {
     return Canvas;
   }
@@ -351,8 +351,8 @@ protected:
   /*! Desired frame rate of synchronized recording */
   int                                         AcquisitionFrameRate;
   /// Cached variables from other systems
-  QVTKWidget*                                 Canvas;
-  vtkIGSIOTransformRepository*                 TransformRepository;
+  QVTKOpenGLNativeWidget*                     Canvas;
+  vtkIGSIOTransformRepository*                TransformRepository;
   vtkPlusChannel*                             SelectedChannel;
   vtkPlusDataCollector*                       DataCollector;
 };
