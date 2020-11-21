@@ -308,12 +308,6 @@ ENDIF()
 
 ADD_SUBDIRECTORY(Documentation)
 
-#-----------------------------------------------------------------------------
-# Include PlusLib MS projects
-# --------------------------------------------------------------------------
-INCLUDE_PLUSLIB_MS_PROJECTS()
-GROUP_PLUSLIB_MS_PROJECTS("PlusLib")
-
 SET(PLUSAPP_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
