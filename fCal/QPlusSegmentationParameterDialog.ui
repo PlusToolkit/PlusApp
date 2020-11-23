@@ -1095,7 +1095,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QVTKOpenGLNativeWidget" name="canvas" native="true">
+    <widget class="QVTKWidget" name="canvas" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>7</horstretch>
@@ -1120,10 +1120,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QVTKOpenGLNativeWidget</class>
+   <class>QVTKWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QVTKOpenGLNativeWidget.h</header>
-   <container>1</container>
+   <header location="global">QVTKWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>

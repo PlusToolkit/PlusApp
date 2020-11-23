@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>235</width>
+    <width>230</width>
     <height>420</height>
    </rect>
   </property>
@@ -109,7 +109,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QVTKOpenGLNativeWidget" name="canvasPhantom" native="true">
+    <widget class="QVTKWidget" name="canvasPhantom" native="true">
      <property name="minimumSize">
       <size>
        <width>218</width>
@@ -433,10 +433,9 @@
  <layoutdefault spacing="4" margin="4"/>
  <customwidgets>
   <customwidget>
-   <class>QVTKOpenGLNativeWidget</class>
+   <class>QVTKWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QVTKOpenGLNativeWidget.h</header>
-   <container>1</container>
+   <header location="global">QVTKWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>
