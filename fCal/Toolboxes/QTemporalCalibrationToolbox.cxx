@@ -973,8 +973,8 @@ void QTemporalCalibrationToolbox::ShowPlotsToggled(bool aOn)
     uncalibratedChart->SetShowLegend(true);
     UncalibratedPlotContextView->GetScene()->AddItem(uncalibratedChart);
 
-    uncalibratedPlotVtkWidget->GetRenderWindow()->AddRenderer(UncalibratedPlotContextView->GetRenderer());
-    uncalibratedPlotVtkWidget->GetRenderWindow()->SetSize(800, 600);
+    uncalibratedPlotVtkWidget->renderWindow()->AddRenderer(UncalibratedPlotContextView->GetRenderer());
+    uncalibratedPlotVtkWidget->renderWindow()->SetSize(800, 600);
 
     gridPlotLayout->addWidget(uncalibratedPlotVtkWidget, 0, 0);
 
@@ -1000,8 +1000,8 @@ void QTemporalCalibrationToolbox::ShowPlotsToggled(bool aOn)
     calibratedChart->SetShowLegend(true);
     CalibratedPlotContextView->GetScene()->AddItem(calibratedChart);
 
-    calibratedPlotVtkWidget->GetRenderWindow()->AddRenderer(CalibratedPlotContextView->GetRenderer());
-    calibratedPlotVtkWidget->GetRenderWindow()->SetSize(800, 600);
+    calibratedPlotVtkWidget->renderWindow()->AddRenderer(CalibratedPlotContextView->GetRenderer());
+    calibratedPlotVtkWidget->renderWindow()->SetSize(800, 600);
 
     gridPlotLayout->addWidget(calibratedPlotVtkWidget, 1, 0);
 
@@ -1264,7 +1264,7 @@ void QTemporalCalibrationToolbox::OnSavePlotsRequested()
     QVTKWidget* vtkWidget = dynamic_cast<QVTKWidget*>(widget);
     if (vtkWidget)
     {
-      vtkWidget->GetRenderWindow()->AddRenderer(this->UncalibratedPlotContextView->GetRenderer());
+      vtkWidget->renderWindow()->AddRenderer(this->UncalibratedPlotContextView->GetRenderer());
     }
   }
 
@@ -1290,7 +1290,7 @@ void QTemporalCalibrationToolbox::OnSavePlotsRequested()
     QVTKWidget* vtkWidget = dynamic_cast<QVTKWidget*>(widget);
     if (vtkWidget)
     {
-      vtkWidget->GetRenderWindow()->AddRenderer(this->CalibratedPlotContextView->GetRenderer());
+      vtkWidget->renderWindow()->AddRenderer(this->CalibratedPlotContextView->GetRenderer());
     }
   }
 }

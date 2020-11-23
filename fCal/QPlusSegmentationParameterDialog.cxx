@@ -951,7 +951,7 @@ PlusStatus QPlusSegmentationParameterDialog::InitializeVisualization()
   m_ImageVisualizer->GetCanvasRenderer()->SetBackground(0.1, 0.1, 0.1);
   m_ImageVisualizer->SetResultColor(0.8, 0.0, 0.0);
   m_ImageVisualizer->SetResultOpacity(0.8);
-  ui.canvas->GetRenderWindow()->AddRenderer(m_ImageVisualizer->GetCanvasRenderer());
+  ui.canvas->renderWindow()->AddRenderer(m_ImageVisualizer->GetCanvasRenderer());
   m_ImageVisualizer->SetInputData(m_Frame.GetImageData()->GetImage());
 
   // Create default picker
@@ -1499,10 +1499,10 @@ PlusStatus QPlusSegmentationParameterDialog::SwitchToROIMode()
   m_ROIModeHandler->SetEnabled(true);
   m_ImageVisualizer->EnableROI(true);
 
-  ui.canvas->GetRenderWindow()->GetInteractor()->RemoveAllObservers();
-  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, m_ROIModeHandler);
-  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, m_ROIModeHandler);
-  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, m_ROIModeHandler);
+  ui.canvas->renderWindow()->GetInteractor()->RemoveAllObservers();
+  ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, m_ROIModeHandler);
+  ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, m_ROIModeHandler);
+  ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, m_ROIModeHandler);
 
   return PLUS_SUCCESS;
 }
@@ -1526,10 +1526,10 @@ PlusStatus QPlusSegmentationParameterDialog::SwitchToSpacingMode()
   m_ImageVisualizer->EnableROI(false);
   m_SpacingModeHandler->SetEnabled(true);
 
-  ui.canvas->GetRenderWindow()->GetInteractor()->RemoveAllObservers();
-  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, m_SpacingModeHandler);
-  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, m_SpacingModeHandler);
-  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, m_SpacingModeHandler);
+  ui.canvas->renderWindow()->GetInteractor()->RemoveAllObservers();
+  ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, m_SpacingModeHandler);
+  ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, m_SpacingModeHandler);
+  ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, m_SpacingModeHandler);
 
   return PLUS_SUCCESS;
 }

@@ -18,13 +18,13 @@ See License.txt for details.
 #include <QObject>
 #include <QTimer>
 
-// VTK includes
-#include <QVTKWidget.h>
-
+// Local includes
 class vtkPlusImageVisualizer;
 class vtkPlus3DObjectVisualizer;
 class vtkPlusDisplayableObject;
 
+// VTK includes
+class QVTKWidget;
 class vtkImageActor;
 class vtkMatrix4x4;
 class vtkPolyData;
@@ -352,7 +352,7 @@ protected:
   int                                         AcquisitionFrameRate;
   /// Cached variables from other systems
   QVTKWidget*                                 Canvas;
-  vtkIGSIOTransformRepository*                 TransformRepository;
+  vtkIGSIOTransformRepository*                TransformRepository;
   vtkPlusChannel*                             SelectedChannel;
   vtkPlusDataCollector*                       DataCollector;
 };
