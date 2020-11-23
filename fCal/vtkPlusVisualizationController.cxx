@@ -15,7 +15,7 @@ See License.txt for details.
 #include <vtkIGSIOTrackedFrameList.h>
 
 // VTK includes
-#include <QVTKWidget.h>
+#include <QVTKOpenGLNativeWidget.h>
 #include <vtkDirectory.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkMath.h>
@@ -94,7 +94,7 @@ vtkPlusVisualizationController::~vtkPlusVisualizationController()
 }
 
 //-----------------------------------------------------------------------------
-void vtkPlusVisualizationController::SetCanvas(QVTKWidget* aCanvas)
+void vtkPlusVisualizationController::SetCanvas(QVTKOpenGLNativeWidget* aCanvas)
 {
   this->Canvas = aCanvas;
   this->Canvas->setFocusPolicy(Qt::ClickFocus);
