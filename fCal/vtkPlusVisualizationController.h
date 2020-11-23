@@ -29,6 +29,7 @@ class vtkImageActor;
 class vtkMatrix4x4;
 class vtkPolyData;
 class vtkPolyDataMapper;
+class vtkRenderWindow;
 class vtkRenderer;
 class vtkSTLReader;
 class vtkTransform;
@@ -319,6 +320,7 @@ protected:
   {
     return Canvas;
   }
+  vtkRenderWindow* GetRenderWindow();
 
 protected:
   /*!

@@ -175,6 +175,11 @@ protected slots:
   */
   virtual void resizeEvent(QResizeEvent* aEvent);
 
+  /*! 
+  * show event handler
+  */
+  virtual void showEvent(QShowEvent* aEvent);
+
   /*!
   * Slot catching refresh timer events and refreshing the canvas
   */
