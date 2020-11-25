@@ -1361,11 +1361,10 @@ void QPlusSegmentationParameterDialog::UpdateCanvas()
 
   SegmentCurrentImage();
 
-#if VTK_MAJOR_VERSION < 9 && VTK_MINOR_VERSION < 9
   ui.canvas->update();
+#if VTK_MAJOR_VERSION < 9 && VTK_MINOR_VERSION < 9
   ui.canvas->GetRenderWindow()->Render();
 #else
-  ui.canvas->update();
   ui.canvas->renderWindow()->Render();
 #endif
 }
