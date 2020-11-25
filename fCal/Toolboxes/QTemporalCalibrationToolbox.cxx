@@ -952,7 +952,7 @@ void QTemporalCalibrationToolbox::ShowPlotsToggled(bool aOn)
     gridPlotLayout->setSpacing(4);
 
     // Uncalibrated chart view
-    QVTKWidget* uncalibratedPlotVtkWidget = new QVTKWidget(TemporalCalibrationPlotsWindow);
+    QVTKOpenGLNativeWidget* uncalibratedPlotVtkWidget = new QVTKOpenGLNativeWidget(TemporalCalibrationPlotsWindow);
 
     UncalibratedPlotContextView = vtkContextView::New();
     UncalibratedPlotContextView->GetRenderer()->SetBackground(1.0, 1.0, 1.0);
@@ -973,13 +973,18 @@ void QTemporalCalibrationToolbox::ShowPlotsToggled(bool aOn)
     uncalibratedChart->SetShowLegend(true);
     UncalibratedPlotContextView->GetScene()->AddItem(uncalibratedChart);
 
+#if VTK_MAJOR_VERSION < 9
+    uncalibratedPlotVtkWidget->GetRenderWindow()->AddRenderer(UncalibratedPlotContextView->GetRenderer());
+    uncalibratedPlotVtkWidget->GetRenderWindow()->SetSize(800, 600);
+#else
     uncalibratedPlotVtkWidget->renderWindow()->AddRenderer(UncalibratedPlotContextView->GetRenderer());
     uncalibratedPlotVtkWidget->renderWindow()->SetSize(800, 600);
+#endif
 
     gridPlotLayout->addWidget(uncalibratedPlotVtkWidget, 0, 0);
 
     // Calibrated chart view
-    QVTKWidget* calibratedPlotVtkWidget = new QVTKWidget(TemporalCalibrationPlotsWindow);
+    QVTKOpenGLNativeWidget* calibratedPlotVtkWidget = new QVTKOpenGLNativeWidget(TemporalCalibrationPlotsWindow);
 
     CalibratedPlotContextView = vtkContextView::New();
     CalibratedPlotContextView->GetRenderer()->SetBackground(1.0, 1.0, 1.0);
@@ -1000,8 +1005,13 @@ void QTemporalCalibrationToolbox::ShowPlotsToggled(bool aOn)
     calibratedChart->SetShowLegend(true);
     CalibratedPlotContextView->GetScene()->AddItem(calibratedChart);
 
+#if VTK_MAJOR_VERSION < 9
+    calibratedPlotVtkWidget->GetRenderWindow()->AddRenderer(CalibratedPlotContextView->GetRenderer());
+    calibratedPlotVtkWidget->GetRenderWindow()->SetSize(800, 600);
+#else
     calibratedPlotVtkWidget->renderWindow()->AddRenderer(CalibratedPlotContextView->GetRenderer());
     calibratedPlotVtkWidget->renderWindow()->SetSize(800, 600);
+#endif
 
     gridPlotLayout->addWidget(calibratedPlotVtkWidget, 1, 0);
 
@@ -1261,10 +1271,14 @@ void QTemporalCalibrationToolbox::OnSavePlotsRequested()
   QWidget* widget = item->widget();
   if (widget != nullptr)
   {
-    QVTKWidget* vtkWidget = dynamic_cast<QVTKWidget*>(widget);
+    QVTKOpenGLNativeWidget* vtkWidget = dynamic_cast<QVTKOpenGLNativeWidget*>(widget);
     if (vtkWidget)
     {
+#if VTK_MAJOR_VERSION < 9
+      vtkWidget->GetRenderWindow()->AddRenderer(this->UncalibratedPlotContextView->GetRenderer());
+#else
       vtkWidget->renderWindow()->AddRenderer(this->UncalibratedPlotContextView->GetRenderer());
+#endif
     }
   }
 
@@ -1287,10 +1301,14 @@ void QTemporalCalibrationToolbox::OnSavePlotsRequested()
   widget = item->widget();
   if (widget != nullptr)
   {
-    QVTKWidget* vtkWidget = dynamic_cast<QVTKWidget*>(widget);
+    QVTKOpenGLNativeWidget* vtkWidget = dynamic_cast<QVTKOpenGLNativeWidget*>(widget);
     if (vtkWidget)
     {
+#if VTK_MAJOR_VERSION < 9
+      vtkWidget->GetRenderWindow()->AddRenderer(this->CalibratedPlotContextView->GetRenderer());
+#else
       vtkWidget->renderWindow()->AddRenderer(this->CalibratedPlotContextView->GetRenderer());
+#endif
     }
   }
 }

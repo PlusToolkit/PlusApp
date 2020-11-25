@@ -60,7 +60,11 @@ QPhantomRegistrationToolbox::QPhantomRegistrationToolbox(fCalMainWindow* aParent
   m_PhantomRenderer->SetBackground2(0.4, 0.4, 0.4);
   m_PhantomRenderer->SetGradientBackground(true);
 
+#if VTK_MAJOR_VERSION < 9
+  ui.canvasPhantom->GetRenderWindow()->AddRenderer(m_PhantomRenderer);
+#else
   ui.canvasPhantom->renderWindow()->AddRenderer(m_PhantomRenderer);
+#endif
 
   // Initialize requested landmarks visualization in toolbox canvas
   m_RequestedLandmarkPolyData->Initialize();
@@ -96,7 +100,11 @@ QPhantomRegistrationToolbox::QPhantomRegistrationToolbox(fCalMainWindow* aParent
 //-----------------------------------------------------------------------------
 QPhantomRegistrationToolbox::~QPhantomRegistrationToolbox()
 {
+#if VTK_MAJOR_VERSION < 9
+  ui.canvasPhantom->GetRenderWindow()->RemoveRenderer(m_PhantomRenderer);
+#else
   ui.canvasPhantom->renderWindow()->RemoveRenderer(m_PhantomRenderer);
+#endif
 }
 
 //-----------------------------------------------------------------------------

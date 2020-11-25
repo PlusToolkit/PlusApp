@@ -24,11 +24,12 @@ class vtkPlus3DObjectVisualizer;
 class vtkPlusDisplayableObject;
 
 // VTK includes
-class QVTKWidget;
+class QVTKOpenGLNativeWidget;
 class vtkImageActor;
 class vtkMatrix4x4;
 class vtkPolyData;
 class vtkPolyDataMapper;
+class vtkRenderWindow;
 class vtkRenderer;
 class vtkSTLReader;
 class vtkTransform;
@@ -276,7 +277,7 @@ public:
   /*! toggle visibility of the line actor for the line segmentation result */
   void SetLineSegmentationVisible(bool _arg);
 
-  void SetCanvas(QVTKWidget* canvas);
+  void SetCanvas(QVTKOpenGLNativeWidget* canvas);
 
   void ClearResultPolyData();
   void ClearInputPolyData();
@@ -315,10 +316,11 @@ protected:
 
   vtkImageActor* GetImageActor();
 
-  QVTKWidget* GetCanvas()
+  QVTKOpenGLNativeWidget* GetCanvas()
   {
     return Canvas;
   }
+  vtkRenderWindow* GetRenderWindow();
 
 protected:
   /*!
@@ -351,7 +353,7 @@ protected:
   /*! Desired frame rate of synchronized recording */
   int                                         AcquisitionFrameRate;
   /// Cached variables from other systems
-  QVTKWidget*                                 Canvas;
+  QVTKOpenGLNativeWidget*                     Canvas;
   vtkIGSIOTransformRepository*                TransformRepository;
   vtkPlusChannel*                             SelectedChannel;
   vtkPlusDataCollector*                       DataCollector;

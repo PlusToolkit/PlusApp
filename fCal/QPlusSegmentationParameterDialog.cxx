@@ -951,7 +951,11 @@ PlusStatus QPlusSegmentationParameterDialog::InitializeVisualization()
   m_ImageVisualizer->GetCanvasRenderer()->SetBackground(0.1, 0.1, 0.1);
   m_ImageVisualizer->SetResultColor(0.8, 0.0, 0.0);
   m_ImageVisualizer->SetResultOpacity(0.8);
+#if VTK_MAJOR_VERSION < 9
+  ui.canvas->GetRenderWindow()->AddRenderer(m_ImageVisualizer->GetCanvasRenderer());
+#else
   ui.canvas->renderWindow()->AddRenderer(m_ImageVisualizer->GetCanvasRenderer());
+#endif
   m_ImageVisualizer->SetInputData(m_Frame.GetImageData()->GetImage());
 
   // Create default picker
@@ -1329,10 +1333,25 @@ void QPlusSegmentationParameterDialog::resizeEvent(QResizeEvent* aEvent)
 {
   LOG_TRACE("QPlusSegmentationParameterDialog::resizeEvent");
 
-  if (m_ImageVisualizer != NULL)
+  if (m_ImageVisualizer != nullptr)
   {
+    // render window not visible yet, scaling not correct
     m_ImageVisualizer->UpdateCameraPose();
   }
+
+  QDialog::resizeEvent(aEvent);
+}
+
+//----------------------------------------------------------------------------
+void QPlusSegmentationParameterDialog::showEvent(QShowEvent* aEvent)
+{
+  if (m_ImageVisualizer != nullptr)
+  {
+    // render window not visible yet, scaling not correct
+    m_ImageVisualizer->UpdateCameraPose();
+  }
+
+  QDialog::showEvent(aEvent);
 }
 
 //-----------------------------------------------------------------------------
@@ -1343,6 +1362,11 @@ void QPlusSegmentationParameterDialog::UpdateCanvas()
   SegmentCurrentImage();
 
   ui.canvas->update();
+#if VTK_MAJOR_VERSION < 9 && VTK_MINOR_VERSION < 9
+  ui.canvas->GetRenderWindow()->Render();
+#else
+  ui.canvas->renderWindow()->Render();
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1499,10 +1523,17 @@ PlusStatus QPlusSegmentationParameterDialog::SwitchToROIMode()
   m_ROIModeHandler->SetEnabled(true);
   m_ImageVisualizer->EnableROI(true);
 
+#if VTK_MAJOR_VERSION < 9
+  ui.canvas->GetRenderWindow()->GetInteractor()->RemoveAllObservers();
+  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, m_ROIModeHandler);
+  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, m_ROIModeHandler);
+  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, m_ROIModeHandler);
+#else
   ui.canvas->renderWindow()->GetInteractor()->RemoveAllObservers();
   ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, m_ROIModeHandler);
   ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, m_ROIModeHandler);
   ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, m_ROIModeHandler);
+#endif
 
   return PLUS_SUCCESS;
 }
@@ -1526,10 +1557,17 @@ PlusStatus QPlusSegmentationParameterDialog::SwitchToSpacingMode()
   m_ImageVisualizer->EnableROI(false);
   m_SpacingModeHandler->SetEnabled(true);
 
+#if VTK_MAJOR_VERSION < 9
+  ui.canvas->GetRenderWindow()->GetInteractor()->RemoveAllObservers();
+  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, m_SpacingModeHandler);
+  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, m_SpacingModeHandler);
+  ui.canvas->GetRenderWindow()->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, m_SpacingModeHandler);
+#else
   ui.canvas->renderWindow()->GetInteractor()->RemoveAllObservers();
   ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, m_SpacingModeHandler);
   ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, m_SpacingModeHandler);
   ui.canvas->renderWindow()->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, m_SpacingModeHandler);
+#endif
 
   return PLUS_SUCCESS;
 }
