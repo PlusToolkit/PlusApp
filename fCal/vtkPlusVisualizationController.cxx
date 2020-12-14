@@ -42,7 +42,7 @@ vtkRenderWindow* vtkPlusVisualizationController::GetRenderWindow()
 #if VTK_MAJOR_VERSION < 9
   return this->Canvas->GetRenderWindow();
 #else
-  return this->Canvas->RenderWindow();
+  return this->Canvas->renderWindow();
 #endif
 }
 
