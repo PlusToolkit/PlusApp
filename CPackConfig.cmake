@@ -99,7 +99,11 @@ IF(NOT ITK_BIN_DIR)
 ENDIF()
 
 IF(EXISTS "${VTK_DIR}/VTKTargets.cmake" OR EXISTS "${VTK_DIR}/VTK-Targets.cmake")
-  LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${VTK_BIN_DIR};VTK;RuntimeLibraries;/") #TODO: Remove when VTK_DIR packages correctly
+  IF(${VTK_MAJOR_VERSION} GREATER_EQUAL 9)
+    LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${VTK_BIN_DIR};VTK;runtime;/") #TODO: Remove when VTK_DIR packages correctly
+  ELSE()
+    LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${VTK_BIN_DIR};VTK;RuntimeLibraries;/") #TODO: Remove when VTK_DIR packages correctly
+  ENDIF()
 ELSE()
   MESSAGE(WARNING "Unable to set VTK_DIR for package generation!")
 ENDIF()
