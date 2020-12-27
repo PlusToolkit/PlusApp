@@ -24,6 +24,7 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceBkProFocus
 - \subpage DevicePhilips
 - \subpage DeviceClarius
+- \subpage DeviceClariusOEM
 
 \subsection DevicesFramegrabber Framegrabbers and cameras
 - \subpage DeviceEpiphan
