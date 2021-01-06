@@ -145,23 +145,21 @@ void QTemporalCalibrationToolbox::OnActivated()
     int index(0);
     for (DeviceCollectionIterator it = aCollection.begin(); it != aCollection.end(); ++it)
     {
-      if (!(*it)->IsVirtual())
+      for (ChannelContainerIterator chanIt = (*it)->GetOutputChannelsStart(); chanIt != (*it)->GetOutputChannelsEnd(); ++chanIt)
       {
-        for (ChannelContainerIterator chanIt = (*it)->GetOutputChannelsStart(); chanIt != (*it)->GetOutputChannelsEnd(); ++chanIt)
+        if (!this->RequestedFixedChannel.empty() && STRCASECMP((*chanIt)->GetChannelId(), this->RequestedFixedChannel.c_str()) == 0)
         {
-          if (!this->RequestedFixedChannel.empty() && STRCASECMP((*chanIt)->GetChannelId(), this->RequestedFixedChannel.c_str()) == 0)
-          {
-            requestedFixedIndex = index;
-          }
-          if (!this->RequestedMovingChannel.empty() && STRCASECMP((*chanIt)->GetChannelId(), this->RequestedMovingChannel.c_str()) == 0)
-          {
-            requestedMovingIndex = index;
-          }
-          ui.comboBox_FixedChannelValue->addItem(QString((*chanIt)->GetChannelId()));
-          ui.comboBox_MovingChannelValue->addItem(QString((*chanIt)->GetChannelId()));
-          ++index;
+          requestedFixedIndex = index;
         }
+        if (!this->RequestedMovingChannel.empty() && STRCASECMP((*chanIt)->GetChannelId(), this->RequestedMovingChannel.c_str()) == 0)
+        {
+          requestedMovingIndex = index;
+        }
+        ui.comboBox_FixedChannelValue->addItem(QString((*chanIt)->GetChannelId()));
+        ui.comboBox_MovingChannelValue->addItem(QString((*chanIt)->GetChannelId()));
+        ++index;
       }
+      
     }
 
     ui.comboBox_FixedChannelValue->setCurrentIndex(requestedFixedIndex);
