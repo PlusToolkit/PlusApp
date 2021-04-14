@@ -191,7 +191,6 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       SET(OPTITRACK_ADDITIONAL_FILES
         ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/EmptyProfile.xml
         ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/Reference.tra
-        ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/SampleProfile.xml
         ${PLUSLIB_DATA_DIR}/ConfigFiles/OptiTrack/Stylus.tra
         )
       LIST(APPEND PLUSLIB_CONFIG_FILES
