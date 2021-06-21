@@ -99,7 +99,8 @@ int main(int argc, char* argv[])
       while (true)
       {
         // Receive generic header from the socket
-        int rs = socket->Receive(headerMsg->GetBufferPointer(), headerMsg->GetBufferSize());
+        bool timeout(false);
+        igtlUint64 rs = socket->Receive(headerMsg->GetBufferPointer(), headerMsg->GetBufferSize(), timeout);
         if (rs == 0)
         {
           if (threadID >= 0)
@@ -136,7 +137,8 @@ int main(int argc, char* argv[])
           startTracking->SetMessageHeader(headerMsg);
           startTracking->AllocateBuffer();
 
-          int r2 = socket->Receive(startTracking->GetBufferBodyPointer(), startTracking->GetBufferBodySize());
+          bool timeout(false);
+          igtlUint64 r2 = socket->Receive(startTracking->GetBufferBodyPointer(), startTracking->GetBufferBodySize(), timeout);
           int c = startTracking->Unpack(1);
           if (c & igtl::MessageHeader::UNPACK_BODY) // if CRC check is OK
           {
