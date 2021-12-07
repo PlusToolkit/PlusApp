@@ -19,6 +19,9 @@ See License.txt for details.
 // Qt includes
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDateTime>
+#include <QDesktopServices>
+#include <QDir>
 #include <QDomDocument>
 #include <QFileInfo>
 #include <QHostAddress>
@@ -206,6 +209,8 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
 
   connect(m_RemoteControlServerConnectorProcessTimer, &QTimer::timeout, this, &PlusServerLauncherMainWindow::OnTimerTimeout);
 
+  connect(ui.pushButton_LatestLog, &QPushButton::clicked, this, &PlusServerLauncherMainWindow::LatestLogClicked);
+
   m_RemoteControlServerConnectorProcessTimer->start(5);
 
   ReadConfiguration();
@@ -248,7 +253,8 @@ PlusServerLauncherMainWindow::~PlusServerLauncherMainWindow()
   m_RemoteControlServerConnectorProcessTimer = nullptr;
 
   disconnect(ui.checkBox_writePermission, &QCheckBox::clicked, this, &PlusServerLauncherMainWindow::OnWritePermissionClicked);
-  connect(m_RemoteControlServerConnectorProcessTimer, &QTimer::timeout, this, &PlusServerLauncherMainWindow::OnTimerTimeout);
+  disconnect(m_RemoteControlServerConnectorProcessTimer, &QTimer::timeout, this, &PlusServerLauncherMainWindow::OnTimerTimeout);
+  disconnect(ui.pushButton_LatestLog, &QPushButton::clicked, this, &PlusServerLauncherMainWindow::LatestLogClicked);
 
   WriteConfiguration();
 }
@@ -888,6 +894,51 @@ void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QPro
 void PlusServerLauncherMainWindow::LogLevelChanged()
 {
   vtkPlusLogger::Instance()->SetLogLevel(ui.comboBox_LogLevel->currentData().toInt());
+}
+
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::LatestLogClicked()
+{
+  // Open the latest log in the output folder
+  QDir directory(QString::fromStdString(vtkPlusConfig::GetInstance()->GetOutputDirectory()));
+  QFileInfoList fileInfoList = directory.entryInfoList(QStringList() << "*.txt");
+  if (fileInfoList.isEmpty())
+  {
+    this->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "No logs in output directory.");
+    return;
+  }
+
+  QFileInfo latestInfo = fileInfoList.at(0);
+  QDateTime latestTime = fileInfoList.at(0).lastModified();
+  for (auto& fileInfo : fileInfoList)
+  {
+    if (!fileInfo.isFile())
+    {
+      continue;
+    }
+    if (fileInfo.lastModified().secsTo(latestTime) < 0)
+    {
+      latestTime = fileInfo.lastModified();
+      latestInfo = fileInfo;
+    }
+  }
+
+  // Open it in an editor
+  QString editorApplicationExecutable(vtkPlusConfig::GetInstance()->GetEditorApplicationExecutable().c_str());
+
+  if (!editorApplicationExecutable.isEmpty())
+  {
+    QString file = latestInfo.absoluteFilePath();
+
+    QProcess::startDetached(editorApplicationExecutable, QStringList() << file);
+    return;
+  }
+
+  // No editor application defined, try using the system default
+  if (!QDesktopServices::openUrl(QUrl("file:///" + latestInfo.absoluteFilePath(), QUrl::TolerantMode)))
+  {
+    LOG_ERROR("Failed to open file in default application: " << latestInfo.absoluteFilePath().toStdString());
+  }
 }
 
 //---------------------------------------------------------------------------

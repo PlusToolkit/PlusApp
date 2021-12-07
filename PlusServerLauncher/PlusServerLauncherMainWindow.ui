@@ -340,6 +340,17 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QPushButton" name="pushButton_LatestLog">
+         <property name="text">
+          <string>Latest Log</string>
+         </property>
+         <property name="icon">
+          <iconset resource="PlusServerLauncher.qrc">
+           <normaloff>:/icons/Resources/icon_Edit.png</normaloff>:/icons/Resources/icon_Edit.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>

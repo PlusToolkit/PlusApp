@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="icons">
     <file>Resources/icon_ConnectLarge.ico</file>
+    <file>Resources/icon_Edit.png</file>
   </qresource>
   <qresource prefix="styles"/>
 </RCC>
