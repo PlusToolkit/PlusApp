@@ -76,6 +76,8 @@ protected slots:
 
   void LogLevelChanged();
 
+  void LatestLogClicked();
+
   static void OnRemoteControlServerEventReceived(vtkObject* caller, unsigned long eventId, void* clientdata, void* calldata);
   void OnClientDisconnectedEvent();
   void OnCommandReceivedEvent(igtlioCommandPointer command);
