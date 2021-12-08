@@ -342,7 +342,7 @@
        <item>
         <widget class="QPushButton" name="pushButton_LatestLog">
          <property name="text">
-          <string>Latest Log</string>
+          <string>Latest log</string>
          </property>
          <property name="icon">
           <iconset resource="PlusServerLauncher.qrc">
