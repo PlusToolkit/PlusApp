@@ -57,6 +57,7 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceChRobotics
 - \subpage DeviceMicrochip
 - \subpage DeviceWitMotionTracker
+- \subpage DeviceGenericSensor
 
 \subsection DevicesMiscTracking Other tracking devices
 - \subpage DeviceOpenIGTLinkTracker
