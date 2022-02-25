@@ -8,8 +8,10 @@ See License.txt for details.
 #include "QStylusCalibrationToolbox.h"
 #include "fCalMainWindow.h"
 #include "igsioMath.h"
-#include "vtkPlusPivotCalibrationAlgo.h"
 #include "vtkPlusVisualizationController.h"
+
+// IGSIOCalibration includes
+#include <vtkIGSIOPivotCalibrationAlgo.h>
 
 // Qt includes
 #include <QFileDialog>
@@ -24,7 +26,7 @@ See License.txt for details.
 QStylusCalibrationToolbox::QStylusCalibrationToolbox(fCalMainWindow* aParentMainWindow, Qt::WindowFlags aFlags)
   : QAbstractToolbox(aParentMainWindow)
   , QWidget(aParentMainWindow, aFlags)
-  , m_PivotCalibration(vtkSmartPointer<vtkPlusPivotCalibrationAlgo>::New())
+  , m_PivotCalibration(vtkSmartPointer<vtkIGSIOPivotCalibrationAlgo>::New())
   , m_NumberOfPoints(200)
   , m_FreeHandStartupDelaySec(5)
   , m_CurrentPointNumber(0)
@@ -396,7 +398,7 @@ void QStylusCalibrationToolbox::SetDisplayAccordingToState()
 }
 
 //----------------------------------------------------------------------------
-vtkPlusPivotCalibrationAlgo* QStylusCalibrationToolbox::GetPivotCalibrationAlgo()
+vtkIGSIOPivotCalibrationAlgo* QStylusCalibrationToolbox::GetPivotCalibrationAlgo()
 {
   return m_PivotCalibration;
 }
