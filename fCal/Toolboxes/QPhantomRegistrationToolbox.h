@@ -16,7 +16,7 @@ See License.txt for details.
 
 class vtkPlusPhantomLandmarkRegistrationAlgo;
 class vtkPlusPhantomLinearObjectRegistrationAlgo;
-class vtkIGSIOLandmarkDetectionAlgo;
+class vtkPlusLandmarkDetectionAlgo;
 class vtkActor;
 class vtkPolyData;
 class vtkRenderer;
@@ -197,7 +197,7 @@ protected:
   vtkSmartPointer<vtkPlusPhantomLinearObjectRegistrationAlgo> m_PhantomLinearObjectRegistration;
 
   /*! Stylus tip Landmark detection algorithm */
-  vtkSmartPointer<vtkIGSIOLandmarkDetectionAlgo>               m_LandmarkDetection;
+  vtkSmartPointer<vtkPlusLandmarkDetectionAlgo>               m_LandmarkDetection;
 
   /*! Landmark already detected */
   int                                     m_LandmarkDetected;

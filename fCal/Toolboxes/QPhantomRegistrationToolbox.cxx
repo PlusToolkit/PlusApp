@@ -17,15 +17,13 @@ See License.txt for details.
 // IGSIO includes
 #include <vtkIGSIOAccurateTimer.h>
 
-// IGSIOCalibration includes
-#include <vtkIGSIOLandmarkDetectionAlgo.h>
-#include <vtkIGSIOPivotCalibrationAlgo.h>
-
 // PlusLib includes
 #include <igsioMath.h>
 #include <vtkPlusFakeTracker.h>
+#include <vtkPlusLandmarkDetectionAlgo.h>
 #include <vtkPlusPhantomLandmarkRegistrationAlgo.h>
 #include <vtkPlusPhantomLinearObjectRegistrationAlgo.h>
+#include <vtkPlusPivotCalibrationAlgo.h>
 
 // VTK includes
 #include <vtkCamera.h>
@@ -44,7 +42,7 @@ QPhantomRegistrationToolbox::QPhantomRegistrationToolbox(fCalMainWindow* aParent
   , QWidget(aParentMainWindow, aFlags)
   , m_PhantomLandmarkRegistration(vtkSmartPointer<vtkPlusPhantomLandmarkRegistrationAlgo>::New())
   , m_PhantomLinearObjectRegistration(vtkSmartPointer<vtkPlusPhantomLinearObjectRegistrationAlgo>::New())
-  , m_LandmarkDetection(vtkSmartPointer<vtkIGSIOLandmarkDetectionAlgo>::New())
+  , m_LandmarkDetection(vtkSmartPointer<vtkPlusLandmarkDetectionAlgo>::New())
   , m_PhantomActor(vtkSmartPointer<vtkActor>::New())
   , m_RequestedLandmarkActor(vtkSmartPointer<vtkActor>::New())
   , m_RequestedLandmarkPolyData(vtkSmartPointer<vtkPolyData>::New())
@@ -679,7 +677,7 @@ void QPhantomRegistrationToolbox::OpenStylusCalibration()
   }
 
   // Read stylus coordinate frame name
-  vtkIGSIOPivotCalibrationAlgo* pivotCalibrationAlgo = vtkIGSIOPivotCalibrationAlgo::New();
+  vtkPlusPivotCalibrationAlgo* pivotCalibrationAlgo = vtkPlusPivotCalibrationAlgo::New();
   if (pivotCalibrationAlgo->ReadConfiguration(vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData()) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to read stylus coordinate frame name!");
