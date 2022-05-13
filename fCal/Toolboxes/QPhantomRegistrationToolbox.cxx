@@ -631,7 +631,7 @@ PlusStatus QPhantomRegistrationToolbox::Start()
   }
 
   vtkPlusDataCollector* dataCollector = m_ParentMainWindow->GetVisualizationController()->GetDataCollector();
-  m_LandmarkDetection->SetMinimunDistanceBetweenLandmarksMm(m_PhantomLandmarkRegistration->GetMinimunDistanceBetweenTwoLandmarksMm());
+  m_LandmarkDetection->SetMinimumDistanceBetweenLandmarksMm(m_PhantomLandmarkRegistration->GetMinimunDistanceBetweenTwoLandmarksMm());
 
   if (dataCollector)
   {
