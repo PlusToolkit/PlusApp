@@ -55,9 +55,16 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
   IF(PLUS_USE_ATRACSYS)
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Atracsys.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_AstmPhantomTest_Atracsys.xml
       )
     SET(ATRACSYS_MARKERS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/stylus.ini
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/geometry020.ini
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/geometry101.ini
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/geometry102.ini
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/geometry103.ini
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/geometry104.ini
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/geometry105.ini
       )
   ENDIF()
   
