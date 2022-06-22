@@ -15,7 +15,7 @@ ga('send', 'pageview');
 <!-- End Google Analytics -->
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 1 2018 10:29:35 for Plus applications user manual by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on $datetime for Plus applications user manual by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
