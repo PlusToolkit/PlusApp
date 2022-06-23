@@ -4,13 +4,21 @@
 
 \section PlusAppIntro Introduction
 
-Plus (Public software Library for UltraSound) is an open-source software package for tracked ultrasound image acquisition, calibration, and processing. Plus applications include complete end-user software applications for spatial and temporal calibration (fCal) and real-time data acquisition, processing and streaming (PlusServer). For building complete image-guided therapy applications you can use the 3D Slicer and the <a href="http://www.slicerigt.org">SlicerIGT extension</a>. The SlicerIGT website contains an extensive set of step-by-step tutorials for building image-guided therapy systems from readily-available components.
+Plus (Public software Library for UltraSound) is an open-source software package for tracked ultrasound image acquisition, calibration, and processing. Plus applications include complete end-user software applications for spatial and temporal calibration (fCal) and real-time data acquisition, processing and streaming (PlusServer). For building complete image-guided therapy applications you can use the 3D Slicer and the <a href="http://www.slicerigt.org">SlicerIGT extension</a>.
 
 Overview papers and presentations:
 - <a href="http://perk.cs.queensu.ca/contents/plus-open-source-toolkit-ultrasound-guided-intervention-systems">Paper published in IEEE-TBME</a>
 - <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/overview/PlusOverview.pptx">Technology overview presentation</a>
 - <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/overview/SlicerIgtPlusIntro-NCIGT2013.pptx">Overview presentation with some clinical applications</a>
 - <a href="https://github.com/PlusToolkit/PlusDoc/raw/master/overview/PlusArchitectureOverview.pptx">Multi-channel architecture overview presentation</a>
+
+\par Download
+
+<a href="https://plustoolkit.github.io/download">Click here to download pre-compiled Plus applications releases</a>
+
+\par Tutorials
+
+The SlicerIGT website contains an extensive set of <a href="http://www.slicerigt.org/wp/user-tutorial/">step-by-step tutorials</a> for building image-guided therapy systems from readily-available components.
 
 \par How to cite
 
@@ -37,17 +45,16 @@ Please cite the following paper when referring to Plus in your publication:
 
 Plus has a BSD-style license, which allows any kind of use for free. See more details in&nbsp;<a href="https://github.com/PlusToolkit/PlusLib/blob/master/src/License.txt">License.txt</a>
 
-\par Download
-
-<a href="https://plustoolkit.github.io/download">Click here to download pre-compiled Plus applications releases</a>
-
 \par More information
 
-All information about the Plus project is publicly available at <a href="http://www.plustoolkit.org">www.plustoolkit.org</a>. Register at <a href="https://github.com/">github.com</a> and visit the <a href="https://github.com/PlusToolkit/PlusLib">PlusLib GitHub page</a> to submit messages, bug reports, feature requests, and get email notifications.
+- All information about the Plus project is publicly available at <a href="http://www.plustoolkit.org">www.plustoolkit.org</a>.
+- Register at <a href="https://github.com/">github.com</a> and visit the <a href="https://github.com/PlusToolkit/PlusLib">PlusLib GitHub page</a> to submit messages, bug reports, feature requests, and get email notifications.
+- Information for developers on how to Plus, add new devices, or contribute back to Plus can be found at <a href="https://github.com/PlusToolkit/PlusLib/blob/master/README.md">github.com</a>.
 
 \par Additional resources
 
 - <a href="http://perk-software.cs.queensu.ca/plus/doc/nightly/modelcatalog">Plus 3D model catalog</a> contains printable 3D models of tools and tracking fixtures.
+- <a href="https://github.com/lassoan/pyigtl">pyIGTL</a> contains a Python interface that can be used to receive send/receive live data from Plus in Python, and is installable using pip.
 - <a href="https://github.com/PlusToolkit/PlusMatlabUtils">Plus Matlab Utils</a> contains a MatLab interface to read data recorded by Plus and send/receive live data from Plus in Matlab.
 
 */
