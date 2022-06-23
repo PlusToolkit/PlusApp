@@ -47,7 +47,7 @@ All information about the Plus project is publicly available at <a href="http://
 
 \par Additional resources
 
-The <a href="http://perk-software.cs.queensu.ca/plus/doc/nightly/modelcatalog">Plus 3D model catalog</a> contains printable 3D models of tools and tracking fixtures.
-The <a href="https://github.com/PlusToolkit/PlusMatlabUtils">Plus Matlab interface</a> contains a MatLab interface to read data recorded by Plus and send/receive live data from Plus in Matlab.
+- <a href="http://perk-software.cs.queensu.ca/plus/doc/nightly/modelcatalog">Plus 3D model catalog</a> contains printable 3D models of tools and tracking fixtures.
+- <a href="https://github.com/PlusToolkit/PlusMatlabUtils">Plus Matlab Utils</a> contains a MatLab interface to read data recorded by Plus and send/receive live data from Plus in Matlab.
 
 */
