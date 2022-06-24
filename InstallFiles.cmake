@@ -287,7 +287,11 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
   ENDIF()
 
   IF(PLUS_USE_CLARIUS)
-    LIST(APPEND PLUSLIB_CONFIG_FILES ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ClariusVideoCapture.xml)
+    LIST(APPEND PLUSLIB_CONFIG_FILES
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ClariusVideoCapture.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ClariusVideoCapture_IMU.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_ClariusVideoRfBMode.xml
+      )
   ENDIF()
 
   IF(PLUS_USE_CLARIUS_OEM)
