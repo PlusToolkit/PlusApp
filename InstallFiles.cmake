@@ -56,7 +56,6 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
     LIST(APPEND PLUSLIB_CONFIG_FILES
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_Atracsys.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_AstmPhantomTest_Atracsys.xml
-      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_AstmPhantomTest_NDI_Polaris.xml
       )
     SET(ATRACSYS_MARKERS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/AtracsysTools/stylus.ini
@@ -244,6 +243,7 @@ IF(PLUSBUILD_DOWNLOAD_PLUSLIBDATA AND EXISTS "${PLUSLIB_DATA_DIR}")
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_fCal_Ultrasonix_L14-5_NDIPolaris_2.0.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_NDIPolaris.xml
       ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_NDIAurora.xml
+      ${PLUSLIB_DATA_DIR}/ConfigFiles/PlusDeviceSet_Server_AstmPhantomTest_NDI_Polaris.xml
       )
     SET(NDI_TOOL_DEFINITIONS
       ${PLUSLIB_DATA_DIR}/ConfigFiles/NdiToolDefinitions/8700339.rom
