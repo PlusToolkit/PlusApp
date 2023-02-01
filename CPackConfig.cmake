@@ -111,6 +111,8 @@ ENDIF()
 IF(EXISTS "${ITK_DIR}/ITKTargets.cmake")
   SET(ITK_USE_REVIEW OFF)
   LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${ITK_BIN_DIR};ITK;RuntimeLibraries;/") #TODO: Remove when ITK_DIR packages correctly
+  LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${ITK_BIN_DIR};ITK;libraries;/")
+  LIST(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${ITK_BIN_DIR};ITK;cpplibraries;/")
 ELSE()
   MESSAGE(WARNING "Unable to set ITK_DIR for package generation!")
 ENDIF()
