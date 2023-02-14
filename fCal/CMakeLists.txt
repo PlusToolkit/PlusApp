@@ -109,6 +109,10 @@ AddPlusQt5Executable(fCal ${APP_MODE}
   ${fCal_QT_Resources}
   )
 SET_TARGET_PROPERTIES(fCal PROPERTIES COMPILE_DEFINTIIONS ${Qt5Widgets_DEFINITIONS})
+IF(NOT VTK_VERSION VERSION_LESS 9.0.0)
+  # vtk_module_autoinit is needed
+  vtk_module_autoinit(TARGETS fCal MODULES ${VTK_LIBRARIES})
+ENDIF()
 TARGET_LINK_LIBRARIES(fCal PUBLIC ${fCal_LIBS})
 target_include_directories(fCal PUBLIC 
   ${CMAKE_CURRENT_BINARY_DIR}
