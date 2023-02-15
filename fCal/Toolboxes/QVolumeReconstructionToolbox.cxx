@@ -548,8 +548,6 @@ void QVolumeReconstructionToolbox::PopulateImageComboBox()
     QString imageFileName(imagesIterator.next());
     int lastIndexOfSlash = imageFileName.lastIndexOf('/');
     int lastIndexOfBackslash = imageFileName.lastIndexOf('\\');
-    imageFileName.right(imageFileName.length() - std::max(lastIndexOfSlash, lastIndexOfBackslash));
-
     ui.comboBox_InputImage->addItem(imageFileName);
   }
 
