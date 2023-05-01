@@ -37,6 +37,7 @@ This section contains the list of all supported hardware and software devices. C
 - \subpage DeviceInfraredTEQ1Cam
 - \subpage DeviceInfraredTEEV2Cam
 - \subpage DeviceUltravioletPCOUVCam
+- \subpage DeviceDAQVideoSource
 - \subpage DeviceSpinnaker
 - \subpage DeviceBlackMagicDeckLink
 - \subpage DeviceAzureKinect
