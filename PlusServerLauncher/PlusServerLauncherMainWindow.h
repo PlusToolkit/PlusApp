@@ -173,7 +173,7 @@ protected:
   /*! Update the contents of the remote control table to reflect the current status */
   void UpdateRemoteServerTable();
 
-  void ShowNotification(std::string message, std::string title="PlusServerLauncher");
+  void ShowNotification(QString message, QString title="PlusServerLauncher");
 
 protected:
   /*! Device set selector widget */

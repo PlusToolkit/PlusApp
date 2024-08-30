@@ -383,6 +383,7 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
 
   // During waitForFinished an error signal may be emitted, which may delete newServerProcess,
   // therefore we need to check if the current server process still exists
+  QString baseFileName = QString::fromStdString(vtksys::SystemTools::GetFilenameName(configFilePath.toStdString()));
   if (GetServerInfoFromID(newServerInfo.ID).Process &&
     newServerProcess && newServerProcess->state() == QProcess::Running)
   {
@@ -392,9 +393,7 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
     ui.comboBox_LogLevel->setEnabled(false);
     UpdateRemoteServerTable();
 
-    std::stringstream ss;
-    ss << "Server starting using configuration file: " << configFilePath.toStdString();
-    ShowNotification(ss.str(), "Server starting...");
+    ShowNotification(QString("Configuration file: %1").arg(baseFileName), "Server starting");
 
     return true;
   }
@@ -402,9 +401,7 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
   {
     LOG_ERROR("Failed to start server process");
 
-    std::stringstream ss;
-    ss << "Failed to start server using configuration file: " << configFilePath.toStdString();
-    ShowNotification(ss.str(), "Failed to start server");
+    ShowNotification(QString("Configuration file: %1").arg(baseFileName), "Failed to start server");
 
     return false;
   }
@@ -667,9 +664,7 @@ void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
       m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Stop server"));
     }
 
-    std::stringstream ss;
-    ss << "Server started using configuration file: " << info.Filename;
-    ShowNotification(ss.str(), "Server started");
+    ShowNotification(QString("Configuration file: %1").arg(info.Filename.c_str()), "Server started");
   }
   else if (message.find("Server status: ") != std::string::npos)
   {
@@ -949,16 +944,12 @@ void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QPro
   if (returnCode == 0)
   {
     LOG_INFO("Server process terminated.");
-    std::stringstream ss;
-    ss << "Server stopped using configuration file: " << configFileName;
-    ShowNotification(ss.str(), "Server stopped");
+    ShowNotification(QString("Configuration file: %1").arg(configFileName.c_str()), "Server stopped");
   }
   else
   {
     LOG_ERROR("Server stopped unexpectedly. Return code: " << returnCode);
-    std::stringstream ss;
-    ss << "Server stopped unexpectedly using configuration file: " << configFileName;
-    ShowNotification(ss.str(), "Server stopped unexpectedly");
+    ShowNotification(QString("Configuration file: %1").arg(configFileName.c_str()), "Server stopped unexpectedly");
   }
 
   if (finishedProcess)
@@ -1715,7 +1706,7 @@ bool PlusServerLauncherMainWindow::GetHideOnStartup() const
 }
 
 //---------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::ShowNotification(std::string message, std::string title)
+void PlusServerLauncherMainWindow::ShowNotification(QString message, QString title)
 {
   if (!ui.checkBox_showNotifications->isChecked())
   {
@@ -1723,8 +1714,8 @@ void PlusServerLauncherMainWindow::ShowNotification(std::string message, std::st
   }
 
   m_SystemTrayIcon->showMessage(
-    "Plus Server Launcher",
-    QString::fromStdString(message),
+    title,
+    message,
     m_SystemTrayIcon->icon(),
     SYSTEM_TRAY_MESSAGE_TIMEOUT_MS);
 }
