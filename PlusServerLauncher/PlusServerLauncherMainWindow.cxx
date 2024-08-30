@@ -97,8 +97,12 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   connect(m_DeviceSetSelectorWidget, SIGNAL(ConnectToDevicesByConfigFileInvoked(std::string)), this, SLOT(ConnectToDevicesByConfigFile(std::string)));
 
   m_SystemTrayMenu = new QMenu(this);
-  m_SystemTrayShowAction = m_SystemTrayMenu->addAction("Show PlusServerLauncher", this, SLOT(show()));
+  m_SystemTrayShowAction = m_SystemTrayMenu->addAction("Show Plus Server Launcher", this, SLOT(show()));
   m_SystemTrayHideAction = m_SystemTrayMenu->addAction("Minimize to tray", this, SLOT(hide()));
+  m_SystemTrayMenu->addSeparator();
+  m_SystemTrayMenu->addAction("Open log folder", this, SLOT(OpenLogFolderClicked()));
+  m_SystemTrayMenu->addAction("Open latest log file", this, SLOT(LatestLogClicked()));
+  m_SystemTrayMenu->addSeparator();
   m_SystemTrayMenu->addAction("Exit", this, SLOT(close()));
 
   m_SystemTrayIcon = new QSystemTrayIcon(QIcon(":/icons/Resources/icon_ConnectLarge.ico"), this);
@@ -1020,6 +1024,17 @@ void PlusServerLauncherMainWindow::LatestLogClicked()
   }
 }
 
+//----------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::OpenLogFolderClicked()
+{
+  // Open the output folder
+  QDir directory(QString::fromStdString(vtkPlusConfig::GetInstance()->GetOutputDirectory()));
+  if (!QDesktopServices::openUrl(QUrl("file:///" + directory.absolutePath(), QUrl::TolerantMode)))
+  {
+    LOG_ERROR("Failed to open folder in default application: " << directory.absolutePath().toStdString());
+  }
+}
+
 //---------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::OnRemoteControlServerEventReceived(vtkObject* caller, unsigned long eventId, void* clientData, void* callData)
 {
@@ -1679,7 +1694,7 @@ void PlusServerLauncherMainWindow::closeEvent(QCloseEvent* event)
 
   if (m_SystemTrayIcon->isVisible())
   {
-    QMessageBox::information(this, tr("PlusServerLauncher"),
+    QMessageBox::information(this, tr("Plus Server Launcher"),
       tr("The program will keep running in the "
         "system tray. To terminate the program, "
         "right-click on the system tray icon and "
@@ -1704,7 +1719,7 @@ void PlusServerLauncherMainWindow::ShowNotification(std::string message, std::st
   }
 
   m_SystemTrayIcon->showMessage(
-    "PlusServerLauncher",
+    "Plus Server Launcher",
     QString::fromStdString(message),
     m_SystemTrayIcon->icon(),
     SYSTEM_TRAY_MESSAGE_TIMEOUT_MS);
