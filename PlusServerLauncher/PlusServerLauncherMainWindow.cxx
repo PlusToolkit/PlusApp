@@ -107,9 +107,8 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   m_SystemTrayMenu->addAction("Exit", this, SLOT(close()));
 
   m_SystemTrayIcon = new QSystemTrayIcon(QIcon(":/icons/Resources/icon_ConnectLarge.ico"), this);
-  std::stringstream systemTraySS;
-  systemTraySS << "Plus Server Launcher - " << PlusCommon::GetPlusLibVersionString();
-  m_SystemTrayIcon->setToolTip(QString::fromStdString(systemTraySS.str()));
+  std::string plusVersionString = PlusCommon::GetPlusLibVersionString();
+  m_SystemTrayIcon->setToolTip(QString("Plus Server Launcher - %1").arg(plusVersionString.c_str()));
   m_SystemTrayIcon->setContextMenu(m_SystemTrayMenu);
   m_SystemTrayIcon->show();
   connect(m_SystemTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(SystemTrayIconActivated(QSystemTrayIcon::ActivationReason)));
@@ -145,7 +144,7 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   ui.centralLayout->insertWidget(0, m_DeviceSetSelectorWidget);
 
   // Log basic info (Plus version, supported devices)
-  std::string strPlusLibVersion = std::string(" Software version: ") + PlusCommon::GetPlusLibVersionString();
+  std::string strPlusLibVersion = std::string(" Software version: ") + plusVersionString;
   LOG_INFO(strPlusLibVersion);
   LOG_INFO("Logging at level " << vtkPlusLogger::Instance()->GetLogLevel() << " to file: " << vtkPlusLogger::Instance()->GetLogFileName());
   vtkSmartPointer<vtkPlusDeviceFactory> deviceFactory = vtkSmartPointer<vtkPlusDeviceFactory>::New();
@@ -1732,6 +1731,8 @@ void PlusServerLauncherMainWindow::SystemTrayIconActivated(QSystemTrayIcon::Acti
   else
   {
     show();
+    raise();
+    activateWindow();
   }
 }
 
@@ -1739,4 +1740,6 @@ void PlusServerLauncherMainWindow::SystemTrayIconActivated(QSystemTrayIcon::Acti
 void PlusServerLauncherMainWindow::SystemTrayMessageClicked()
 {
   show();
+  raise();
+  activateWindow();
 }
