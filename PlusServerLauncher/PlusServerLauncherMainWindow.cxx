@@ -106,6 +106,7 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   m_SystemTrayMenu->addAction("Exit", this, SLOT(close()));
 
   m_SystemTrayIcon = new QSystemTrayIcon(QIcon(":/icons/Resources/icon_ConnectLarge.ico"), this);
+  m_SystemTrayIcon->setToolTip("Plus Server Launcher");
   m_SystemTrayIcon->setContextMenu(m_SystemTrayMenu);
   m_SystemTrayIcon->show();
   connect(m_SystemTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(OnSystemTrayIconActivated(QSystemTrayIcon::ActivationReason)));
