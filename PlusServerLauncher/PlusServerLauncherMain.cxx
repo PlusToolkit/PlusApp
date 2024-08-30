@@ -188,10 +188,16 @@ int appMain(int argc, char* argv[])
 
   // Start the application
   PlusServerLauncherMainWindow PlusServerLauncherMainWindow(0, 0, autoConnect, remoteControlServerPort);
-  PlusServerLauncherMainWindow.show();
+  if (PlusServerLauncherMainWindow.GetHideOnStartup())
+  {
+    PlusServerLauncherMainWindow.hide();
+  }
+  else
+  {
+    PlusServerLauncherMainWindow.show();
+  }
 
   int retValue = app.exec();
-
   return retValue;
 }
 

@@ -10,8 +10,10 @@
 #include "PlusConfigure.h"
 #include "ui_PlusServerLauncherMainWindow.h"
 
+// Qt includes
 #include <QMainWindow>
 #include <QProcess>
+#include <QSystemTrayIcon>;
 
 // OpenIGTLinkIO includes
 #include <igtlioCommand.h>
@@ -56,6 +58,8 @@ public:
   PlusServerLauncherMainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0, bool autoConnect = false, int remoteControlServerPort = RemoteControlServerPortUseDefault);
   ~PlusServerLauncherMainWindow();
 
+  bool GetHideOnStartup() const;
+
 protected slots:
   /*!
     Connect to devices described in the argument configuration file in response by clicking on the Connect button
@@ -88,6 +92,8 @@ protected slots:
   void OnTimerTimeout();
 
   void StopRemoteServerButtonClicked();
+
+  void OnSystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
 
 protected:
 
@@ -165,9 +171,17 @@ protected:
   /*! Update the contents of the remote control table to reflect the current status */
   void UpdateRemoteServerTable();
 
+  void ShowNotification(std::string message, std::string title="PlusServerLauncher");
+
 protected:
   /*! Device set selector widget */
   QPlusDeviceSetSelectorWidget*         m_DeviceSetSelectorWidget;
+
+  QMenu*                                m_SystemTrayMenu;
+  QAction*                              m_SystemTrayShowAction;
+  QAction*                              m_SystemTrayHideAction;
+  QAction*                              m_SystemTrayQuitAction;
+  QSystemTrayIcon*                      m_SystemTrayIcon;
 
   /*! PlusServer instances that are responsible for all data collection and network transfer */
   std::deque<ServerInfo>                m_ServerInstances;
@@ -191,6 +205,8 @@ protected:
 
   /*! Incomplete string received from PlusServer */
   std::string                           m_LogIncompleteLine;
+
+  void closeEvent(QCloseEvent* event) override;
 
 private:
   Ui::PlusServerLauncherMainWindow ui;

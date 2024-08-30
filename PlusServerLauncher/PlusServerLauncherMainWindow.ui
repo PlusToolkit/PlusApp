@@ -250,28 +250,88 @@
           </property>
           <layout class="QVBoxLayout" name="remoteControlLayout">
            <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Remote control servers</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QTableWidget" name="serverTable"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_networkDetailsCaption">
+             <property name="text">
+              <string>Server running on:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_networkDetails">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="settings_tab">
+       <attribute name="title">
+        <string>Settings</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Settings</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QGroupBox" name="groupBox_2">
+             <property name="title">
+              <string>System tray</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QCheckBox" name="checkBox_startMinimized">
+                <property name="text">
+                 <string>Start minimized</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkBox_minimizeOnClose">
+                <property name="text">
+                 <string>Minimize on close</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkBox_showNotifications">
+                <property name="text">
+                 <string>Show notifications</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
            <item>
             <widget class="QGroupBox" name="groupBox_RemoteSettings">
              <property name="title">
-              <string>Remote Server Settings</string>
+              <string>Remote control</string>
              </property>
              <layout class="QGridLayout" name="gridLayout">
-              <item row="1" column="1">
-               <widget class="QLabel" name="label_networkDetails">
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="3" column="0">
                <widget class="QCheckBox" name="checkBox_overwritePermission">
                 <property name="text">
-                 <string>Allow overwrite?</string>
+                 <string>Allow overwrite of existing config files</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>
@@ -281,22 +341,28 @@
               <item row="2" column="0">
                <widget class="QCheckBox" name="checkBox_writePermission">
                 <property name="text">
-                 <string>Allow write?</string>
+                 <string>Write remote config file to disk</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_networkDetailsCaption">
-                <property name="text">
-                 <string>Server running on:</string>
-                </property>
-               </widget>
-              </item>
              </layout>
             </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </widget>

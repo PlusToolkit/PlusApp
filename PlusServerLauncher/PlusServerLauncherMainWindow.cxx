@@ -28,6 +28,8 @@ See License.txt for details.
 #include <QHostInfo>
 #include <QIcon>
 #include <QKeyEvent>
+#include <QMenu>
+#include <QMessageBox>
 #include <QNetworkInterface>
 #include <QProcess>
 #include <QRegExp>
@@ -68,6 +70,8 @@ namespace
   }
 }
 
+const int SYSTEM_TRAY_MESSAGE_TIMEOUT_MS = 1000;
+
 //-----------------------------------------------------------------------------
 PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*/, Qt::WindowFlags flags/*=0*/, bool autoConnect /*=false*/, int remoteControlServerPort/*=RemoteControlServerPortUseDefault*/)
   : QMainWindow(parent, flags)
@@ -91,6 +95,16 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   m_DeviceSetSelectorWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Launch server"));
   connect(m_DeviceSetSelectorWidget, SIGNAL(ConnectToDevicesByConfigFileInvoked(std::string)), this, SLOT(ConnectToDevicesByConfigFile(std::string)));
+
+  m_SystemTrayMenu = new QMenu(this);
+  m_SystemTrayShowAction = m_SystemTrayMenu->addAction("Show PlusServerLauncher", this, SLOT(show()));
+  m_SystemTrayHideAction = m_SystemTrayMenu->addAction("Minimize to tray", this, SLOT(hide()));
+  m_SystemTrayMenu->addAction("Exit", this, SLOT(close()));
+
+  m_SystemTrayIcon = new QSystemTrayIcon(QIcon(":/icons/Resources/icon_ConnectLarge.ico"), this);
+  m_SystemTrayIcon->setContextMenu(m_SystemTrayMenu);
+  m_SystemTrayIcon->show();
+  connect(m_SystemTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(OnSystemTrayIconActivated(QSystemTrayIcon::ActivationReason)));
 
   // Create status icon
   QPlusStatusIcon* statusIcon = new QPlusStatusIcon(NULL);
@@ -275,6 +289,34 @@ PlusStatus PlusServerLauncherMainWindow::ReadConfiguration()
   applicationConfigurationRoot->GetScalarAttribute("CurrentTab", currentTab);
   ui.tabWidget->setCurrentIndex(currentTab);
 
+  const char* hideOnStartupValue = applicationConfigurationRoot->GetAttribute("HideOnStartup");
+  bool hideOnStartup = false;
+  if (hideOnStartupValue && STRCASECMP(hideOnStartupValue, "True") == 0)
+  {
+    hideOnStartup = true;
+  }
+  ui.checkBox_startMinimized->setChecked(hideOnStartup);
+
+  const char* showNotificationsValue = applicationConfigurationRoot->GetAttribute("ShowNotifications");
+  bool showNotifications = true;
+  if (showNotificationsValue && STRCASECMP(showNotificationsValue, "True") == 0)
+  {
+    showNotifications = true;
+  }
+  else
+  {
+    showNotifications = false;
+  }
+  ui.checkBox_showNotifications->setChecked(showNotifications);
+
+  const char* minimizeOnCloseValue = applicationConfigurationRoot->GetAttribute("MinimizeOnClose");
+  bool minimizeOnClose = false;
+  if (minimizeOnCloseValue && STRCASECMP(minimizeOnCloseValue, "True") == 0)
+  {
+    minimizeOnClose = true;
+  }
+  ui.checkBox_minimizeOnClose->setChecked(minimizeOnClose);
+
   return PLUS_SUCCESS;
 }
 
@@ -291,6 +333,9 @@ PlusStatus PlusServerLauncherMainWindow::WriteConfiguration()
   }
 
   applicationConfigurationRoot->SetIntAttribute("CurrentTab", ui.tabWidget->currentIndex());
+  applicationConfigurationRoot->SetAttribute("HideOnStartup", ui.checkBox_startMinimized->isChecked() ? "True" : "False");
+  applicationConfigurationRoot->SetAttribute("ShowNotifications", ui.checkBox_showNotifications->isChecked() ? "True" : "False");
+  applicationConfigurationRoot->SetAttribute("MinimizeOnClose", ui.checkBox_minimizeOnClose->isChecked() ? "True" : "False");
 
   // Write configuration to file
   igsioCommon::XML::PrintXML(applicationConfigurationFilePath.c_str(), applicationConfigurationRoot);
@@ -338,11 +383,21 @@ bool PlusServerLauncherMainWindow::StartServer(const QString& configFilePath, in
     connect(newServerInfo.Process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
     ui.comboBox_LogLevel->setEnabled(false);
     UpdateRemoteServerTable();
+
+    std::stringstream ss;
+    ss << "Server starting using configuration file: " << configFilePath.toStdString();
+    ShowNotification(ss.str(), "Server starting...");
+
     return true;
   }
   else
   {
     LOG_ERROR("Failed to start server process");
+
+    std::stringstream ss;
+    ss << "Failed to start server using configuration file: " << configFilePath.toStdString();
+    ShowNotification(ss.str(), "Failed to start server");
+
     return false;
   }
 }
@@ -505,11 +560,6 @@ bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
     return true;
   }
 
-  disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
-  disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
-  disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
-  disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
-
   bool forcedShutdown = false;
   if (process->state() == QProcess::Running)
   {
@@ -538,6 +588,11 @@ bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
     LOG_INFO("Server process stopped successfully");
     ui.comboBox_LogLevel->setEnabled(true);
   }
+
+  disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(StdOutMsgReceived()));
+  disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(StdErrMsgReceived()));
+  disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
+  disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
 
   delete process;
   RemoveServerProcess(process);
@@ -573,31 +628,48 @@ bool PlusServerLauncherMainWindow::LocalStopServer()
 void PlusServerLauncherMainWindow::ParseContent(const std::string& message)
 {
   QProcess* process = qobject_cast<QProcess*>(QObject::sender());
-  if (process)
+  if (!process)
   {
-    ServerInfo info = GetServerInfoFromProcess(process);
-    if (info.Filename != vtksys::SystemTools::GetFilenameName(m_LocalConfigFile))
-    {
-      return;
-    }
+    return;
   }
+
+  bool localConfigFile = true;
+  ServerInfo info = GetServerInfoFromProcess(process);
+  if (info.Filename != vtksys::SystemTools::GetFilenameName(m_LocalConfigFile))
+  {
+    localConfigFile = false;
+  }
+
   // Input is the format: message
   // Plus OpenIGTLink server listening on IPs: 169.254.100.247, 169.254.181.13, 129.100.44.163, 192.168.199.1, 192.168.233.1, 127.0.0.1 -- port 18944
   if (message.find("Plus OpenIGTLink server listening on IPs:") != std::string::npos)
   {
-    m_Suffix.append(message);
-    m_Suffix.append("\n");
-    m_DeviceSetSelectorWidget->SetDescriptionSuffix(QString(m_Suffix.c_str()));
+    if (localConfigFile)
+    {
+      m_Suffix.append(message);
+      m_Suffix.append("\n");
+      m_DeviceSetSelectorWidget->SetDescriptionSuffix(QString(m_Suffix.c_str()));
+    }
   }
   else if (message.find("Server status: Server(s) are running.") != std::string::npos)
   {
-    m_DeviceSetSelectorWidget->SetConnectionSuccessful(true);
-    m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Stop server"));
+    if (localConfigFile)
+    {
+      m_DeviceSetSelectorWidget->SetConnectionSuccessful(true);
+      m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Stop server"));
+    }
+
+    std::stringstream ss;
+    ss << "Server started using configuration file: " << info.Filename;
+    ShowNotification(ss.str(), "Server started");
   }
   else if (message.find("Server status: ") != std::string::npos)
   {
-    // pull off server status and display it
-    m_DeviceSetSelectorWidget->SetDescriptionSuffix(QString(message.c_str()));
+    if (localConfigFile)
+    {
+      // pull off server status and display it
+      m_DeviceSetSelectorWidget->SetDescriptionSuffix(QString(message.c_str()));
+    }
   }
 }
 
@@ -862,18 +934,25 @@ void PlusServerLauncherMainWindow::ErrorReceived(QProcess::ProcessError errorCod
 //-----------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QProcess::ExitStatus status)
 {
+  QProcess* finishedProcess = dynamic_cast<QProcess*>(sender());
+  ServerInfo info = GetServerInfoFromProcess(finishedProcess);
+  std::string configFileName = info.Filename;
+
   if (returnCode == 0)
   {
     LOG_INFO("Server process terminated.");
+    std::stringstream ss;
+    ss << "Server stopped using configuration file: " << configFileName;
+    ShowNotification(ss.str(), "Server stopped");
   }
   else
   {
     LOG_ERROR("Server stopped unexpectedly. Return code: " << returnCode);
+    std::stringstream ss;
+    ss << "Server stopped unexpectedly using configuration file: " << configFileName;
+    ShowNotification(ss.str(), "Server stopped unexpectedly");
   }
 
-  QProcess* finishedProcess = dynamic_cast<QProcess*>(sender());
-  ServerInfo info = GetServerInfoFromProcess(finishedProcess);
-  std::string configFileName = info.Filename;
   if (finishedProcess)
   {
     RemoveServerProcess(finishedProcess);
@@ -904,7 +983,7 @@ void PlusServerLauncherMainWindow::LatestLogClicked()
   QFileInfoList fileInfoList = directory.entryInfoList(QStringList() << "*.txt");
   if (fileInfoList.isEmpty())
   {
-    this->LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "No logs in output directory.");
+    LocalLog(vtkPlusLogger::LOG_LEVEL_INFO, "No logs in output directory.");
     return;
   }
 
@@ -1583,4 +1662,64 @@ std::string PlusServerLauncherMainWindow::GetServersFromConfigFile(std::string f
 
   }
   return ports;
+}
+
+//---------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::closeEvent(QCloseEvent* event)
+{
+  if (!event->spontaneous() || !isVisible())
+  {
+    return;
+  }
+
+  if (!ui.checkBox_minimizeOnClose->isChecked())
+  {
+    return;
+  }
+
+  if (m_SystemTrayIcon->isVisible())
+  {
+    QMessageBox::information(this, tr("PlusServerLauncher"),
+      tr("The program will keep running in the "
+        "system tray. To terminate the program, "
+        "right-click on the system tray icon and "
+        "choose <b>Exit</b>."));
+    hide();
+    event->ignore();
+  }
+}
+
+//-----------------------------------------------------------------------------
+bool PlusServerLauncherMainWindow::GetHideOnStartup() const
+{
+  return ui.checkBox_startMinimized->isChecked();
+}
+
+//---------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::ShowNotification(std::string message, std::string title)
+{
+  if (!ui.checkBox_showNotifications->isChecked())
+  {
+    return;
+  }
+
+  m_SystemTrayIcon->showMessage(
+    "PlusServerLauncher",
+    QString::fromStdString(message),
+    m_SystemTrayIcon->icon(),
+    SYSTEM_TRAY_MESSAGE_TIMEOUT_MS);
+}
+
+//---------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::OnSystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+  if (reason == QSystemTrayIcon::ActivationReason::Context)
+  {
+    m_SystemTrayShowAction->setVisible(!isVisible());
+    m_SystemTrayHideAction->setVisible(isVisible());
+  }
+  else
+  {
+    show();
+  }
 }
