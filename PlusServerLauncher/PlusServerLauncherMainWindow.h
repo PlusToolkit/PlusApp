@@ -95,7 +95,9 @@ protected slots:
 
   void StopRemoteServerButtonClicked();
 
-  void OnSystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
+  void SystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
+
+  void SystemTrayMessageClicked();
 
 protected:
 

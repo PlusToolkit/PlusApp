@@ -112,7 +112,8 @@ PlusServerLauncherMainWindow::PlusServerLauncherMainWindow(QWidget* parent /*=0*
   m_SystemTrayIcon->setToolTip(QString::fromStdString(systemTraySS.str()));
   m_SystemTrayIcon->setContextMenu(m_SystemTrayMenu);
   m_SystemTrayIcon->show();
-  connect(m_SystemTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(OnSystemTrayIconActivated(QSystemTrayIcon::ActivationReason)));
+  connect(m_SystemTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(SystemTrayIconActivated(QSystemTrayIcon::ActivationReason)));
+  connect(m_SystemTrayIcon, SIGNAL(messageClicked()), this, SLOT(SystemTrayMessageClicked()));
 
   // Create status icon
   QPlusStatusIcon* statusIcon = new QPlusStatusIcon(NULL);
@@ -1721,7 +1722,7 @@ void PlusServerLauncherMainWindow::ShowNotification(QString message, QString tit
 }
 
 //---------------------------------------------------------------------------
-void PlusServerLauncherMainWindow::OnSystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+void PlusServerLauncherMainWindow::SystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
   if (reason == QSystemTrayIcon::ActivationReason::Context)
   {
@@ -1732,4 +1733,10 @@ void PlusServerLauncherMainWindow::OnSystemTrayIconActivated(QSystemTrayIcon::Ac
   {
     show();
   }
+}
+
+//---------------------------------------------------------------------------
+void PlusServerLauncherMainWindow::SystemTrayMessageClicked()
+{
+  show();
 }
