@@ -1713,11 +1713,19 @@ void PlusServerLauncherMainWindow::ShowNotification(QString message, QString tit
     return;
   }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5,9,0))
   m_SystemTrayIcon->showMessage(
     title,
     message,
     m_SystemTrayIcon->icon(),
     SYSTEM_TRAY_MESSAGE_TIMEOUT_MS);
+#else
+  m_SystemTrayIcon->showMessage(
+    title,
+    message,
+    QSystemTrayIcon::Information,
+    SYSTEM_TRAY_MESSAGE_TIMEOUT_MS);
+#endif
 }
 
 //---------------------------------------------------------------------------

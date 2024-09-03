@@ -13,7 +13,7 @@
 // Qt includes
 #include <QMainWindow>
 #include <QProcess>
-#include <QSystemTrayIcon>;
+#include <QSystemTrayIcon>
 
 // OpenIGTLinkIO includes
 #include <igtlioCommand.h>
