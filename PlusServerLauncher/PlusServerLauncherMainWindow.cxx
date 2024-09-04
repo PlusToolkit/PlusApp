@@ -1579,8 +1579,7 @@ void PlusServerLauncherMainWindow::OnLogEvent(vtkObject* caller, unsigned long e
 
   if (!logMessage.isEmpty())
   {
-
-    QStringList tokens = logMessage.split('|', QString::SkipEmptyParts);
+    QStringList tokens = logMessage.split('|', Qt::SkipEmptyParts);
     if (tokens.size() > 0)
     {
       std::string logLevel = tokens[0].toStdString();
@@ -1682,20 +1681,19 @@ void PlusServerLauncherMainWindow::closeEvent(QCloseEvent* event)
     return;
   }
 
+  QApplication* app = qobject_cast<QApplication*>(QApplication::instance());
   if (!ui.checkBox_minimizeOnClose->isChecked())
   {
-    return;
+    app->setQuitOnLastWindowClosed(true);
   }
-
-  if (m_SystemTrayIcon->isVisible())
+  else if (m_SystemTrayIcon->isVisible())
   {
+    app->setQuitOnLastWindowClosed(false);
     QMessageBox::information(this, tr("Plus Server Launcher"),
       tr("The program will keep running in the "
         "system tray. To terminate the program, "
         "right-click on the system tray icon and "
         "choose <b>Exit</b>."));
-    hide();
-    event->ignore();
   }
 }
 
