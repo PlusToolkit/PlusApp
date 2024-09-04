@@ -1676,17 +1676,15 @@ std::string PlusServerLauncherMainWindow::GetServersFromConfigFile(std::string f
 //---------------------------------------------------------------------------
 void PlusServerLauncherMainWindow::closeEvent(QCloseEvent* event)
 {
+  QApplication* app = qobject_cast<QApplication*>(QApplication::instance());
+  app->setQuitOnLastWindowClosed(true);
+
   if (!event->spontaneous() || !isVisible())
   {
     return;
   }
 
-  QApplication* app = qobject_cast<QApplication*>(QApplication::instance());
-  if (!ui.checkBox_minimizeOnClose->isChecked())
-  {
-    app->setQuitOnLastWindowClosed(true);
-  }
-  else if (m_SystemTrayIcon->isVisible())
+  if (ui.checkBox_minimizeOnClose->isChecked())
   {
     app->setQuitOnLastWindowClosed(false);
     QMessageBox::information(this, tr("Plus Server Launcher"),
