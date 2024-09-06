@@ -1579,7 +1579,11 @@ void PlusServerLauncherMainWindow::OnLogEvent(vtkObject* caller, unsigned long e
 
   if (!logMessage.isEmpty())
   {
+#if (QT_VERSION >= QT_VERSION_CHECK(5,14,0))
     QStringList tokens = logMessage.split('|', Qt::SkipEmptyParts);
+#else
+    QStringList tokens = logMessage.split('|', QString::SkipEmptyParts);
+#endif
     if (tokens.size() > 0)
     {
       std::string logLevel = tokens[0].toStdString();
