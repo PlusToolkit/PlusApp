@@ -599,8 +599,8 @@ bool PlusServerLauncherMainWindow::StopServer(const QString& configFilePath)
   disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(ErrorReceived(QProcess::ProcessError)));
   disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ServerExecutableFinished(int, QProcess::ExitStatus)));
 
-  delete process;
   RemoveServerProcess(process);
+  delete process;
 
   if (m_RemoteControlServerConnector)
   {
@@ -713,7 +713,10 @@ void PlusServerLauncherMainWindow::ConnectToDevicesByConfigFile(std::string aCon
   {
     LOG_INFO("Disconnect request successful");
     m_DeviceSetSelectorWidget->ClearDescriptionSuffix();
-    m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
+    if (m_DeviceSetSelectorWidget->GetConnectionSuccessful())
+    {
+      m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
+    }
     m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Launch server"));
     return;
   }
@@ -961,7 +964,10 @@ void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QPro
   {
     ConnectToDevicesByConfigFile("");
     ui.comboBox_LogLevel->setEnabled(true);
-    m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
+    if (m_DeviceSetSelectorWidget->GetConnectionSuccessful())
+    {
+      m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
+    }
   }
 
   SendServerStoppedCommand(info);
