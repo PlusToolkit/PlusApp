@@ -928,7 +928,7 @@ void PlusServerLauncherMainWindow::ErrorReceived(QProcess::ProcessError errorCod
   if (process)
   {
     ServerInfo info = GetServerInfoFromProcess(process);
-    if (info.Filename == m_LocalConfigFile)
+    if (vtksys::SystemTools::GetFilenameName(info.Filename) == vtksys::SystemTools::GetFilenameName(m_LocalConfigFile))
     {
       m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
     }
