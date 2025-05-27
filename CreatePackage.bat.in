@@ -18,7 +18,7 @@ ECHO User manual generation DONE
 
 :PACKAGE
 REM Build the package 
-"${CMAKE_CPACK_COMMAND}" --config ./CPackConfig.cmake --verbose
+"${CMAKE_CPACK_COMMAND}" --config ./CPackConfig.cmake
 IF ERRORLEVEL 1  GOTO PACKAGINGFAILED
 ECHO Packaging DONE
 
