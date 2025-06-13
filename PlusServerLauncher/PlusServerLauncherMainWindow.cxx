@@ -713,10 +713,6 @@ void PlusServerLauncherMainWindow::ConnectToDevicesByConfigFile(std::string aCon
   {
     LOG_INFO("Disconnect request successful");
     m_DeviceSetSelectorWidget->ClearDescriptionSuffix();
-    if (m_DeviceSetSelectorWidget->GetConnectionSuccessful())
-    {
-      m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
-    }
     m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Launch server"));
     return;
   }
@@ -944,17 +940,6 @@ void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QPro
   ServerInfo info = GetServerInfoFromProcess(finishedProcess);
   std::string configFileName = info.Filename;
 
-  if (returnCode == 0)
-  {
-    LOG_INFO("Server process terminated.");
-    ShowNotification(QString("Configuration file: %1").arg(configFileName.c_str()), "Server stopped");
-  }
-  else
-  {
-    LOG_ERROR("Server stopped unexpectedly. Return code: " << returnCode);
-    ShowNotification(QString("Configuration file: %1").arg(configFileName.c_str()), "Server stopped unexpectedly");
-  }
-
   if (finishedProcess)
   {
     RemoveServerProcess(finishedProcess);
@@ -964,10 +949,20 @@ void PlusServerLauncherMainWindow::ServerExecutableFinished(int returnCode, QPro
   {
     ConnectToDevicesByConfigFile("");
     ui.comboBox_LogLevel->setEnabled(true);
-    if (m_DeviceSetSelectorWidget->GetConnectionSuccessful())
-    {
-      m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
-    }
+    m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
+    m_DeviceSetSelectorWidget->SetConnectButtonText(QString("Launch server"));
+  }
+
+  if (returnCode == 0)
+  {
+    LOG_INFO("Server process terminated.");
+    ShowNotification(QString("Configuration file: %1").arg(configFileName.c_str()), "Server stopped");
+  }
+  else
+  {
+    m_DeviceSetSelectorWidget->SetConnectionSuccessful(false);
+    LOG_ERROR("Server stopped unexpectedly. Return code: " << returnCode);
+    ShowNotification(QString("Configuration file: %1").arg(configFileName.c_str()), "Server stopped unexpectedly");
   }
 
   SendServerStoppedCommand(info);
