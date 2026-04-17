@@ -91,6 +91,14 @@ ELSEIF(TARGET vtkRenderingGL2PS)
     )
 ENDIF()
 
+IF(NOT VTK_VERSION VERSION_LESS 9.0.0)
+  LIST(APPEND fCal_LIBS
+    VTK::FiltersParallel
+    VTK::RenderingCellGrid
+    VTK::RenderingContextOpenGL2
+    )
+ENDIF()
+
 IF (PLUS_USE_OpenIGTLink)
   LIST(APPEND fCal_LIBS OpenIGTLink)
 ENDIF()
